@@ -26,3 +26,4 @@ def test_system_status_endpoint(client):
     assert ".md" in data["limits"]["allowed_extensions"]
     assert data["rag_defaults"]["chunk_size"] == 700
     assert data["retention_days"] == 7
+

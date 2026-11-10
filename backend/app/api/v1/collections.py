@@ -171,3 +171,4 @@ def delete_collection(
     db.delete(coll)
     db.commit()
     return ActionStatusResponse(success=True, message=f"Collection '{coll.name}' deleted successfully.")
+

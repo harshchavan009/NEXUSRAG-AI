@@ -126,3 +126,4 @@ def test_document_deletion_removes_physical_file(client, workspace_a_auth):
     # Verify subsequent GET returns 404
     get_res = client.get(f"/api/v1/documents/{doc_id}")
     assert get_res.status_code == 404
+

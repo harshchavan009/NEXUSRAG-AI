@@ -36,3 +36,4 @@ class UploadJobItem(BaseModel):
 class DocumentUploadResponse(BaseModel):
     uploaded: List[UploadJobItem]
     failed: List[UploadJobItem]
+

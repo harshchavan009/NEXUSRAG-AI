@@ -27,3 +27,4 @@ class SystemStatusResponse(BaseModel):
     limits: SystemLimits
     rag_defaults: Dict[str, Any]
     retention_days: int
+

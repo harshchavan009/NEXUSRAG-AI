@@ -85,3 +85,4 @@ def purge_user_data(
         success=True,
         message="All workspace data, documents, chunks, and sessions permanently purged."
     )
+

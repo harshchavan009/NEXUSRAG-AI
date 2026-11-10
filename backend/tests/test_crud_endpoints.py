@@ -109,3 +109,4 @@ def test_document_listing_filtering_and_export(client, workspace_a_auth):
     assert current_res.status_code == 200
     assert current_res.json()["stats"]["document_count"] == 1
     assert current_res.json()["stats"]["collection_count"] == 1
+

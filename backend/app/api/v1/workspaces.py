@@ -78,3 +78,4 @@ def get_current_workspace_info(
             session_count=session_count
         )
     )
+

@@ -10,7 +10,7 @@ class Citation(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     message_id = Column(String(36), ForeignKey("messages.id", ondelete="CASCADE"), nullable=True, index=True)
     workflow_run_id = Column(String(36), ForeignKey("workflow_runs.id", ondelete="CASCADE"), nullable=True, index=True)
-    chunk_id = Column(BigInteger, ForeignKey("chunks.id", ondelete="SET NULL"), nullable=True, index=True)
+    chunk_id = Column(Integer, ForeignKey("chunks.id", ondelete="SET NULL"), nullable=True, index=True)
     document_id = Column(String(36), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False, index=True)
     
     citation_index = Column(Integer, nullable=False)  # 1, 2, ...
@@ -29,3 +29,4 @@ class Citation(Base):
     __table_args__ = (
         Index("ix_citations_run_index", "workflow_run_id", "citation_index"),
     )
+

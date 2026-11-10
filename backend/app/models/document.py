@@ -38,3 +38,4 @@ class Document(Base):
         Index("ix_documents_workspace_status", "workspace_id", "status"),
         Index("ix_documents_workspace_hash", "workspace_id", "sha256_hash"),
     )
+

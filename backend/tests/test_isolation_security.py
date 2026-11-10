@@ -88,3 +88,4 @@ def test_user_purge_clears_cookie_and_records(client, workspace_a_auth):
     )
     assert res_purge.status_code == 200
     assert res_purge.json()["success"] is True
+

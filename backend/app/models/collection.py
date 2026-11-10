@@ -19,3 +19,4 @@ class Collection(Base):
     __table_args__ = (
         Index("ix_collections_workspace_name", "workspace_id", "name"),
     )
+

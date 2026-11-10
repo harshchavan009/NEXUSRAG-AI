@@ -1,11 +1,11 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, status
+from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, status, BackgroundTasks
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from backend.app.database import get_db
 from backend.app.models.workspace import Workspace
 from backend.app.models.document import Document
 from backend.app.models.collection import Collection
+from backend.app.models.chunk import Chunk
 from backend.app.schemas.document import (
     DocumentResponse,
     DocumentListResponse,
@@ -17,11 +17,25 @@ from backend.app.core.dependencies import get_or_create_workspace, verify_csrf
 from backend.app.core.exceptions import NotFoundException, APIException
 from backend.app.services.document_service import DocumentService
 from backend.app.services.storage_service import StorageService
+from backend.app.services.ingestion_service import IngestionService
+from backend.app.rag.vector_store import FAISSVectorStore
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
+def _run_ingestion_background(document_id: str):
+    from backend.app.database import SessionLocal
+    db = SessionLocal()
+    try:
+        IngestionService.process_document(document_id, db)
+    except Exception as e:
+        # Avoid crashing background task threads
+        pass
+    finally:
+        db.close()
+
 @router.post("/upload", response_model=DocumentUploadResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_csrf)])
 async def upload_documents(
+    background_tasks: BackgroundTasks,
     files: List[UploadFile] = File(...),
     collection_id: Optional[str] = Form(None),
     workspace: Workspace = Depends(get_or_create_workspace),
@@ -30,7 +44,7 @@ async def upload_documents(
     """
     Multi-file upload endpoint supporting PDF, TXT, and Markdown files.
     Performs comprehensive validation: size cap, magic bytes, extension, duplicate SHA-256.
-    Returns structured list of successfully queued and rejected files with honest failure messages.
+    Triggers automated parsing, chunking, embedding, and FAISS indexing pipeline.
     """
     uploaded_items: List[UploadJobItem] = []
     failed_items: List[UploadJobItem] = []
@@ -45,6 +59,9 @@ async def upload_documents(
                 collection_id=collection_id,
                 db=db
             )
+            # Queue background ingestion task
+            background_tasks.add_task(_run_ingestion_background, doc.id)
+
             uploaded_items.append(
                 UploadJobItem(
                     document_id=doc.id,
@@ -91,10 +108,7 @@ def list_documents(
     workspace: Workspace = Depends(get_or_create_workspace),
     db: Session = Depends(get_db)
 ):
-    """
-    Lists documents for the current workspace with optional filtering by collection, status, and search query.
-    All data is computed live from stored document rows.
-    """
+    """Lists documents for current workspace with live counts, summaries, and statuses."""
     query = db.query(Document, Collection.name.label("collection_name")).outerjoin(
         Collection, Document.collection_id == Collection.id
     ).filter(Document.workspace_id == workspace.id)
@@ -147,7 +161,7 @@ def get_document(
     workspace: Workspace = Depends(get_or_create_workspace),
     db: Session = Depends(get_db)
 ):
-    """Retrieves document metadata by ID."""
+    """Retrieves document details."""
     result = db.query(Document, Collection.name.label("collection_name")).outerjoin(
         Collection, Document.collection_id == Collection.id
     ).filter(
@@ -185,8 +199,8 @@ def delete_document(
     db: Session = Depends(get_db)
 ):
     """
-    Deletes document record, raw file from storage, and associated database chunks.
-    (FAISS vector removal hook is also wired here).
+    Deletes document record, raw file from storage, database chunks,
+    and removes all associated vectors from FAISS index.
     """
     doc = db.query(Document).filter(
         Document.id == document_id,
@@ -196,10 +210,21 @@ def delete_document(
     if not doc:
         raise NotFoundException("Document", document_id)
 
-    # 1. Remove physical file from disk
+    # 1. Fetch chunk IDs to remove from FAISS
+    chunks = db.query(Chunk.id).filter(Chunk.document_id == doc.id).all()
+    chunk_ids = [c[0] for c in chunks]
+
+    if chunk_ids:
+        try:
+            vector_store = FAISSVectorStore(workspace_id=workspace.id)
+            vector_store.remove_vectors(chunk_ids)
+        except Exception as e:
+            pass
+
+    # 2. Remove physical file from disk
     StorageService.delete_file(doc.storage_path)
 
-    # 2. Delete document row from DB (foreign key cascades will remove chunks and citations)
+    # 3. Delete document row from DB (foreign key cascades will remove chunks and citations)
     filename = doc.filename
     db.delete(doc)
     db.commit()
@@ -212,10 +237,11 @@ def delete_document(
 @router.post("/{document_id}/reindex", response_model=ActionStatusResponse, dependencies=[Depends(verify_csrf)])
 def reindex_document(
     document_id: str,
+    background_tasks: BackgroundTasks,
     workspace: Workspace = Depends(get_or_create_workspace),
     db: Session = Depends(get_db)
 ):
-    """Marks document for reindexing."""
+    """Reindexes document: re-parses text, creates new chunks, and re-embeds into FAISS."""
     doc = db.query(Document).filter(
         Document.id == document_id,
         Document.workspace_id == workspace.id
@@ -224,8 +250,7 @@ def reindex_document(
     if not doc:
         raise NotFoundException("Document", document_id)
 
-    doc.status = "extracting"
-    db.commit()
+    background_tasks.add_task(_run_ingestion_background, doc.id)
 
     return ActionStatusResponse(
         success=True,

@@ -12,3 +12,4 @@ api_v1_router.include_router(workspaces_router)
 api_v1_router.include_router(collections_router)
 api_v1_router.include_router(documents_router)
 api_v1_router.include_router(user_router)
+

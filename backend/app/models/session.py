@@ -29,3 +29,4 @@ class Message(Base):
     session = relationship("ResearchSession", back_populates="messages")
     workflow_run = relationship("WorkflowRun", back_populates="messages")
     citations = relationship("Citation", back_populates="message", cascade="all, delete-orphan")
+

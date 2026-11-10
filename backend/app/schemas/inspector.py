@@ -19,3 +19,4 @@ class WorkflowRunResponse(BaseModel):
     error_message: Optional[str] = None
     created_at: datetime
     citations: List[CitationResponse] = []
+

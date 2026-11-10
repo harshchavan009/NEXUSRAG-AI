@@ -6,8 +6,8 @@ from backend.app.database import Base
 class Chunk(Base):
     __tablename__ = "chunks"
 
-    # Integer ID matches 64-bit integer ID used in FAISS IndexIDMap2
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    # Integer ID matches integer ID used in FAISS IndexIDMap2 (auto-incrementing ROWID in SQLite / Serial in Postgres)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     document_id = Column(String(36), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False, index=True)
     workspace_id = Column(String(36), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
     
@@ -31,3 +31,4 @@ class Chunk(Base):
     __table_args__ = (
         Index("ix_chunks_workspace_doc", "workspace_id", "document_id"),
     )
+

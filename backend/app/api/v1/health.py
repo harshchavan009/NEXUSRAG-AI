@@ -53,3 +53,4 @@ def get_system_status():
         },
         retention_days=7
     )
+

@@ -34,3 +34,4 @@ def sanitize_filename(filename: str) -> str:
     if not clean:
         clean = f"document_{secrets.token_hex(4)}.txt"
     return clean
+

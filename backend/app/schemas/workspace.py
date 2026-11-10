@@ -14,3 +14,4 @@ class WorkspaceResponse(BaseModel):
     created_at: datetime
     last_active_at: datetime
     stats: WorkspaceStatsResponse
+

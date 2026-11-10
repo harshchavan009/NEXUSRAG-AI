@@ -85,3 +85,4 @@ settings = Settings()
 settings.STORAGE_DIR.mkdir(parents=True, exist_ok=True)
 settings.UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 settings.FAISS_DIR.mkdir(parents=True, exist_ok=True)
+

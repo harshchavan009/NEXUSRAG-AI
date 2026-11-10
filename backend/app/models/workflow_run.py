@@ -27,3 +27,4 @@ class WorkflowRun(Base):
     workspace = relationship("Workspace", back_populates="workflow_runs")
     messages = relationship("Message", back_populates="workflow_run")
     citations = relationship("Citation", back_populates="workflow_run", cascade="all, delete-orphan")
+

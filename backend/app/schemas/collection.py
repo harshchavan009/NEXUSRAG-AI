@@ -23,3 +23,4 @@ class CollectionResponse(BaseModel):
 class CollectionListResponse(BaseModel):
     collections: List[CollectionResponse]
     total: int
+

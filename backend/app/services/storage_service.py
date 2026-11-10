@@ -41,3 +41,4 @@ class StorageService:
             shutil.rmtree(wdir, ignore_errors=True)
             return True
         return False
+

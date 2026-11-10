@@ -56,3 +56,4 @@ class CSRFException(APIException):
             code="CSRF_VALIDATION_FAILED",
             message=message
         )
+

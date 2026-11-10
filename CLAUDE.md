@@ -155,7 +155,7 @@ RAG Assistant/
 
 - [x] **Phase 1: Analysis, Design Research & Architecture Plan** (Completed & Approved)
 - [x] **Phase 2: Backend Foundation (FastAPI, PostgreSQL / SQLite, Isolation, Storage)** (Completed — 17/17 tests passing, 96% coverage)
-- [ ] **Phase 3: Ingestion Pipeline (PyMuPDF, Chunking, FAISS IDMap2, Drift Recovery)**
+- [x] **Phase 3: Ingestion Pipeline (PyMuPDF, Chunking, FAISS IDMap2, Drift Recovery)** (Completed — 26/26 tests passing, 87% coverage)
 - [ ] **Phase 4: Advanced RAG Engine (LangGraph DAG, Reranking, SSE Streaming, Tracing)**
 - [ ] **Phase 5: Frontend Design System & 7 Core Views**
 - [ ] **Phase 6: End-to-End Integration & Calibrated Evaluation**

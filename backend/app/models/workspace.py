@@ -17,3 +17,4 @@ class Workspace(Base):
     chunks = relationship("Chunk", back_populates="workspace", cascade="all, delete-orphan")
     sessions = relationship("ResearchSession", back_populates="workspace", cascade="all, delete-orphan")
     workflow_runs = relationship("WorkflowRun", back_populates="workspace", cascade="all, delete-orphan")
+

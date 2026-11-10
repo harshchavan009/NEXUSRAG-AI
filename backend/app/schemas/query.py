@@ -30,3 +30,4 @@ class QueryResponse(BaseModel):
     sufficiency_score: float
     groundedness_score: float
     timings_ms: Dict[str, float]
+
