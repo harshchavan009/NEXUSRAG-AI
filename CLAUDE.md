@@ -162,6 +162,7 @@ RAG Assistant/
 - [x] **Phase 5: Frontend Design System & 7 Core Views** (Completed — React 18, Vite 6, Tailwind CSS, 7 reference-driven views, PDF.js, TanStack Query, SSE stream)
 - [x] **Phase 6: End-to-End Integration & Calibrated Evaluation** (Completed — 10 benchmark queries, 100% P@1, 100% Recall@4, 1.0 MRR, 100% Gate Accuracy, 39/39 passing tests)
 - [x] **Phase 7: Comprehensive Verification & Security Audit** (Completed — 47/47 backend tests, 16/16 frontend tests, 0 vulnerabilities in pip-audit and npm audit, 0 secrets, WCAG 2.1 AA compliant)
-- [ ] **Phase 8: Master 26-Section Documentation & Diagrams**
+- [x] **Phase 8: Master 26-Section Documentation & Diagrams** (Completed — 26-chapter master README, OpenAPI docs, Dockerfile & Compose, video script, legal drafts)
+- [x] **UI/UX Elevation Across All 5 Reference Screens** (Completed — Ask-First Home with left sidebar tree and model/length chips, Documents table with color badges and byte-level upload tray, PDF annotator with anchored citation popover, Research reader with document tabs, Slite-style marketing landing page with curved accent)
 - [ ] **Phase 9: Production Go-Live Deployment & Submission Pack**
 
