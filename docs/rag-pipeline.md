@@ -240,3 +240,4 @@ For responsive user feedback, NexusRAG exposes `POST /api/v1/query/stream` consu
    ```
 4. **`event: error`**
    Emitted with structured error envelope if an exception occurs.
+

@@ -44,9 +44,12 @@ export function ResearchDeskPage({
   const abortControllerRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  const { data: sessions = [], refetch: refetchSessions } = useSessions();
+  const rawSessions = useSessions();
+  const sessions = Array.isArray(rawSessions.data) ? rawSessions.data : (rawSessions.data?.sessions || []);
+  const refetchSessions = rawSessions.refetch;
   const { data: sessionDetail, refetch: refetchDetail } = useSessionDetail(activeSessionId);
-  const { data: collections = [] } = useCollections();
+  const rawColls = useCollections();
+  const collections = Array.isArray(rawColls.data) ? rawColls.data : (rawColls.data?.collections || []);
   const createSessionMutation = useCreateSession();
   const deleteSessionMutation = useDeleteSession();
 

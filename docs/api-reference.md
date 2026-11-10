@@ -293,3 +293,4 @@ Exports all caller documents, collections, messages, and traces as a structured 
 Completely and permanently purges all documents, physical upload files on disk, chunks, FAISS vectors, sessions, and traces belonging to the caller's workspace, and expires the session cookie.
 - **Headers:** `X-CSRF-Token: <token>`
 - **Response `200 OK`:** `{"success": true, "message": "Workspace data purged successfully."}`
+

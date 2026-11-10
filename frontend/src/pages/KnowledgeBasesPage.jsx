@@ -32,8 +32,11 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
   const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
 
-  const { data: collections = [] } = useCollections();
-  const { data: documents = [], isLoading: docsLoading } = useDocuments(activeCollectionId);
+  const collsQuery = useCollections();
+  const docsQuery = useDocuments(activeCollectionId);
+  const collections = Array.isArray(collsQuery.data) ? collsQuery.data : (collsQuery.data?.collections || []);
+  const documents = Array.isArray(docsQuery.data) ? docsQuery.data : (docsQuery.data?.documents || []);
+  const docsLoading = docsQuery.isLoading;
   const createCollMutation = useCreateCollection();
   const deleteCollMutation = useDeleteCollection();
   const deleteDocMutation = useDeleteDocument();

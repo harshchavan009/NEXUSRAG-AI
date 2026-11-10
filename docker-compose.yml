@@ -31,3 +31,4 @@ services:
 volumes:
   nexus_storage:
     driver: local
+

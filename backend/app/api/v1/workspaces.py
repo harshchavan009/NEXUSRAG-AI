@@ -60,6 +60,16 @@ def get_current_workspace_info(
     db: Session = Depends(get_db)
 ):
     """Retrieves current workspace details and live-calculated metrics."""
+    response.set_cookie(
+        key=settings.SESSION_COOKIE_NAME,
+        value=workspace.session_token,
+        max_age=settings.SESSION_MAX_AGE_SECONDS,
+        httponly=True,
+        secure=settings.SESSION_COOKIE_SECURE,
+        samesite=settings.SESSION_COOKIE_SAMESITE,
+        path="/"
+    )
+
     doc_count = db.query(Document).filter(Document.workspace_id == workspace.id).count()
     coll_count = db.query(Collection).filter(Collection.workspace_id == workspace.id).count()
     chunk_count = db.query(Chunk).filter(Chunk.workspace_id == workspace.id).count()

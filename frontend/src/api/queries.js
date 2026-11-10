@@ -21,7 +21,10 @@ export function useCurrentWorkspace() {
 export function useCollections() {
   return useQuery({
     queryKey: ['collections'],
-    queryFn: () => apiRequest('/api/v1/collections'),
+    queryFn: async () => {
+      const res = await apiRequest('/api/v1/collections');
+      return Array.isArray(res) ? res : (res?.collections || []);
+    },
   });
 }
 
@@ -55,11 +58,12 @@ export function useDeleteCollection() {
 export function useDocuments(collectionId = null) {
   return useQuery({
     queryKey: ['documents', collectionId],
-    queryFn: () => {
+    queryFn: async () => {
       const url = collectionId
         ? `/api/v1/documents?collection_id=${encodeURIComponent(collectionId)}`
         : '/api/v1/documents';
-      return apiRequest(url);
+      const res = await apiRequest(url);
+      return Array.isArray(res) ? res : (res?.documents || []);
     },
     refetchInterval: 5000, // Refresh status while indexing
   });
@@ -102,7 +106,10 @@ export function useReindexDocument() {
 export function useSessions() {
   return useQuery({
     queryKey: ['sessions'],
-    queryFn: () => apiRequest('/api/v1/sessions'),
+    queryFn: async () => {
+      const res = await apiRequest('/api/v1/sessions');
+      return Array.isArray(res) ? res : (res?.sessions || []);
+    },
   });
 }
 
@@ -143,7 +150,10 @@ export function useDeleteSession() {
 export function useInspectorRuns() {
   return useQuery({
     queryKey: ['inspector-runs'],
-    queryFn: () => apiRequest('/api/v1/inspector/runs'),
+    queryFn: async () => {
+      const res = await apiRequest('/api/v1/inspector/runs');
+      return Array.isArray(res) ? res : (res?.runs || []);
+    },
   });
 }
 

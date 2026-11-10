@@ -57,3 +57,4 @@
 > *In our security audit, both `pip-audit` on the Python backend and `npm audit` on the React frontend reported **zero vulnerabilities**, and `detect-secrets` proved zero committed credentials across Git history. All color tokens achieve WCAG 2.1 AA compliance with a minimum 5.14:1 contrast ratio.*
 >
 > *NexusRAG is fully containerized with multi-stage Docker builds, non-root security execution, and persistent volume support. Thank you for your time, and I look forward to your evaluation!"*
+

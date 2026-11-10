@@ -33,8 +33,11 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [filterQuery, setFilterQuery] = useState('');
 
-  const { data: documents = [], isLoading: docsLoading } = useDocuments();
-  const { data: collections = [] } = useCollections();
+  const docsQuery = useDocuments();
+  const collsQuery = useCollections();
+  const documents = Array.isArray(docsQuery.data) ? docsQuery.data : (docsQuery.data?.documents || []);
+  const collections = Array.isArray(collsQuery.data) ? collsQuery.data : (collsQuery.data?.collections || []);
+  const docsLoading = docsQuery.isLoading;
   const createCollectionMutation = useCreateCollection();
   const deleteDocMutation = useDeleteDocument();
 
