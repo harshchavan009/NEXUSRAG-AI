@@ -43,3 +43,4 @@ class TextParser(BaseParser):
             pages=[page],
             summary_candidate_text=cleaned_text[:1500]
         )
+

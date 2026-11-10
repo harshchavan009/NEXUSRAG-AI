@@ -20,3 +20,4 @@ class BaseParser(ABC):
     def parse(self, file_path: str, original_filename: str) -> ParsedDocument:
         """Parses document from disk into normalized structured pages."""
         pass
+

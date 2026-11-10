@@ -69,3 +69,4 @@ class PDFParser(BaseParser):
             pages=extracted_pages,
             summary_candidate_text=summary_candidate
         )
+

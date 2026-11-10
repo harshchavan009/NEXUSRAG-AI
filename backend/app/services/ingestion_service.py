@@ -156,3 +156,4 @@ class IngestionService:
             db.commit()
             db.refresh(doc)
             raise
+

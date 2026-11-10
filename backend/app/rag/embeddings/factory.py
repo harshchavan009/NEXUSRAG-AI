@@ -22,3 +22,4 @@ def get_embedding_provider(
     else:
         # Default fallback
         return MockEmbeddingProvider(dimension=settings.EMBEDDING_DIMENSION)
+

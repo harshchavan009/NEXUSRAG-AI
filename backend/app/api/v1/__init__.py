@@ -4,6 +4,8 @@ from backend.app.api.v1.workspaces import router as workspaces_router
 from backend.app.api.v1.collections import router as collections_router
 from backend.app.api.v1.documents import router as documents_router
 from backend.app.api.v1.user import router as user_router
+from backend.app.api.v1.chat import router as chat_router
+from backend.app.api.v1.inspector import router as inspector_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 
@@ -12,4 +14,6 @@ api_v1_router.include_router(workspaces_router)
 api_v1_router.include_router(collections_router)
 api_v1_router.include_router(documents_router)
 api_v1_router.include_router(user_router)
+api_v1_router.include_router(chat_router)
+api_v1_router.include_router(inspector_router)
 

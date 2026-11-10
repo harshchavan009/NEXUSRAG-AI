@@ -75,3 +75,4 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
     def embed_query(self, text: str) -> List[float]:
         vectors = self._call_with_retry([text], task_type="RETRIEVAL_QUERY")
         return vectors[0]
+

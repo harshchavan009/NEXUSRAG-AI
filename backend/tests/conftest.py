@@ -16,8 +16,11 @@ TEST_DATABASE_URL = f"sqlite:///{TEST_DB_PATH}"
 test_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
-# Point global settings to test DB for background tasks
+# Point global settings and database module to test DB for background tasks
 settings.DATABASE_URL = TEST_DATABASE_URL
+import backend.app.database as db_mod
+db_mod.SessionLocal.configure(bind=test_engine)
+db_mod.engine = test_engine
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():

@@ -23,3 +23,4 @@ class EmbeddingProvider(ABC):
     def embed_query(self, text: str) -> List[float]:
         """Generates an embedding vector for a single search query."""
         pass
+
