@@ -133,3 +133,4 @@
 10. **Trace Timeline Retrieval Inspector (from LangSmith & Phoenix):** A dedicated inspection view exposes the LangGraph DAG run: original query, rewritten query, initial vector candidates, reranked results, evidence sufficiency verdict, and token latency.
 11. **Keyboard-First Command Palette (from Linear):** Global `Cmd+K` / `Ctrl+K` command menu providing rapid search, navigation, theme switching, and document upload triggers.
 12. **Empirical Editorial Landing Frame (from Ref 5):** Public landing page pairs a concise, honest value proposition with a full-size, unmocked Playwright screenshot of the running workspace.
+

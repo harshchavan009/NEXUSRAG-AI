@@ -351,3 +351,4 @@ To fulfill Phase 9 go-live requirements, the stack requires persistent disk supp
 | **Render** | Supported (Render Persistent Disks) | \$7/month starter web service + \$0.25/GB disk | Yes (Render rewrite rules or unified container) | Verified | **Strong Alternative (Option 2)** |
 | **Fly.io** | Native Fly Volumes | Pay-as-you-go (~$3-5/mo) | Yes (Single domain proxying) | Verified | Viable |
 | **Small VPS (Hetzner / DO)** | Native Linux filesystem | \$4-6/month | Yes (Caddy or Nginx reverse proxy) | Verified | Maximum control |
+

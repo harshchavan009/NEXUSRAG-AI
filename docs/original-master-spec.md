@@ -151,3 +151,4 @@ NexusRAG is an enterprise-grade, verifiable document research workspace designed
 - **Rule R1 (Zero Static Data):** No hardcoded documents, counts, metrics, or answers.
 - **Rule R2 (Not Generic / Not Vibe-Coded):** No purple gradients, pill buttons, decorative emojis, em dashes, or generic SaaS tropes.
 - **Rule R3 (Honesty & Calibrated Claims):** Zero simulated workflows, no fake citations, no unverified test claims.
+

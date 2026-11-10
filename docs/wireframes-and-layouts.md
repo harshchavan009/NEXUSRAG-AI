@@ -197,3 +197,4 @@
 - **Populated State:** Displays live runtime configuration and parameters from `GET /api/v1/system/status`.
 - **Loading State:** Form controls show loading skeletons while reading runtime status.
 - **Error State:** Connection alert if runtime configuration cannot be queried.
+

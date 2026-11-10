@@ -171,3 +171,4 @@ Begin with **Phase 1 only**.
 2. Inspect the repository and list the available tools (browser MCP or Chrome extension, docs MCP, GitHub MCP, `frontend-design` skill) and anything missing.
 3. Study the references and live products and write `docs/design-research.md`. Produce the Phase 1 deliverables A to L from the original spec plus the identity options and wireframes above.
 4. **Stop and wait for my approval.**
+
