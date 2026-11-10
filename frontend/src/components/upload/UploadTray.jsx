@@ -1,5 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, CheckCircle, AlertCircle, FileText, Loader2 } from 'lucide-react';
+import {
+  UploadCloud,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  FileText,
+  Loader2,
+  Share2
+} from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getCsrfToken } from '../../api/client';
 import { Button } from '../common/Button';
@@ -106,32 +114,41 @@ export function UploadTray({ collections = [], defaultCollectionId = null, onUpl
   };
 
   const formatBytes = (bytes) => {
+    if (!bytes) return '0 B';
     if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} kb`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const getFileBadge = (filename) => {
+    const ext = filename.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return { label: 'PDF', color: 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950 dark:text-red-400' };
+    if (ext === 'txt') return { label: 'TXT', color: 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950 dark:text-amber-400' };
+    return { label: 'MD', color: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950 dark:text-blue-400' };
+  };
+
   return (
-    <div className="bg-surface border border-border rounded-md p-4 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-ink">Upload Documents</h3>
-        {collections.length > 0 && (
+    <div className="flex flex-col gap-4 w-full">
+      {/* Target Collection Switcher */}
+      {collections.length > 0 && (
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-ink-muted font-medium">Target Collection:</span>
           <select
             value={selectedCollectionId}
             onChange={(e) => setSelectedCollectionId(e.target.value)}
-            className="text-xs bg-surface-subtle border border-border rounded px-2.5 py-1 text-ink focus:outline-none focus:border-brand"
+            className="text-xs bg-surface-subtle border border-border rounded-md px-2.5 py-1 text-ink focus:outline-none focus:border-brand font-medium"
           >
-            <option value="">No Collection (Root)</option>
+            <option value="">Root (All Documents)</option>
             {collections.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
             ))}
           </select>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Drag & Drop Target Zone */}
+      {/* Drag & Drop Target Zone (Reference 1 Style) */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -147,10 +164,10 @@ export function UploadTray({ collections = [], defaultCollectionId = null, onUpl
         }}
         onClick={() => fileInputRef.current?.click()}
         className={clsx(
-          'border border-dashed rounded p-6 text-center cursor-pointer transition-colors duration-150',
+          'border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-150 flex flex-col items-center justify-center gap-3',
           dragOver
             ? 'border-brand bg-brand/5'
-            : 'border-border hover:border-border-strong hover:bg-surface-subtle'
+            : 'border-border-strong hover:border-brand hover:bg-surface-subtle bg-surface'
         )}
       >
         <input
@@ -165,86 +182,106 @@ export function UploadTray({ collections = [], defaultCollectionId = null, onUpl
             }
           }}
         />
-        <Upload className="w-6 h-6 mx-auto mb-2 text-brand" />
-        <p className="text-xs font-medium text-ink">
-          Drag and drop files here, or <span className="text-brand underline">browse</span>
-        </p>
-        <p className="text-[11px] text-ink-muted mt-1">
-          PDF, Markdown, or TXT up to 25MB (max 60 pages for PDF)
-        </p>
+        <div className="w-12 h-12 rounded-full bg-surface-subtle border border-border flex items-center justify-center text-ink-muted">
+          <UploadCloud className="w-6 h-6 text-brand" />
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-ink">
+            Drag And Drop Your Files Here
+          </p>
+          <p className="text-[11px] text-ink-muted mt-0.5">
+            PDF, Markdown, or TXT up to 25MB
+          </p>
+        </div>
+        <button
+          type="button"
+          className="px-4 py-1.5 rounded-lg bg-[#20272F] text-white hover:bg-[#2C3642] text-xs font-medium transition-colors shadow-xs"
+        >
+          Upload file
+        </button>
       </div>
 
-      {/* Per-File Progress Queue */}
+      {/* Active Uploads / Processing Queue (Reference 1 Style) */}
       {filesQueue.length > 0 && (
-        <div className="flex flex-col gap-2 mt-1">
-          {filesQueue.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between text-xs p-2.5 rounded bg-surface-subtle border border-border"
-            >
-              <div className="flex items-center gap-2.5 flex-1 min-w-0 mr-3">
-                <FileText className="w-4 h-4 text-ink-faint flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-ink truncate">{item.name}</span>
-                    <span className="text-[11px] font-mono text-ink-muted ml-2">
-                      {item.status === 'uploading'
-                        ? `${item.progress}%`
-                        : formatBytes(item.size)}
+        <div className="flex flex-col gap-2.5">
+          <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider px-1">
+            Active Uploads ({filesQueue.filter(f => f.status === 'uploading').length})
+          </span>
+
+          <div className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
+            {filesQueue.map((item) => {
+              const badge = getFileBadge(item.name);
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between text-xs p-3 rounded-xl bg-surface border border-border shadow-2xs"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0 mr-3">
+                    <span className={clsx('px-1.5 py-0.5 rounded text-[10px] font-bold border font-mono', badge.color)}>
+                      {badge.label}
                     </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-medium text-ink truncate text-xs">{item.name}</span>
+                        <span className="text-[10px] font-mono text-ink-muted ml-2">
+                          {item.status === 'uploading' ? `${item.progress}%` : formatBytes(item.size)}
+                        </span>
+                      </div>
+
+                      {/* Byte Progress Bar */}
+                      {item.status === 'uploading' && (
+                        <div className="w-full bg-surface-subtle rounded-full h-1.5 overflow-hidden border border-border/40">
+                          <div
+                            className="bg-[#20272F] dark:bg-brand h-full transition-all duration-150 rounded-full"
+                            style={{ width: `${item.progress}%` }}
+                          />
+                        </div>
+                      )}
+
+                      {item.status === 'completed' && (
+                        <span className="text-[10px] text-status-success font-medium flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" /> Indexed into FAISS
+                        </span>
+                      )}
+
+                      {item.status === 'error' && (
+                        <span className="text-[10px] text-status-error truncate block" title={item.error}>
+                          {item.error}
+                        </span>
+                      )}
+
+                      {item.status === 'aborted' && (
+                        <span className="text-[10px] text-ink-muted italic">Cancelled</span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Byte Progress Bar */}
-                  {item.status === 'uploading' && (
-                    <div className="w-full bg-border rounded-full h-1 overflow-hidden">
-                      <div
-                        className="bg-brand h-1 transition-all duration-150"
-                        style={{ width: `${item.progress}%` }}
-                      />
-                    </div>
-                  )}
-
-                  {item.status === 'error' && (
-                    <p className="text-[11px] text-status-error">{item.error}</p>
-                  )}
-                  {item.status === 'aborted' && (
-                    <p className="text-[11px] text-ink-muted">Upload cancelled</p>
-                  )}
+                  {/* Cancel / Dismiss Button */}
+                  <div>
+                    {item.status === 'uploading' ? (
+                      <button
+                        onClick={() => cancelUpload(item.id)}
+                        className="p-1 rounded-full text-ink-muted hover:text-ink hover:bg-surface-subtle transition-colors"
+                        title="Cancel upload"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => removeQueueItem(item.id)}
+                        className="p-1 rounded-full text-ink-faint hover:text-ink transition-colors"
+                        title="Dismiss"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              {/* Status or Cancel Action */}
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                {item.status === 'uploading' && (
-                  <button
-                    onClick={() => cancelUpload(item.id)}
-                    className="p-1 text-ink-muted hover:text-status-error rounded hover:bg-surface transition-colors"
-                    title="Cancel upload"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                {item.status === 'completed' && (
-                  <CheckCircle className="w-4 h-4 text-status-success" />
-                )}
-                {item.status === 'error' && (
-                  <AlertCircle className="w-4 h-4 text-status-error" />
-                )}
-                {['completed', 'error', 'aborted'].includes(item.status) && (
-                  <button
-                    onClick={() => removeQueueItem(item.id)}
-                    className="p-1 text-ink-faint hover:text-ink rounded hover:bg-surface transition-colors"
-                    title="Dismiss"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
   );
 }
-

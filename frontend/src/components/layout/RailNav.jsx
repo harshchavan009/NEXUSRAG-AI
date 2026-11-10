@@ -8,8 +8,7 @@ import {
   Settings,
   Sun,
   Moon,
-  Compass,
-  FolderTree
+  Compass
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -35,23 +34,23 @@ export function RailNav({ currentView, onViewChange, isDark, onToggleTheme }) {
   ];
 
   return (
-    <aside className="w-16 flex-shrink-0 bg-surface border-r border-border flex flex-col items-center py-4 justify-between z-20 select-none">
-      {/* Brand Icon Mark */}
+    <aside className="w-16 flex-shrink-0 bg-[#1E242B] border-r border-[#2D3540] flex flex-col items-center py-4 justify-between z-20 select-none text-white">
+      {/* Brand Icon Mark (Design Reference 1 Dark Rail Logic) */}
       <div className="flex flex-col items-center gap-6">
         <button
           onClick={() => onViewChange(VIEWS.LANDING)}
-          className="w-10 h-10 rounded bg-brand flex items-center justify-center text-white shadow-xs hover:bg-brand-hover transition-colors"
+          className="w-10 h-10 rounded-md bg-[#B84A28] flex items-center justify-center text-white shadow-sm hover:bg-[#9E3E20] transition-colors relative group focus:outline-none focus:ring-2 focus:ring-[#D96E43]"
           title="NexusRAG Home"
           aria-label="NexusRAG Home"
         >
           <svg className="w-5 h-5 fill-current" viewBox="0 0 32 32">
             <path d="M8 10h6a4 4 0 0 1 4 4v10a4 4 0 0 0-4-4H8V10zm16 0h-6a4 4 0 0 0-4 4v10a4 4 0 0 1 4-4h6V10z" fill="currentColor"/>
-            <circle cx="16" cy="14" r="2" fill="#D96E43"/>
+            <circle cx="16" cy="14" r="2" fill="#F7F6F2"/>
           </svg>
         </button>
 
         {/* Navigation Rail Buttons */}
-        <nav className="flex flex-col gap-1.5" aria-label="Main Navigation">
+        <nav className="flex flex-col gap-2" aria-label="Main Navigation">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
@@ -60,21 +59,21 @@ export function RailNav({ currentView, onViewChange, isDark, onToggleTheme }) {
                 key={item.id}
                 onClick={() => onViewChange(item.id)}
                 className={clsx(
-                  'w-10 h-10 rounded flex items-center justify-center transition-colors relative group',
+                  'w-10 h-10 rounded-md flex items-center justify-center transition-all relative group focus:outline-none',
                   isActive
-                    ? 'bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand'
-                    : 'text-ink-muted hover:text-ink hover:bg-surface-subtle'
+                    ? 'bg-[#B84A28] text-white shadow-sm'
+                    : 'text-[#8C9BAE] hover:text-white hover:bg-[#2A333E]'
                 )}
                 title={item.label}
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4.5 h-4.5" />
                 {isActive && (
-                  <span className="absolute left-0 top-2 bottom-2 w-0.5 bg-brand rounded-r" aria-hidden="true" />
+                  <span className="absolute -left-1 top-2.5 bottom-2.5 w-1 bg-white rounded-r" aria-hidden="true" />
                 )}
                 {/* Floating Tooltip */}
-                <span className="absolute left-14 px-2 py-1 bg-ink text-white text-xs rounded whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-md">
+                <span className="absolute left-14 px-2.5 py-1 bg-[#11161B] text-white text-xs font-medium rounded whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-lg border border-[#2D3540]">
                   {item.label}
                 </span>
               </button>
@@ -84,17 +83,19 @@ export function RailNav({ currentView, onViewChange, isDark, onToggleTheme }) {
       </div>
 
       {/* Theme Toggle & Bottom Actions */}
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-2">
         <button
           onClick={onToggleTheme}
-          className="w-10 h-10 rounded flex items-center justify-center text-ink-muted hover:text-ink hover:bg-surface-subtle transition-colors"
+          className="w-10 h-10 rounded-md flex items-center justify-center text-[#8C9BAE] hover:text-white hover:bg-[#2A333E] transition-colors"
           title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
           aria-label={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
         >
-          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {isDark ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
         </button>
+
+        {/* Workspace status dot */}
+        <div className="w-2 h-2 rounded-full bg-[#34A853] mt-1" title="Workspace Connected" />
       </div>
     </aside>
   );
 }
-

@@ -71,3 +71,4 @@ NexusRAG integrates with external LLM APIs (specifically Google Gemini API or Op
 For inquiries or questions regarding workspace data processing:  
 **Contact:** Harsh Chavan — [harshchavan1030@gmail.com](mailto:harshchavan1030@gmail.com)  
 **ShadowFox AI Engineer Internship Submission:** [https://github.com/harshchavan009/NEXUSRAG-AI.git](https://github.com/harshchavan009/NEXUSRAG-AI.git)
+

@@ -81,3 +81,4 @@ If an API key is accidentally printed, committed, or exposed:
    - Provision a fresh restricted key and update `.env` on production host.
 4. **Step 4: Clean Git History**
    - Run `detect-secrets scan` and verify that no commit in history references the compromised credential.
+

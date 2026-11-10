@@ -11,7 +11,20 @@ import {
   ShieldCheck,
   Activity,
   FileText,
-  Clock
+  Clock,
+  Search,
+  Star,
+  Folder,
+  ChevronDown,
+  ChevronRight,
+  Highlighter,
+  Maximize2,
+  ZoomIn,
+  ZoomOut,
+  Copy,
+  Check,
+  RotateCcw,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { StatusDot } from '../components/common/StatusDot';
@@ -21,7 +34,8 @@ import {
   useSessionDetail,
   useCreateSession,
   useDeleteSession,
-  useCollections
+  useCollections,
+  useDocuments
 } from '../api/queries';
 import { VIEWS } from '../components/layout/RailNav';
 import clsx from 'clsx';
@@ -39,7 +53,9 @@ export function ResearchDeskPage({
   const [streamingText, setStreamingText] = useState('');
   const [currentStage, setCurrentStage] = useState(null);
   const [selectedCitation, setSelectedCitation] = useState(null);
-  const [rightPanelTab, setRightPanelTab] = useState('passage'); // 'passage', 'citation', 'trace'
+  const [rightPanelTab, setRightPanelTab] = useState('assistant'); // 'assistant', 'passage', 'citation'
+  const [searchTreeTerm, setSearchTreeTerm] = useState('');
+  const [copiedId, setCopiedId] = useState(null);
 
   const abortControllerRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -50,6 +66,9 @@ export function ResearchDeskPage({
   const { data: sessionDetail, refetch: refetchDetail } = useSessionDetail(activeSessionId);
   const rawColls = useCollections();
   const collections = Array.isArray(rawColls.data) ? rawColls.data : (rawColls.data?.collections || []);
+  const rawDocs = useDocuments();
+  const documents = Array.isArray(rawDocs.data) ? rawDocs.data : (rawDocs.data?.documents || []);
+
   const createSessionMutation = useCreateSession();
   const deleteSessionMutation = useDeleteSession();
 
@@ -73,7 +92,7 @@ export function ResearchDeskPage({
   }, [sessionDetail?.messages, streamingText]);
 
   const handleCreateNewSession = async () => {
-    const res = await createSessionMutation.mutateAsync('New Research Session');
+    const res = await createSessionMutation.mutateAsync('Research Session');
     setActiveSessionId(res.id);
     refetchSessions();
   };
@@ -161,6 +180,12 @@ export function ResearchDeskPage({
     }
   };
 
+  const handleCopyText = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   // Helper to render inline clickable citations [1], [2] inside answer text
   const renderTextWithCitations = (text, citations = []) => {
     if (!text) return null;
@@ -199,90 +224,156 @@ export function ResearchDeskPage({
 
   return (
     <div className="flex-1 flex h-full overflow-hidden bg-canvas">
-      {/* Panel 1: Left Sessions Rail (Design Reference 2) */}
+      {/* Panel 1: Left Tree Navigation Rail (Design Reference 2) */}
       <aside className="w-64 bg-surface border-r border-border flex flex-col flex-shrink-0 select-none">
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <h2 className="text-xs font-semibold text-ink uppercase tracking-wide">
-            Research Sessions
-          </h2>
-          <button
-            onClick={handleCreateNewSession}
-            className="p-1 text-ink-muted hover:text-brand rounded hover:bg-surface-subtle"
-            title="New Session"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
+        {/* Search Files Input */}
+        <div className="p-3 border-b border-border">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-ink-faint absolute left-2.5 top-2.5" />
+            <input
+              type="text"
+              placeholder="Search files..."
+              value={searchTreeTerm}
+              onChange={(e) => setSearchTreeTerm(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-surface-subtle border border-border rounded-lg text-ink placeholder:text-ink-faint focus:outline-none focus:border-brand"
+            />
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1 text-xs">
-          {sessions.length === 0 ? (
-            <div className="p-4 text-center text-ink-muted italic">
-              No sessions yet. Click + to begin.
+        {/* Tree Content: RECENT, FAVORITES, PROJECTS */}
+        <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-4 text-xs">
+          {/* Section: RECENT */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider px-2">
+              Recent
+            </span>
+            <div className="flex flex-col gap-0.5">
+              {sessions.slice(0, 3).map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setActiveSessionId(s.id)}
+                  className={clsx(
+                    'flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left truncate transition-colors',
+                    activeSessionId === s.id
+                      ? 'bg-brand/10 text-brand font-medium dark:bg-brand/20'
+                      : 'text-ink-muted hover:text-ink hover:bg-surface-subtle'
+                  )}
+                >
+                  <FileText className="w-3.5 h-3.5 flex-shrink-0 text-brand" />
+                  <span className="truncate">{s.title || 'Research Session'}</span>
+                </button>
+              ))}
             </div>
-          ) : (
-            sessions.map((s) => (
-              <div
-                key={s.id}
-                onClick={() => setActiveSessionId(s.id)}
-                className={clsx(
-                  'group flex items-center justify-between px-3 py-2.5 rounded cursor-pointer transition-colors',
-                  activeSessionId === s.id
-                    ? 'bg-brand/10 text-brand font-medium dark:bg-brand/20'
-                    : 'text-ink-muted hover:text-ink hover:bg-surface-subtle'
-                )}
-              >
-                <div className="flex items-center gap-2 truncate flex-1 min-w-0 mr-2">
-                  <BookOpen className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate">{s.title}</span>
-                </div>
+          </div>
 
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <span className="font-mono text-[10px] opacity-75">
-                    {s.message_count || 0}
-                  </span>
-                  <button
-                    onClick={(e) => handleDeleteSession(s.id, e)}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 text-ink-faint hover:text-status-error transition-opacity"
-                    title="Delete session"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+          {/* Section: FAVORITES */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider px-2">
+              Favorites
+            </span>
+            <div className="flex flex-col gap-0.5">
+              {documents.slice(0, 2).map((d) => (
+                <div
+                  key={d.id}
+                  onClick={() => onOpenDocumentReader(d)}
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left truncate text-ink-muted hover:text-ink hover:bg-surface-subtle cursor-pointer transition-colors"
+                >
+                  <Star className="w-3.5 h-3.5 flex-shrink-0 text-amber-500 fill-amber-500" />
+                  <span className="truncate">{d.original_filename || d.filename}</span>
                 </div>
-              </div>
-            ))
-          )}
+              ))}
+            </div>
+          </div>
+
+          {/* Section: PROJECTS / COLLECTIONS TREE */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between px-2 text-[10px] font-bold text-ink-muted uppercase tracking-wider">
+              <span>Collections</span>
+              <span className="font-mono text-[10px]">{collections.length}</span>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              {collections.map((c) => (
+                <div key={c.id} className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1.5 px-2 py-1 text-ink font-medium">
+                    <ChevronDown className="w-3.5 h-3.5 text-ink-muted" />
+                    <Folder className="w-3.5 h-3.5 text-brand/70" />
+                    <span className="truncate">{c.name}</span>
+                  </div>
+
+                  {/* Documents nested inside collection */}
+                  <div className="pl-6 flex flex-col gap-0.5">
+                    {documents
+                      .filter((d) => d.collection_id === c.id)
+                      .slice(0, 3)
+                      .map((doc) => (
+                        <div
+                          key={doc.id}
+                          onClick={() => onOpenDocumentReader(doc)}
+                          className="flex items-center gap-2 px-2 py-1 rounded text-ink-muted hover:text-ink hover:bg-surface-subtle cursor-pointer truncate"
+                        >
+                          <FileText className="w-3 h-3 text-ink-faint flex-shrink-0" />
+                          <span className="truncate">{doc.original_filename || doc.filename}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Button: + New Session / Collection */}
+        <div className="p-3 border-t border-border">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCreateNewSession}
+            icon={Plus}
+            className="w-full justify-center"
+          >
+            New Session
+          </Button>
         </div>
       </aside>
 
-      {/* Panel 2: Center Conversation Synthesis Desk */}
+      {/* Panel 2: Center Synthesis & Document Tabs Workspace (Design Reference 2) */}
       <main className="flex-1 flex flex-col min-w-0 bg-canvas overflow-hidden">
-        {/* Desk Header */}
-        <div className="h-12 bg-surface border-b border-border px-6 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-2 truncate">
-            <Sparkles className="w-4 h-4 text-brand" />
-            <span className="text-xs font-semibold text-ink truncate">
-              {sessionDetail?.title || 'Active Session'}
-            </span>
-          </div>
+        {/* Document Tabs Strip (Reference 2 Layout) */}
+        <div className="h-10 bg-surface border-b border-border flex items-center px-3 gap-1 overflow-x-auto flex-shrink-0 select-none">
+          {documents.slice(0, 3).map((doc, idx) => (
+            <div
+              key={doc.id}
+              onClick={() => onOpenDocumentReader(doc)}
+              className={clsx(
+                'flex items-center gap-2 px-3 py-1.5 rounded-t-md text-xs cursor-pointer border-t-2 transition-colors max-w-xs',
+                idx === 0
+                  ? 'bg-canvas border-brand font-medium text-ink'
+                  : 'bg-surface border-transparent text-ink-muted hover:text-ink hover:bg-surface-subtle'
+              )}
+            >
+              <FileText className="w-3.5 h-3.5 text-brand flex-shrink-0" />
+              <span className="truncate">{doc.original_filename || doc.filename}</span>
+            </div>
+          ))}
 
-          <div className="flex items-center gap-3 text-xs">
-            {isStreaming && (
-              <div className="flex items-center gap-2 font-mono text-[11px] text-citation animate-pulse">
-                <span className="w-1.5 h-1.5 rounded-full bg-citation" />
-                <span>{currentStage || 'Streaming response...'}</span>
-              </div>
-            )}
-          </div>
+          <span className="text-[11px] text-ink-faint px-2 font-mono ml-auto">
+            {documents.length} indexed files
+          </span>
         </div>
 
-        {/* Scrollable Conversation History */}
+        {/* Conversation / Findings Area */}
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
           {sessionDetail?.messages?.length === 0 && !isStreaming ? (
-            <div className="my-auto text-center max-w-md mx-auto p-8 rounded border border-border bg-surface text-xs text-ink-muted flex flex-col items-center gap-2">
-              <Sparkles className="w-6 h-6 text-brand mb-1" />
-              <p className="font-semibold text-ink">Empty Research Session</p>
-              <p className="font-serif">
-                Type your research question in the box below to synthesize answers across your indexed documents.
+            <div className="flex flex-col items-center justify-center h-full text-center max-w-md mx-auto my-auto gap-3 text-ink-muted">
+              <div className="w-12 h-12 rounded-full bg-brand/10 text-brand flex items-center justify-center">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="font-semibold text-ink text-sm">
+                Ask your documents. See the passage that answers.
+              </h3>
+              <p className="text-xs font-serif leading-relaxed">
+                Submit a research inquiry below. NexusRAG executes our 9-node LangGraph pipeline to retrieve, rerank, and synthesize findings with verifiable citations.
               </p>
             </div>
           ) : (
@@ -290,63 +381,75 @@ export function ResearchDeskPage({
               <div
                 key={msg.id}
                 className={clsx(
-                  'flex flex-col gap-2 max-w-3xl',
-                  msg.role === 'user' ? 'self-end items-end ml-12' : 'self-start items-start mr-12 w-full'
+                  'flex flex-col gap-2 max-w-3xl w-full',
+                  msg.role === 'user' ? 'self-end items-end ml-12' : 'self-start items-start mr-12'
                 )}
               >
-                {/* Role Label */}
-                <span className="text-[10px] font-mono uppercase tracking-wider text-ink-muted">
-                  {msg.role === 'user' ? 'Researcher' : 'NexusRAG Synthesis'}
-                </span>
+                {/* Role and Timestamp Badge */}
+                <div className="flex items-center gap-2 text-[11px] text-ink-muted px-1">
+                  <span className="font-semibold uppercase tracking-wider text-[10px]">
+                    {msg.role === 'user' ? 'You' : 'NexusRAG Synthesis'}
+                  </span>
+                  <span>•</span>
+                  <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
 
-                {/* Bubble / Container */}
+                {/* Message Body */}
                 <div
                   className={clsx(
-                    'p-4 rounded-md text-sm',
+                    'p-4 rounded-xl text-sm leading-relaxed shadow-xs w-full',
                     msg.role === 'user'
-                      ? 'bg-brand text-white font-sans max-w-xl'
-                      : 'bg-surface border border-border text-ink font-serif leading-relaxed w-full shadow-xs'
+                      ? 'bg-[#20272F] text-white'
+                      : 'bg-surface border border-border font-serif text-ink'
                   )}
                 >
                   {msg.role === 'user' ? (
-                    msg.content
+                    <p className="font-sans">{msg.content}</p>
                   ) : (
-                    <div>
-                      <div className="whitespace-pre-wrap">
+                    <div className="flex flex-col gap-3">
+                      <div className="whitespace-pre-wrap leading-relaxed text-sm">
                         {renderTextWithCitations(msg.content, msg.citations || [])}
                       </div>
 
-                      {/* Message Footer with Citations & Groundedness */}
-                      {msg.citations?.length > 0 && (
-                        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs font-sans">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-ink-muted text-[11px]">Sources:</span>
-                            {msg.citations.map((c) => (
-                              <button
-                                key={c.index || c.citation_index}
-                                onClick={() => {
-                                  setSelectedCitation(c);
-                                  setRightPanelTab('passage');
-                                }}
-                                className="px-1.5 py-0.5 rounded bg-surface-subtle border border-border font-mono text-[10px] text-ink-muted hover:text-brand hover:border-brand"
-                              >
-                                [{c.index || c.citation_index}] {c.filename} (p. {c.page_number})
-                              </button>
-                            ))}
-                          </div>
+                      {/* Bottom Synthesis Action Bar */}
+                      <div className="flex items-center justify-between pt-3 border-t border-border/80 text-xs text-ink-muted font-sans">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleCopyText(msg.content, msg.id)}
+                            className="flex items-center gap-1 hover:text-ink text-[11px] p-1 rounded hover:bg-surface-subtle"
+                            title="Copy synthesis"
+                          >
+                            {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-status-success" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
+                          </button>
 
-                          {msg.workflow_run_id && (
-                            <button
-                              onClick={() => onNavigateToInspector(msg.workflow_run_id)}
-                              className="text-[11px] font-mono text-ink-muted hover:text-brand flex items-center gap-1"
-                              title="View LangGraph DAG Execution Trace"
-                            >
-                              <Activity className="w-3 h-3" />
-                              <span>Trace</span>
-                            </button>
-                          )}
+                          <button
+                            onClick={() => handleSend(sessionDetail?.messages[sessionDetail.messages.indexOf(msg) - 1]?.content || '')}
+                            className="flex items-center gap-1 hover:text-ink text-[11px] p-1 rounded hover:bg-surface-subtle"
+                            title="Regenerate synthesis"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Regenerate</span>
+                          </button>
                         </div>
-                      )}
+
+                        <div className="flex items-center gap-3">
+                          {msg.citations?.length > 0 && (
+                            <span className="font-mono text-[10px] text-status-success font-semibold">
+                              ✓ {msg.citations.length} Verified Citations
+                            </span>
+                          )}
+
+                          <button
+                            onClick={() => onNavigateToInspector()}
+                            className="hover:text-brand flex items-center gap-1 text-[11px]"
+                            title="Inspect LangGraph DAG Trace"
+                          >
+                            <Activity className="w-3.5 h-3.5 text-brand" />
+                            <span>Trace</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -354,15 +457,15 @@ export function ResearchDeskPage({
             ))
           )}
 
-          {/* Real-time Streaming Message */}
+          {/* Streaming Synthesis Bubble */}
           {isStreaming && (
             <div className="self-start w-full max-w-3xl flex flex-col gap-2 mr-12">
               <span className="text-[10px] font-mono uppercase tracking-wider text-citation animate-pulse">
-                NexusRAG Synthesis (Streaming)
+                NexusRAG Synthesis ({currentStage || 'Processing'}...)
               </span>
-              <div className="bg-surface border border-brand/30 p-4 rounded-md text-sm font-serif text-ink leading-relaxed shadow-xs">
+              <div className="bg-surface border border-brand/30 p-4 rounded-xl text-sm font-serif text-ink leading-relaxed shadow-xs">
                 <div className="whitespace-pre-wrap">
-                  {streamingText || <span className="text-ink-muted italic">Synthesizing findings...</span>}
+                  {streamingText || <span className="text-ink-muted italic">Synthesizing findings from indexed passages...</span>}
                   <span className="inline-block w-1.5 h-4 bg-brand ml-1 animate-pulse" />
                 </div>
               </div>
@@ -372,14 +475,30 @@ export function ResearchDeskPage({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Bottom Composer Box */}
+        {/* Floating Bottom Reader / Pagination Controls (Reference 2 Bottom Controls) */}
+        <div className="h-10 bg-surface border-t border-border px-4 flex items-center justify-between text-xs text-ink-muted select-none flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-amber-400 cursor-pointer" title="Yellow highlight" />
+            <span className="w-3 h-3 rounded-full bg-green-400 cursor-pointer" title="Green highlight" />
+            <span className="w-3 h-3 rounded-full bg-blue-400 cursor-pointer" title="Blue highlight" />
+            <span className="w-3 h-3 rounded-full bg-purple-400 cursor-pointer" title="Purple highlight" />
+          </div>
+
+          <div className="flex items-center gap-3 font-mono text-[11px]">
+            <span>100%</span>
+            <span>•</span>
+            <span>1 of {documents.length || 1} files</span>
+          </div>
+        </div>
+
+        {/* Question Input Composer */}
         <div className="p-4 bg-surface border-t border-border flex flex-col gap-2 flex-shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleSend();
             }}
-            className="flex items-center gap-2 bg-canvas border border-border rounded-md px-3 py-2 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand/30"
+            className="flex items-center gap-2 bg-surface-subtle border border-border rounded-xl px-3.5 py-2.5 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 shadow-2xs"
           >
             <input
               type="text"
@@ -390,11 +509,11 @@ export function ResearchDeskPage({
               disabled={isStreaming}
             />
 
-            {/* Scope select in composer */}
+            {/* Scope select */}
             <select
               value={selectedScope}
               onChange={(e) => setSelectedScope(e.target.value)}
-              className="text-xs bg-surface border border-border rounded px-2 py-1 text-ink focus:outline-none focus:border-brand"
+              className="text-xs bg-surface border border-border rounded-lg px-2.5 py-1 text-ink focus:outline-none focus:border-brand"
               disabled={isStreaming}
             >
               <option value="all">All Documents</option>
@@ -416,28 +535,32 @@ export function ResearchDeskPage({
                 Stop
               </Button>
             ) : (
-              <Button
+              <button
                 type="submit"
-                variant="primary"
-                size="sm"
-                icon={Send}
                 disabled={!inputQuery.trim()}
+                className={clsx(
+                  'w-8 h-8 rounded-lg flex items-center justify-center transition-all',
+                  inputQuery.trim()
+                    ? 'bg-brand text-white hover:bg-brand-hover shadow-2xs cursor-pointer'
+                    : 'bg-surface text-ink-faint border border-border cursor-not-allowed'
+                )}
+                title="Send inquiry"
               >
-                Ask
-              </Button>
+                <Send className="w-3.5 h-3.5" />
+              </button>
             )}
           </form>
         </div>
       </main>
 
-      {/* Panel 3: Right Source Excerpt Panel (Design Reference 2 & 3) */}
+      {/* Panel 3: Right "Assistant" Panel (Design Reference 2 Layout) */}
       <aside className="w-80 bg-surface border-l border-border flex flex-col flex-shrink-0 select-none">
-        {/* Panel Tabs */}
+        {/* Panel Tabs Header */}
         <div className="flex border-b border-border bg-surface-subtle text-xs">
           {[
+            { id: 'assistant', label: 'Assistant' },
             { id: 'passage', label: 'Passage' },
             { id: 'citation', label: 'Citation' },
-            { id: 'trace', label: 'Trace' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -456,6 +579,49 @@ export function ResearchDeskPage({
 
         {/* Panel Body */}
         <div className="flex-1 overflow-y-auto p-4 text-xs flex flex-col gap-4">
+          {rightPanelTab === 'assistant' && (
+            <div className="flex flex-col gap-4">
+              <div>
+                <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block mb-2">
+                  Quick Actions
+                </span>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => handleSend('Summarize the primary thesis and findings of the selected documents.')}
+                    className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs"
+                  >
+                    <span className="font-medium text-ink">Summarize PDF</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand" />
+                  </button>
+
+                  <button
+                    onClick={() => handleSend('Format full academic APA and IEEE citations for all retrieved documents.')}
+                    className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs"
+                  >
+                    <span className="font-medium text-ink">Format citation</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand" />
+                  </button>
+
+                  <button
+                    onClick={() => handleSend('Audit groundedness and report any unverified or hallucinated assertions.')}
+                    className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs"
+                  >
+                    <span className="font-medium text-ink">Research guidance</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Research Tips Card */}
+              <div className="p-3.5 rounded-xl bg-surface-subtle border border-border flex flex-col gap-2">
+                <span className="font-semibold text-ink text-xs">Citation Grounding</span>
+                <p className="text-ink-muted leading-relaxed font-serif text-[11px]">
+                  Every bracketed chip [1], [2] links to an exact character offset in the original document. Click any citation to inspect the raw excerpt.
+                </p>
+              </div>
+            </div>
+          )}
+
           {rightPanelTab === 'passage' && (
             <div className="flex flex-col gap-3">
               <h3 className="font-semibold text-ink text-xs uppercase tracking-wide">
@@ -463,7 +629,7 @@ export function ResearchDeskPage({
               </h3>
               {selectedCitation ? (
                 <div className="flex flex-col gap-3">
-                  <div className="p-3.5 rounded bg-citation/10 border border-citation/30 font-serif text-xs text-ink leading-relaxed">
+                  <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-800/40 font-serif text-xs text-ink leading-relaxed">
                     "{selectedCitation.excerpt}"
                   </div>
 
@@ -478,7 +644,7 @@ export function ResearchDeskPage({
                     icon={ExternalLink}
                     onClick={() => onOpenDocumentReader(selectedCitation)}
                   >
-                    Open in PDF Reader
+                    Open in Document Reader
                   </Button>
                 </div>
               ) : (
@@ -496,19 +662,17 @@ export function ResearchDeskPage({
               </h3>
               {selectedCitation ? (
                 <div className="flex flex-col gap-2 font-mono text-[11px]">
-                  <div className="p-2.5 rounded bg-surface-subtle border border-border">
+                  <div className="p-2.5 rounded-xl bg-surface-subtle border border-border">
                     <span className="text-ink-muted block text-[10px] uppercase">Document</span>
-                    <span className="text-ink font-semibold">{selectedCitation.filename}</span>
+                    <span className="text-ink font-semibold truncate block">{selectedCitation.filename}</span>
                   </div>
-                  <div className="p-2.5 rounded bg-surface-subtle border border-border">
-                    <span className="text-ink-muted block text-[10px] uppercase">Document ID</span>
-                    <span className="text-ink truncate block">{selectedCitation.document_id}</span>
+                  <div className="p-2.5 rounded-xl bg-surface-subtle border border-border">
+                    <span className="text-ink-muted block text-[10px] uppercase">Page Number</span>
+                    <span className="text-ink font-semibold">{selectedCitation.page_number}</span>
                   </div>
-                  <div className="p-2.5 rounded bg-surface-subtle border border-border">
-                    <span className="text-ink-muted block text-[10px] uppercase">Relevance Score</span>
-                    <span className="text-status-success font-semibold">
-                      {((selectedCitation.relevance_score || selectedCitation.score || 0.88) * 100).toFixed(1)}%
-                    </span>
+                  <div className="p-2.5 rounded-xl bg-surface-subtle border border-border">
+                    <span className="text-ink-muted block text-[10px] uppercase">Groundedness Gate</span>
+                    <span className="text-status-success font-semibold">Passed (&gt; 0.700 threshold)</span>
                   </div>
                 </div>
               ) : (
@@ -516,28 +680,8 @@ export function ResearchDeskPage({
               )}
             </div>
           )}
-
-          {rightPanelTab === 'trace' && (
-            <div className="flex flex-col gap-3">
-              <h3 className="font-semibold text-ink text-xs uppercase tracking-wide">
-                Retrieval Pipeline Trace
-              </h3>
-              <p className="text-ink-muted text-xs leading-relaxed">
-                Every query runs through our 9-node LangGraph DAG with input validation, FAISS vector retrieval, and structured reranking.
-              </p>
-              <Button
-                variant="primary"
-                size="sm"
-                icon={Activity}
-                onClick={() => onNavigateToInspector()}
-              >
-                Open Retrieval Inspector
-              </Button>
-            </div>
-          )}
         </div>
       </aside>
     </div>
   );
 }
-

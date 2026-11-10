@@ -73,3 +73,4 @@ We reserve the right to modify these Terms or suspend workspace access at any ti
 For questions regarding these Terms:  
 **Contact:** Harsh Chavan — [harshchavan1030@gmail.com](mailto:harshchavan1030@gmail.com)  
 **Repository:** [https://github.com/harshchavan009/NEXUSRAG-AI.git](https://github.com/harshchavan009/NEXUSRAG-AI.git)
+
