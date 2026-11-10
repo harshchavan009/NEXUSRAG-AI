@@ -17,3 +17,4 @@ In adversarial peer-to-peer environments where malicious or compromised nodes ma
 
 ## 4. Multi-Paxos Invariants
 Multi-Paxos optimizes basic Paxos by amortizing Phase 1 (Prepare/Promise) across multiple log instances. A stable proposer serves as the distinguished leader. When leadership remains uncontested, Multi-Paxos executes Phase 2 (Accept/Accepted) in a single round-trip latency ($1 \times \text{RTT}$), achieving optimal consensus throughput under standard network conditions.
+

@@ -18,6 +18,8 @@ storage/uploads/*
 storage/faiss/*
 !storage/faiss/.gitkeep
 *.db
+*.db-shm
+*.db-wal
 *.sqlite3
 *.faiss
 *.tmp

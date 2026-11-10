@@ -187,3 +187,4 @@ NexusRAG was evaluated against the Web Content Accessibility Guidelines (WCAG 2.
 | Cross-Tenant Data Isolation | Adversarial isolation suite | 100% blocked | **VERIFIED** |
 | Rate Limiting & Abuse Defense | Sliding window enforcement | HTTP 429 + Retry-After | **VERIFIED** |
 | WCAG 2.1 AA Contrast Ratios | 5 core color token pairs | All $\ge 5.14:1$ | **COMPLIANT** |
+

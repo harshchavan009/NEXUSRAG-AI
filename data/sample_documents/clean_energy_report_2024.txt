@@ -15,3 +15,4 @@ The global benchmark levelized cost of energy (LCOE) for unsubsidized utility-sc
 
 5. Offshore Wind Infrastructure
 Global operational offshore wind capacity reached 75.2 gigawatts across 31 countries. Fixed-bottom offshore turbines reached nominal nameplate capacities of 15 megawatts per turbine, featuring rotor diameters of 236 meters and capacity factors consistently exceeding 52% in the North Sea basin. Floating offshore wind demonstration farms demonstrated viable deep-water performance at water depths exceeding 100 meters.
+

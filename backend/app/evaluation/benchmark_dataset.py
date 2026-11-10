@@ -98,3 +98,4 @@ BENCHMARK_QUERIES: List[BenchmarkQuery] = [
         description="Pseudoscience physics query; must trigger calibrated abstention"
     ),
 ]
+

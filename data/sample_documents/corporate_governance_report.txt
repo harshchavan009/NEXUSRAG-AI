@@ -12,3 +12,4 @@ Executive compensation consists of base salary, annual short-term performance in
 
 Section 4: Enterprise Risk Management & Cybersecurity Oversight
 The Technology and Cybersecurity Committee meets bi-monthly to review network penetration audit findings, zero-trust endpoint telemetry, and third-party vendor compliance. The company maintains $50 million in comprehensive cyber insurance liability coverage and conducts unannounced disaster recovery failover simulations twice annually with a maximum recovery time objective (RTO) of 4 hours and recovery point objective (RPO) of 15 minutes.
+

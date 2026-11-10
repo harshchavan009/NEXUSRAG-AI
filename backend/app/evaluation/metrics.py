@@ -138,3 +138,4 @@ class EvaluationMetricsCollector:
                 "generate": compute_percentiles(generate_latencies),
             }
         }
+
