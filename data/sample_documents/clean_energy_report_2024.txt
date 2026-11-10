@@ -1,0 +1,17 @@
+# Global Clean Energy & Photovoltaic Infrastructure Assessment (2024)
+Source: U.S. National Renewable Energy Laboratory (NREL) / Open Public Domain Assessment
+
+1. Executive Overview
+Global renewable generation additions reached 510 gigawatts in 2023, representing an unprecedented 50% year-over-year surge. Solar photovoltaic (PV) systems accounted for three-quarters of these worldwide capacity additions. The expansion was primarily accelerated by falling module prices, which declined by nearly 50% throughout the fiscal calendar.
+
+2. Photovoltaic Conversion Efficiencies
+Commercial monocrystalline silicon photovoltaic modules achieved a record average field efficiency of 22.8% in 2024, with premium TOPCon (Tunnel Oxide Passivated Contact) and heterojunction (HJT) commercial architectures reaching 24.5% cell efficiency under standard test conditions (STC: 1000 W/m², 25°C, AM 1.5G spectrum). Tandem perovskite-silicon prototype laboratory cells demonstrated certified power conversion efficiencies surpassing 33.9%, establishing a new milestone for next-generation solar harvesting.
+
+3. Grid-Scale Energy Storage & Chemistries
+Utility-scale battery energy storage systems (BESS) installed globally totaled 42 gigawatt-hours (GWh) in 2023. Lithium iron phosphate (LiFePO4, or LFP) battery chemistry increased its utility market share to 82%, overtaking nickel manganese cobalt (NMC) due to superior thermal runaway safety, 4,000 to 6,000 cycle lifetime, and zero reliance on cobalt or nickel supply chains. LFP round-trip efficiency (RTE) averaged 88.5% across 4-hour duration installations.
+
+4. Levelized Cost of Energy (LCOE)
+The global benchmark levelized cost of energy (LCOE) for unsubsidized utility-scale photovoltaic generation decreased to $36 per megawatt-hour ($0.036/kWh). When coupled with 4-hour battery storage, the hybrid solar-plus-storage LCOE ranged between $58 and $74 per megawatt-hour, achieving cost parity with existing natural gas combined-cycle peaking units across southwest desert transmission nodes.
+
+5. Offshore Wind Infrastructure
+Global operational offshore wind capacity reached 75.2 gigawatts across 31 countries. Fixed-bottom offshore turbines reached nominal nameplate capacities of 15 megawatts per turbine, featuring rotor diameters of 236 meters and capacity factors consistently exceeding 52% in the North Sea basin. Floating offshore wind demonstration farms demonstrated viable deep-water performance at water depths exceeding 100 meters.

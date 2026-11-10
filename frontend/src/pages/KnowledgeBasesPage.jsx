@@ -351,3 +351,4 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
     </div>
   );
 }
+

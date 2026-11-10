@@ -53,3 +53,4 @@ export function TopBar({ title, subtitle, onSearchClick }) {
     </header>
   );
 }
+

@@ -247,3 +247,4 @@ export function UploadTray({ collections = [], defaultCollectionId = null, onUpl
     </div>
   );
 }
+

@@ -41,3 +41,4 @@ export function StatusDot({ status, label, className = '' }) {
     </span>
   );
 }
+

@@ -329,3 +329,4 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
     </div>
   );
 }
+

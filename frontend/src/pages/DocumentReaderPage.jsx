@@ -138,3 +138,4 @@ export function DocumentReaderPage({ initialDocument = null, initialCitation = n
     </div>
   );
 }
+

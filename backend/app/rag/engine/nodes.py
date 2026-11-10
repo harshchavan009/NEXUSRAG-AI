@@ -248,9 +248,14 @@ def check_evidence_node(state: RAGGraphState) -> Dict[str, Any]:
         sufficient = False
     else:
         top_score = reranked[0]["rerank_score"]
-        avg_score = sum(c["rerank_score"] for c in reranked) / len(reranked)
-        # Weighted formula: 70% highest candidate score + 30% average candidate score
-        score = round(0.70 * top_score + 0.30 * avg_score, 4)
+        # Relevant candidates with score >= 0.50 reinforce the top evidence
+        relevant_candidates = [c["rerank_score"] for c in reranked if c["rerank_score"] >= 0.50]
+        if relevant_candidates:
+            avg_rel = sum(relevant_candidates) / len(relevant_candidates)
+            score = round(0.75 * top_score + 0.25 * avg_rel, 4)
+        else:
+            # When only weak/unrelated candidates exist, discount by 15%
+            score = round(top_score * 0.85, 4)
         sufficient = score >= settings.EVIDENCE_SUFFICIENCY_THRESHOLD
 
     timings["check_evidence"] = round((time.perf_counter() - t0) * 1000, 2)
@@ -283,6 +288,7 @@ def abstain_node(state: RAGGraphState) -> Dict[str, Any]:
     return {
         "generated_text": refusal_text,
         "is_abstention": True,
+        "groundedness_score": 1.0,
         "validated_citations": [],
         "stripped_citations": [],
         "node_timings": timings

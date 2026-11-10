@@ -97,3 +97,4 @@ export function RailNav({ currentView, onViewChange, isDark, onToggleTheme }) {
     </aside>
   );
 }
+

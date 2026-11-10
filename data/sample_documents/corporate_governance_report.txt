@@ -1,0 +1,14 @@
+Nexus Enterprise Holdings — Governance & Materiality Statement (2024)
+Source: SEC Model Public Corporate Filing (Public Domain)
+
+Section 1: Board Structure and Committee Independence
+The Board of Directors comprises nine members, of whom seven (77.8%) satisfy all criteria for independent non-executive status under New York Stock Exchange listing guidelines. The Audit, Compensation, and Governance Nominating Committees are composed entirely of independent directors. The position of Independent Lead Director is occupied by Dr. Eleanor Vance, who presides over executive sessions without management presence at every scheduled quarterly meeting.
+
+Section 2: Shareholder Rights and Voting Thresholds
+The corporation operates under a strict one-share, one-vote equity structure without dual-class shares. Special shareholder meetings may be convened upon the request of holders representing at least 15% of outstanding voting equity. Material corporate transactions, including mergers, acquisitions exceeding 20% of enterprise market capitalization, and amendments to the corporate certificate of incorporation, require the affirmative approval of a 75% supermajority of voting shares.
+
+Section 3: Executive Compensation and Clawback Mandate
+Executive compensation consists of base salary, annual short-term performance incentives, and long-term equity performance share units (PSUs) with a three-year vesting schedule. In compliance with SEC Rule 10D-1, the Compensation Committee enforces a comprehensive mandatory clawback policy. In the event of an accounting restatement due to material noncompliance with financial reporting requirements, all excess incentive-based compensation received by current or former executive officers during the three preceding fiscal years is recouped without regard to fault or misconduct.
+
+Section 4: Enterprise Risk Management & Cybersecurity Oversight
+The Technology and Cybersecurity Committee meets bi-monthly to review network penetration audit findings, zero-trust endpoint telemetry, and third-party vendor compliance. The company maintains $50 million in comprehensive cyber insurance liability coverage and conducts unannounced disaster recovery failover simulations twice annually with a maximum recovery time objective (RTO) of 4 hours and recovery point objective (RPO) of 15 minutes.
