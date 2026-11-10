@@ -14,6 +14,7 @@ from backend.app.schemas.document import (
 )
 from backend.app.schemas.common import ActionStatusResponse
 from backend.app.core.dependencies import get_or_create_workspace, verify_csrf
+from backend.app.core.rate_limit import check_upload_rate_limit
 from backend.app.core.exceptions import NotFoundException, APIException
 from backend.app.services.document_service import DocumentService
 from backend.app.services.storage_service import StorageService
@@ -33,7 +34,7 @@ def _run_ingestion_background(document_id: str):
     finally:
         db.close()
 
-@router.post("/upload", response_model=DocumentUploadResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_csrf)])
+@router.post("/upload", response_model=DocumentUploadResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_csrf), Depends(check_upload_rate_limit)])
 async def upload_documents(
     background_tasks: BackgroundTasks,
     files: List[UploadFile] = File(...),

@@ -17,6 +17,7 @@ from backend.app.schemas.session import (
 )
 from backend.app.schemas.common import ActionStatusResponse
 from backend.app.core.dependencies import get_or_create_workspace, verify_csrf
+from backend.app.core.rate_limit import check_query_rate_limit
 from backend.app.core.exceptions import NotFoundException
 from backend.app.services.rag_service import RAGService
 
@@ -27,7 +28,7 @@ router = APIRouter(tags=["Query & Research Sessions"])
 @router.post(
     "/query",
     response_model=QueryResponse,
-    dependencies=[Depends(verify_csrf)]
+    dependencies=[Depends(verify_csrf), Depends(check_query_rate_limit)]
 )
 def query_rag(
     payload: QueryRequest,
@@ -50,7 +51,7 @@ def query_rag(
 
 @router.post(
     "/query/stream",
-    dependencies=[Depends(verify_csrf)]
+    dependencies=[Depends(verify_csrf), Depends(check_query_rate_limit)]
 )
 async def query_rag_stream(
     payload: QueryRequest,

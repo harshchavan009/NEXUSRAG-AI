@@ -39,6 +39,15 @@ app = FastAPI(
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com data:; "
+            "img-src 'self' data: blob:; "
+            "connect-src 'self' http: https: ws:; "
+            "frame-ancestors 'none';"
+        )
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
@@ -54,12 +63,15 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["X-CSRF-Token", "Set-Cookie"]
+    expose_headers=["X-CSRF-Token", "Set-Cookie", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"]
 )
 
 # 3. Standardized Error Envelope Handlers
 @app.exception_handler(APIException)
 async def api_exception_handler(request: Request, exc: APIException):
+    headers = {}
+    if hasattr(exc, "retry_after"):
+        headers["Retry-After"] = str(exc.retry_after)
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -68,7 +80,8 @@ async def api_exception_handler(request: Request, exc: APIException):
                 "message": exc.message,
                 "details": exc.details
             }
-        }
+        },
+        headers=headers
     )
 
 @app.exception_handler(RequestValidationError)

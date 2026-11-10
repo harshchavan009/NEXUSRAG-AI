@@ -60,10 +60,12 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
   };
 
   // Filter documents by search string
-  const filteredDocs = documents.filter((doc) =>
-    doc.original_filename.toLowerCase().includes(filterQuery.toLowerCase()) ||
-    (doc.summary && doc.summary.toLowerCase().includes(filterQuery.toLowerCase()))
-  );
+  const filteredDocs = documents.filter((doc) => {
+    const name = (doc.original_filename || doc.filename || '').toLowerCase();
+    const summary = (doc.summary || '').toLowerCase();
+    const query = filterQuery.toLowerCase();
+    return name.includes(query) || summary.includes(query);
+  });
 
   return (
     <div className="flex-1 overflow-y-auto bg-canvas p-6 max-w-6xl mx-auto flex flex-col gap-8">

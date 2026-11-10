@@ -57,3 +57,14 @@ class CSRFException(APIException):
             message=message
         )
 
+class RateLimitException(APIException):
+    def __init__(self, message: str = "Rate limit exceeded. Please slow down and try again shortly.", retry_after: int = 60):
+        super().__init__(
+            status_code=429,
+            code="RATE_LIMIT_EXCEEDED",
+            message=message,
+            details={"retry_after_seconds": retry_after}
+        )
+        self.retry_after = retry_after
+
+
