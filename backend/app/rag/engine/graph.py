@@ -91,3 +91,4 @@ def build_rag_graph():
 
 # Singleton compiled graph instance
 rag_graph = build_rag_graph()
+

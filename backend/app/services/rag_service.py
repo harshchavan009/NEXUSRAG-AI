@@ -194,3 +194,4 @@ class RAGService:
                 yield f"event: final\ndata: {json.dumps(payload)}\n\n"
             elif msg_type == "error":
                 yield f"event: error\ndata: {json.dumps({'error': payload})}\n\n"
+

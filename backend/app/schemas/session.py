@@ -36,3 +36,4 @@ class SessionDetailResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     messages: List[MessageResponse] = []
+

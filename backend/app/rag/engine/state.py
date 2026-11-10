@@ -70,3 +70,4 @@ class RAGGraphState(TypedDict, total=False):
     db: Any
     token_callback: Optional[Callable[[str], None]]
     stage_callback: Optional[Callable[[str, str], None]]
+

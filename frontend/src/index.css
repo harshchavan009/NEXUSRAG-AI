@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Option 1: Warm Architectural Sand & Burnished Terracotta (Light Theme) */
+  --color-canvas: #F7F6F2;
+  --color-canvas-subtle: #EFECE6;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F3F1EC;
+  --color-surface-elevated: #FFFFFF;
+  --color-border: #E2DDD5;
+  --color-border-strong: #C8C2B7;
+  --color-ink: #18191B;
+  --color-ink-muted: #64666E;
+  --color-ink-faint: #989AA2;
+  --color-brand: #B84A28;
+  --color-brand-hover: #9E3E20;
+  --color-brand-subtle: #F9ECE6;
+  --color-citation: #D96E43;
+  --color-citation-hover: #BF5B32;
+  --color-citation-subtle: #FDF3EC;
+  --color-status-success: #287C4F;
+  --color-status-warning: #C27A1B;
+  --color-status-error: #B82828;
+  --color-status-info: #316BB0;
+}
+
+.dark {
+  /* Option 1 Purposefully Engineered Dark Theme */
+  --color-canvas: #0F1115;
+  --color-canvas-subtle: #14171E;
+  --color-surface: #16191F;
+  --color-surface-subtle: #1E232B;
+  --color-surface-elevated: #222731;
+  --color-border: #282D37;
+  --color-border-strong: #383F4D;
+  --color-ink: #ECEEF2;
+  --color-ink-muted: #9096A2;
+  --color-ink-faint: #5C6370;
+  --color-brand: #D96E43;
+  --color-brand-hover: #E28755;
+  --color-brand-subtle: #291D17;
+  --color-citation: #E28755;
+  --color-citation-hover: #F09B6B;
+  --color-citation-subtle: #2D201A;
+  --color-status-success: #34A853;
+  --color-status-warning: #E09F3E;
+  --color-status-error: #EA4335;
+  --color-status-info: #4A90E2;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-strong);
+}
+
+/* PDF.js canvas wrapper styling */
+.pdf-page-canvas {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Citation Chip Highlight Connector Motion */
+@keyframes citationPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); background-color: var(--color-citation-hover); }
+  100% { transform: scale(1); }
+}
+
+.citation-chip-active {
+  animation: citationPulse 0.3s ease-in-out;
+}
