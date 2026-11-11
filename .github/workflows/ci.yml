@@ -96,3 +96,4 @@ jobs:
           else
             echo "Git history secret scan clean: 0 exposed keys."
           fi
+

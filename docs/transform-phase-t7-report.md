@@ -149,3 +149,4 @@ Per Rule 6, any step requiring user credentials, domain registrar, or payment is
 - Complete master 26-chapter root `README.md`.
 - Author demo video walkthrough script and shot list.
 - One-page technical summary and provider key cost-safety checklist.
+

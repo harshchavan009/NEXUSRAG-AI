@@ -119,3 +119,4 @@ Evaluated against a standardized 10-query gold standard (6 in-domain answerable 
 - **Dual-Dialect Persistence:** Docker Compose orchestrates PostgreSQL 16 Alpine (`nexusrag_pgdata` volume) alongside persistent disk storage for uploaded files and FAISS indices (`nexus_storage` volume).
 - **Turnkey Cloud Manifests:** Ready for single-click deployment on Railway (`railway.json`), Render (`render.yaml`), or any VPS with Docker Compose.
 - **Disaster Recovery:** Includes verified backup and restore automation (`scripts/backup_and_restore.py`) supporting full snapshot archive and restoration.
+
