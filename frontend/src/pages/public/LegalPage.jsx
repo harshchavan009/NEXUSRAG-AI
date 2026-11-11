@@ -119,3 +119,4 @@ export function LegalPage({ initialTab = 'privacy', onNavigate }) {
     </div>
   );
 }
+

@@ -113,3 +113,4 @@ export function PublicHeader({ currentView, onNavigate }) {
     </header>
   );
 }
+

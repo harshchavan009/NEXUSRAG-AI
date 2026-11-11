@@ -108,3 +108,4 @@ export function SecurityPage({ onNavigate }) {
     </div>
   );
 }
+

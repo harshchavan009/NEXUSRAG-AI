@@ -144,3 +144,4 @@ Captured in [`docs/screenshots/phase_t4/`](file:///Users/harsh/Desktop/RAG%20Ass
 ## 5. Next Steps
 
 Phase T4 is fully realized and verified. Ready to proceed to **Phase T5: Automated Testing & Evaluation** (End-to-end Playwright journeys, stress testing, hallucination evaluation suite, and originality audit).
+
