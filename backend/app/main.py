@@ -132,8 +132,58 @@ async def generic_exception_handler(request: Request, exc: Exception):
 # 4. Attach API v1 Router
 app.include_router(api_v1_router)
 
+# 5. Static Assets & Production Single-Container SPA Mount
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+frontend_dist = os.path.abspath(os.getenv("FRONTEND_DIST_DIR", "frontend/dist"))
+if not os.path.isdir(frontend_dist):
+    alt_dist = "/app/frontend/dist"
+    if os.path.isdir(alt_dist):
+        frontend_dist = alt_dist
+
+if os.path.isdir(frontend_dist):
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    screenshots_dir = os.path.join(frontend_dist, "screenshots")
+    if os.path.isdir(screenshots_dir):
+        app.mount("/screenshots", StaticFiles(directory=screenshots_dir), name="screenshots")
+
+    @app.get("/favicon.svg", include_in_schema=False)
+    def serve_favicon():
+        return FileResponse(os.path.join(frontend_dist, "favicon.svg"))
+
+    @app.get("/robots.txt", include_in_schema=False)
+    def serve_robots():
+        return FileResponse(os.path.join(frontend_dist, "robots.txt"))
+
+    @app.get("/sitemap.xml", include_in_schema=False)
+    def serve_sitemap():
+        return FileResponse(os.path.join(frontend_dist, "sitemap.xml"))
+
+    @app.get("/manifest.webmanifest", include_in_schema=False)
+    def serve_manifest():
+        return FileResponse(os.path.join(frontend_dist, "manifest.webmanifest"))
+
+    @app.get("/security", include_in_schema=False)
+    @app.get("/faq", include_in_schema=False)
+    @app.get("/status", include_in_schema=False)
+    @app.get("/about", include_in_schema=False)
+    @app.get("/privacy", include_in_schema=False)
+    @app.get("/terms", include_in_schema=False)
+    @app.get("/app/{full_path:path}", include_in_schema=False)
+    def serve_spa_pages(full_path: str = ""):
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+
 @app.get("/")
-def root():
+def root(request: Request):
+    accept = request.headers.get("accept", "")
+    index_html = os.path.join(frontend_dist, "index.html") if os.path.isdir(frontend_dist) else None
+    if "text/html" in accept and index_html and os.path.isfile(index_html):
+        return FileResponse(index_html)
     return {
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,

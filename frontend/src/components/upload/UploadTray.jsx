@@ -202,6 +202,13 @@ export function UploadTray({ collections = [], defaultCollectionId = null, onUpl
         >
           Upload file
         </button>
+
+        <p className="text-[10px] text-ink-faint text-center">
+          Files are processed in an isolated visitor session. By uploading, you agree to our{' '}
+          <a href="/terms" target="_blank" rel="noreferrer" className="underline hover:text-ink">Terms</a>{' '}
+          and{' '}
+          <a href="/privacy" target="_blank" rel="noreferrer" className="underline hover:text-ink">Privacy Policy</a>.
+        </p>
       </div>
 
       {/* Active Uploads / Processing Queue (Reference 1 Style) */}

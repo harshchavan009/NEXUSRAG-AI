@@ -17,6 +17,9 @@ storage/uploads/*
 !storage/uploads/.gitkeep
 storage/faiss/*
 !storage/faiss/.gitkeep
+storage/backups/*
+!storage/backups/.gitkeep
+*.tar.gz
 *.db
 *.db-shm
 *.db-wal

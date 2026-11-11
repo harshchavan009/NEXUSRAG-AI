@@ -148,3 +148,4 @@ Phase T6 is complete and verified.
 - Selection of production deployment target (Railway Hobby / Render / VPS Docker Compose).
 - Custom domain configuration with HTTPS and verified cookie transmission.
 - Live smoke test.
+
