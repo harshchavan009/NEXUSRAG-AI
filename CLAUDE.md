@@ -149,7 +149,7 @@ RAG Assistant/
   - Secret Scan: `detect-secrets scan` (0 committed secrets)
   - Python Security Audit: `python3 -m pip_audit -r backend/requirements.txt` (0 vulnerabilities)
   - Frontend Security Audit: `npm --prefix frontend audit` (0 vulnerabilities)
-  - Full Test Suite: `pytest backend/tests && npm --prefix frontend test` (63/63 passing tests)
+  - Full Test Suite: `pytest backend/tests && npm --prefix frontend test` (66/66 passing tests)
 
 ---
 
@@ -166,7 +166,7 @@ RAG Assistant/
 - [x] **UI/UX Elevation Across All 5 Reference Screens** (Completed — Ask-First Home with left sidebar tree and model/length chips, Documents table with color badges and byte-level upload tray, PDF annotator with anchored citation popover, Research reader with document tabs, Slite-style marketing landing page with curved accent)
 - [x] **Transformation Phase T1: Blockers & Honesty Cleanup** (Completed — Purged fabricated hero mockups and fake testimonial, deployed original copy deck, replaced dead tiles with 1-click sample document ingestion and functional table controls, dropped dead color dots and stuck footer values, fixed workspace session state in settings, added `POST /api/v1/documents/sample`, verified with 48/48 backend tests, 16/16 frontend tests, and 42 multi-viewport screenshots).
 - [x] **Transformation Phase T2: Architectural Separation & Real Dashboard** (Completed — Decoupled standalone public site at `/` from app shell at `/app/*`, eliminated persistent developer status bar, added 200px/64px expandable rail with accessible text labels and zero tooltip bugs, overhauled DashboardPage into true executive dashboard with 4 live metric cards, ask-first composer, 4 quick actions, split recent documents and sessions view, removed dead notification bell/avatar/shared column, verified with 48/48 pytest, 17/17 vitest, 18 multi-viewport screenshots).
-- [ ] **Transformation Phase T3: Product Completeness & First-Run Onboarding** (PostgreSQL verification/deviation justification, complete Page 7 settings panel, citation grounding verification, interactive tour).
+- [x] **Transformation Phase T3: Product Completeness & First-Run Onboarding** (Completed — Implemented full Spec Page 7 Settings panel with AI model selection, chunking parameters, evidence gates, and theme preferences, formally justified SQLite/PostgreSQL dual-dialect persistence in docs and UI, built collection rename modal, bulk document selection/delete, and document reindex actions, deployed global Command Palette via Cmd+K, non-intrusive toast notifications, and feedback reporting dialog, verified with 48/48 pytest, 18/18 vitest, 14 multi-viewport screenshots).
 - [ ] **Transformation Phase T4: Public Site & Documentation Ecosystem** (Architecture diagrams, interactive demo mode, comprehensive legal and API reference).
 - [ ] **Transformation Phase T5: Automated Testing & Evaluation** (End-to-end Playwright journeys, stress testing, hallucination evaluation suite).
 - [ ] **Transformation Phase T6: Comprehensive Security Audit** (Threat model, OWASP Top 10 checklist, penetration test report, rate limiting proof).

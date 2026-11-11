@@ -9,10 +9,12 @@ import {
   Search,
   LayoutList,
   LayoutGrid,
-  Bell,
-  User,
   ChevronDown,
-  Plus
+  Plus,
+  Pencil,
+  Sparkles,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { StatusDot } from '../components/common/StatusDot';
@@ -22,10 +24,13 @@ import {
   useDocuments,
   useCollections,
   useCreateCollection,
+  useUpdateCollection,
   useDeleteCollection,
   useDeleteDocument,
-  useReindexDocument
+  useReindexDocument,
+  useLoadSampleDocuments
 } from '../api/queries';
+import { useToast } from '../components/common/Toast';
 import clsx from 'clsx';
 
 export function KnowledgeBasesPage({ onOpenDocument }) {
@@ -36,22 +41,132 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
   const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
 
+  // Collection rename modal state
+  const [editingCollection, setEditingCollection] = useState(null);
+  const [renameValue, setRenameValue] = useState('');
+
+  // Bulk selection state
+  const [selectedDocIds, setSelectedDocIds] = useState([]);
+  const [isSampleLoading, setIsSampleLoading] = useState(false);
+
+  const toast = useToast();
   const collsQuery = useCollections();
   const docsQuery = useDocuments(activeCollectionId);
   const collections = Array.isArray(collsQuery.data) ? collsQuery.data : (collsQuery.data?.collections || []);
   const documents = Array.isArray(docsQuery.data) ? docsQuery.data : (docsQuery.data?.documents || []);
   const docsLoading = docsQuery.isLoading;
+
   const createCollMutation = useCreateCollection();
+  const updateCollMutation = useUpdateCollection();
   const deleteCollMutation = useDeleteCollection();
   const deleteDocMutation = useDeleteDocument();
   const reindexDocMutation = useReindexDocument();
+  const loadSamplesMutation = useLoadSampleDocuments();
 
   const handleCreateCollection = async (e) => {
     e.preventDefault();
     if (!newCollectionName.trim()) return;
-    await createCollMutation.mutateAsync({ name: newCollectionName.trim() });
-    setNewCollectionName('');
-    setIsNewCollectionOpen(false);
+    try {
+      await createCollMutation.mutateAsync({ name: newCollectionName.trim() });
+      toast.success(`Collection '${newCollectionName.trim()}' created.`);
+      setNewCollectionName('');
+      setIsNewCollectionOpen(false);
+    } catch (err) {
+      toast.error('Failed to create collection.');
+    }
+  };
+
+  const handleOpenRename = (coll) => {
+    setEditingCollection(coll);
+    setRenameValue(coll.name);
+  };
+
+  const handleRenameCollection = async (e) => {
+    e.preventDefault();
+    if (!renameValue.trim() || !editingCollection) return;
+    try {
+      await updateCollMutation.mutateAsync({
+        id: editingCollection.id,
+        name: renameValue.trim(),
+      });
+      toast.success(`Collection renamed to '${renameValue.trim()}'.`);
+      setEditingCollection(null);
+    } catch (err) {
+      toast.error('Failed to rename collection.');
+    }
+  };
+
+  const handleDeleteCollection = async (coll) => {
+    try {
+      await deleteCollMutation.mutateAsync(coll.id);
+      if (activeCollectionId === coll.id) {
+        setActiveCollectionId(null);
+      }
+      toast.success(`Collection '${coll.name}' deleted.`);
+    } catch (err) {
+      toast.error('Failed to delete collection.');
+    }
+  };
+
+  const handleDeleteDoc = async (doc) => {
+    try {
+      await deleteDocMutation.mutateAsync(doc.id);
+      setSelectedDocIds((prev) => prev.filter((id) => id !== doc.id));
+      toast.success(`Document '${doc.original_filename || doc.filename}' deleted.`);
+    } catch (err) {
+      toast.error('Failed to delete document.');
+    }
+  };
+
+  const handleReindexDoc = async (doc) => {
+    try {
+      await reindexDocMutation.mutateAsync(doc.id);
+      toast.info(`Queued '${doc.original_filename || doc.filename}' for reindexing.`);
+    } catch (err) {
+      toast.error('Failed to reindex document.');
+    }
+  };
+
+  const handleLoadSamples = async () => {
+    setIsSampleLoading(true);
+    try {
+      toast.info('Ingesting 4 verified research papers in background...');
+      await loadSamplesMutation.mutateAsync();
+      toast.success('Sample documents ingested into FAISS vector store.');
+    } catch (err) {
+      toast.error('Failed to load sample documents.');
+    } finally {
+      setIsSampleLoading(false);
+    }
+  };
+
+  // Bulk actions
+  const handleToggleSelectDoc = (docId) => {
+    setSelectedDocIds((prev) =>
+      prev.includes(docId) ? prev.filter((id) => id !== docId) : [...prev, docId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedDocIds.length === filteredDocs.length) {
+      setSelectedDocIds([]);
+    } else {
+      setSelectedDocIds(filteredDocs.map((d) => d.id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedDocIds.length === 0) return;
+    const count = selectedDocIds.length;
+    try {
+      for (const id of selectedDocIds) {
+        await deleteDocMutation.mutateAsync(id);
+      }
+      setSelectedDocIds([]);
+      toast.success(`Deleted ${count} documents and removed their FAISS vectors.`);
+    } catch (err) {
+      toast.error('Failed to delete selected documents.');
+    }
   };
 
   const filteredDocs = documents.filter((doc) => {
@@ -77,7 +192,7 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
 
   return (
     <div className="flex-1 flex h-full overflow-hidden bg-canvas">
-      {/* Left Collections Tree Rail (Reference 1 & 2) */}
+      {/* Left Collections Tree Rail */}
       <aside className="w-60 bg-surface border-r border-border flex flex-col flex-shrink-0 select-none">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="text-xs font-semibold text-ink uppercase tracking-wider">
@@ -130,19 +245,28 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                 <span className="truncate">{coll.name}</span>
               </button>
 
-              <button
-                onClick={() => deleteCollMutation.mutate(coll.id)}
-                className="opacity-0 group-hover:opacity-100 p-1 text-ink-faint hover:text-status-error transition-opacity"
-                title="Delete collection"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => handleOpenRename(coll)}
+                  className="p-1 text-ink-faint hover:text-ink transition-colors"
+                  title="Rename collection"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={() => handleDeleteCollection(coll)}
+                  className="p-1 text-ink-faint hover:text-status-error transition-colors"
+                  title="Delete collection"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
       </aside>
 
-      {/* Center Main Documents Table (Design Reference 1 Layout) */}
+      {/* Center Main Documents Table */}
       <main className="flex-1 flex flex-col min-w-0 overflow-y-auto p-6 gap-6">
         {/* Top Search, View Switcher & Action Rail */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -220,9 +344,29 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
             </select>
           </div>
 
-          <span className="text-xs font-mono text-ink-muted">
-            {filteredDocs.length} files available
-          </span>
+          <div className="flex items-center gap-3">
+            {selectedDocIds.length > 0 && (
+              <div className="flex items-center gap-2 bg-surface border border-border px-3 py-1 rounded-lg text-xs">
+                <span className="font-semibold text-brand">{selectedDocIds.length} selected</span>
+                <button
+                  onClick={handleBulkDelete}
+                  className="text-status-error hover:underline font-medium ml-2"
+                >
+                  Delete Selected
+                </button>
+                <button
+                  onClick={() => setSelectedDocIds([])}
+                  className="text-ink-muted hover:text-ink ml-1"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+
+            <span className="text-xs font-mono text-ink-muted">
+              {filteredDocs.length} files available
+            </span>
+          </div>
         </div>
 
         {/* View Layout: List or Grid */}
@@ -231,6 +375,19 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
             <table className="w-full text-left text-xs">
               <thead className="bg-surface-subtle/80 border-b border-border text-ink-muted font-medium select-none">
                 <tr>
+                  <th className="py-3 px-4 w-10">
+                    <button
+                      onClick={handleSelectAll}
+                      className="text-ink-muted hover:text-ink focus:outline-none"
+                      title={selectedDocIds.length === filteredDocs.length && filteredDocs.length > 0 ? "Deselect all" : "Select all"}
+                    >
+                      {selectedDocIds.length === filteredDocs.length && filteredDocs.length > 0 ? (
+                        <CheckSquare className="w-4 h-4 text-brand" />
+                      ) : (
+                        <Square className="w-4 h-4 text-ink-faint" />
+                      )}
+                    </button>
+                  </th>
                   <th className="py-3 px-4">Name</th>
                   <th className="py-3 px-4">Size</th>
                   <th className="py-3 px-4">Collection</th>
@@ -242,25 +399,53 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
               <tbody className="divide-y divide-border">
                 {docsLoading ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-ink-muted">
+                    <td colSpan={7} className="py-8 text-center text-ink-muted">
                       Loading files...
                     </td>
                   </tr>
                 ) : filteredDocs.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-ink-muted">
-                      No documents found. Drag and drop files into the upload tray on the right.
+                    <td colSpan={7} className="py-12 text-center text-ink-muted">
+                      <div className="flex flex-col items-center gap-3 max-w-sm mx-auto">
+                        <p>No documents found in this workspace view.</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          icon={Sparkles}
+                          disabled={isSampleLoading}
+                          onClick={handleLoadSamples}
+                        >
+                          {isSampleLoading ? 'Ingesting Samples...' : 'Load Sample Documents'}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
                   filteredDocs.map((doc) => {
                     const badge = getFileBadge(doc.original_filename || doc.filename, doc.file_type);
+                    const isSelected = selectedDocIds.includes(doc.id);
                     return (
                       <tr
                         key={doc.id}
-                        className="hover:bg-surface-subtle/60 transition-colors group cursor-pointer"
+                        className={clsx(
+                          'hover:bg-surface-subtle/60 transition-colors group cursor-pointer',
+                          isSelected && 'bg-brand/5'
+                        )}
                         onClick={() => onOpenDocument(doc)}
                       >
+                        <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => handleToggleSelectDoc(doc.id)}
+                            className="text-ink-muted hover:text-ink focus:outline-none"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-4 h-4 text-brand" />
+                            ) : (
+                              <Square className="w-4 h-4 text-ink-faint" />
+                            )}
+                          </button>
+                        </td>
+
                         <td className="py-3 px-4 font-medium text-ink flex items-center gap-3">
                           <span className={clsx('px-1.5 py-0.5 rounded text-[10px] font-bold border font-mono', badge.color)}>
                             {badge.label}
@@ -293,6 +478,13 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                         <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
                             <button
+                              onClick={() => handleReindexDoc(doc)}
+                              className="p-1 text-ink-muted hover:text-brand rounded hover:bg-surface-subtle"
+                              title="Reindex document in FAISS"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                            </button>
+                            <button
                               onClick={() => onOpenDocument(doc)}
                               className="p-1 text-ink-muted hover:text-brand rounded hover:bg-surface-subtle"
                               title="Open in Document Reader"
@@ -300,7 +492,7 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                               <ExternalLink className="w-3.5 h-3.5" />
                             </button>
                             <button
-                              onClick={() => deleteDocMutation.mutate(doc.id)}
+                              onClick={() => handleDeleteDoc(doc)}
                               className="p-1 text-ink-muted hover:text-status-error rounded hover:bg-surface-subtle"
                               title="Delete file"
                             >
@@ -320,10 +512,14 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredDocs.map((doc) => {
               const badge = getFileBadge(doc.original_filename || doc.filename, doc.file_type);
+              const isSelected = selectedDocIds.includes(doc.id);
               return (
                 <div
                   key={doc.id}
-                  className="bg-surface border border-border rounded-xl p-4 flex flex-col justify-between gap-3 hover:border-brand transition-colors group cursor-pointer shadow-2xs"
+                  className={clsx(
+                    'bg-surface border rounded-xl p-4 flex flex-col justify-between gap-3 hover:border-brand transition-colors group cursor-pointer shadow-2xs',
+                    isSelected ? 'border-brand ring-2 ring-brand/20' : 'border-border'
+                  )}
                   onClick={() => onOpenDocument(doc)}
                 >
                   <div>
@@ -331,7 +527,19 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                       <span className={clsx('px-1.5 py-0.5 rounded text-[10px] font-bold border font-mono', badge.color)}>
                         {badge.label}
                       </span>
-                      <StatusDot status={doc.status} />
+                      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        <StatusDot status={doc.status} />
+                        <button
+                          onClick={() => handleToggleSelectDoc(doc.id)}
+                          className="text-ink-muted hover:text-ink focus:outline-none ml-1"
+                        >
+                          {isSelected ? (
+                            <CheckSquare className="w-4 h-4 text-brand" />
+                          ) : (
+                            <Square className="w-4 h-4 text-ink-faint" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                     <h4 className="text-xs font-semibold text-ink truncate" title={doc.original_filename || doc.filename}>
                       {doc.original_filename || doc.filename}
@@ -350,13 +558,22 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                       <ExternalLink className="w-3 h-3" />
                     </button>
 
-                    <button
-                      onClick={() => deleteDocMutation.mutate(doc.id)}
-                      className="text-ink-muted hover:text-status-error"
-                      title="Delete file"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleReindexDoc(doc)}
+                        className="p-1 text-ink-muted hover:text-brand rounded"
+                        title="Reindex in FAISS"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteDoc(doc)}
+                        className="p-1 text-ink-muted hover:text-status-error rounded"
+                        title="Delete file"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -365,12 +582,14 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
         )}
       </main>
 
-      {/* Right Upload Tray (Design Reference 1 Layout) */}
+      {/* Right Upload Tray */}
       <aside className="w-80 bg-surface border-l border-border p-5 flex flex-col flex-shrink-0 overflow-y-auto">
         <UploadTray
           collections={collections}
           defaultCollectionId={activeCollectionId}
-          onUploadComplete={() => {}}
+          onUploadComplete={() => {
+            toast.success('Files uploaded and processed successfully.');
+          }}
         />
       </aside>
 
@@ -401,6 +620,38 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
             </Button>
             <Button type="submit" variant="primary" size="sm" loading={createCollMutation.isPending}>
               Create Collection
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Rename Collection Modal */}
+      <Modal
+        isOpen={!!editingCollection}
+        onClose={() => setEditingCollection(null)}
+        title="Rename Knowledge Base Collection"
+      >
+        <form onSubmit={handleRenameCollection} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-xs font-medium text-ink-muted mb-1.5">
+              New Collection Name
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Financial Reports 2024"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:border-brand"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+            <Button variant="outline" size="sm" onClick={() => setEditingCollection(null)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" size="sm" loading={updateCollMutation.isPending}>
+              Save Name
             </Button>
           </div>
         </form>

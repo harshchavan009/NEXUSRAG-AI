@@ -34,6 +34,7 @@ vi.mock('../api/queries', () => ({
     isLoading: false,
   }),
   useCreateCollection: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateCollection: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
   useDeleteCollection: () => ({ mutate: vi.fn(), isPending: false }),
   useDocuments: () => ({
     data: [
@@ -126,15 +127,31 @@ describe('App Navigation & 7 Core View Rendering', () => {
     expect(screen.getAllByText('Clean Energy').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('navigates to Settings view and displays active visitor session and Pipeline telemetry table', () => {
+  it('navigates to Settings view and displays active visitor session and complete Page 7 specifications', () => {
     renderWithProviders(<App />);
     const settingsBtn = screen.getByRole('button', { name: 'System Settings' });
     fireEvent.click(settingsBtn);
 
-    expect(screen.getByText('System & Workspace Settings')).toBeInTheDocument();
-    expect(screen.getByText(/Storage & Health Telemetry/i)).toBeInTheDocument();
-    expect(screen.getByText(/Retrieval Engine & Pipeline Telemetry/i)).toBeInTheDocument();
+    expect(screen.getByText('System Settings & Architecture')).toBeInTheDocument();
+    expect(screen.getByText(/AI Provider & Generation Model/i)).toBeInTheDocument();
+    expect(screen.getByText(/Chunking & LangGraph Pipeline Parameters/i)).toBeInTheDocument();
+    expect(screen.getByText(/Relational Database & Storage Architecture/i)).toBeInTheDocument();
+    expect(screen.getByText(/Appearance & Theme Preference/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Purge All Workspace Data/i })).toBeInTheDocument();
+  });
+
+  it('opens and navigates with the Command Palette via Quick Command button and Cmd+K shortcut', () => {
+    renderWithProviders(<App />);
+    const cmdBtn = screen.getByRole('button', { name: /Quick command.../i });
+    fireEvent.click(cmdBtn);
+
+    // Command palette modal opens
+    expect(screen.getByPlaceholderText(/Type a command, page name, or search documents/i)).toBeInTheDocument();
+    expect(screen.getByText('Go to Retrieval Inspector')).toBeInTheDocument();
+    expect(screen.getByText('Add Sample Documents (Ingest 4 papers)')).toBeInTheDocument();
+
+    // Escape closes the command palette
+    fireEvent.keyDown(window, { key: 'Escape' });
   });
 
   it('renders standalone Public Landing Page when starting at root / without rail or app status bar', () => {

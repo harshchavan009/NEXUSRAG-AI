@@ -145,3 +145,4 @@ Captured in [`docs/screenshots/phase_t2/`](file:///Users/harsh/Desktop/RAG%20Ass
 ## 5. Next Steps
 
 Phase T2 is fully realized and verified. Ready to proceed to **Phase T3: Pipeline Verification & Settings Realignment** (PostgreSQL verification/deviation justification, complete Page 7 settings panel, and citation grounding verification).
+

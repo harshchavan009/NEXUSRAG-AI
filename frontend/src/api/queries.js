@@ -54,6 +54,20 @@ export function useDeleteCollection() {
   });
 }
 
+export function useUpdateCollection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, name, description }) => apiRequest(`/api/v1/collections/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name, description }),
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+  });
+}
+
 // --- Documents ---
 export function useDocuments(collectionId = null) {
   return useQuery({
