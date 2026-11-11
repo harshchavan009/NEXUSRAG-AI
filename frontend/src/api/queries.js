@@ -90,6 +90,20 @@ export function useDeleteDocument() {
   });
 }
 
+export function useLoadSampleDocuments() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiRequest('/api/v1/documents/sample', {
+      method: 'POST',
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['system-status'] });
+      queryClient.invalidateQueries({ queryKey: ['current-workspace'] });
+    },
+  });
+}
+
 export function useReindexDocument() {
   const queryClient = useQueryClient();
   return useMutation({

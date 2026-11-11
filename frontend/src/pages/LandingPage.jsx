@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  Sparkles,
   ArrowRight,
   ShieldCheck,
   CheckCircle,
@@ -8,18 +7,18 @@ import {
   Activity,
   Layers,
   Search,
-  ExternalLink,
-  ChevronDown,
   BookOpen,
   Folder,
-  Database
+  Database,
+  ChevronDown
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { VIEWS } from '../components/layout/RailNav';
-import { useSystemStatus } from '../api/queries';
+import { useSystemStatus, useDocuments } from '../api/queries';
 
 export function LandingPage({ onNavigate }) {
   const { data: statusData } = useSystemStatus();
+  const { data: documents = [] } = useDocuments();
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#F7F6F2] dark:bg-[#0F1115] text-ink select-none">
@@ -73,42 +72,26 @@ export function LandingPage({ onNavigate }) {
         </div>
       </header>
 
-      {/* Hero Section: Warm paper background, confident short headline (Reference 5) */}
+      {/* Hero Section: Warm paper background, confident short headline */}
       <section className="max-w-5xl mx-auto px-6 pt-16 pb-12 text-center flex flex-col items-center">
-        {/* Discrete Announcement Pill (Reference 5 style) */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-surface border border-border text-xs text-ink mb-6 shadow-2xs hover:border-brand transition-colors cursor-pointer"
-             onClick={() => onNavigate(VIEWS.INSPECTOR)}>
-          <span className="px-1.5 py-0.2 rounded-full bg-brand/10 text-brand text-[10px] font-bold">NEW</span>
+        {/* Discrete Announcement Pill */}
+        <div
+          className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-surface border border-border text-xs text-ink mb-6 shadow-2xs hover:border-brand transition-colors cursor-pointer"
+          onClick={() => onNavigate(VIEWS.INSPECTOR)}
+        >
+          <span className="px-1.5 py-0.5 rounded bg-brand/10 text-brand text-[10px] font-bold">UPDATED</span>
           <span className="font-medium text-xs text-ink-muted">
-            Your knowledge base + verifiable search, finally working together →
+            Transparent Document Synthesis with LangGraph Traces →
           </span>
         </div>
 
         {/* Hero Editorial Headline */}
-        <h1 className="text-4xl sm:text-6xl font-bold text-ink tracking-tight max-w-4xl leading-[1.12] font-sans">
-          Ask your documents. <br />
-          <span className="relative inline-block mt-2">
-            <span className="text-[#B84A28] relative z-10">See the passage that answers.</span>
-            {/* Curved SVG Accent Underline (Reference 5 Signature) */}
-            <svg
-              className="absolute -bottom-2 left-0 w-full h-3 text-[#B84A28]/40 -z-0"
-              viewBox="0 0 300 12"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M2.5 9.5C65.5 3.5 175.5 2.5 297.5 7.5"
-                stroke="currentColor"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-ink tracking-tight max-w-4xl leading-[1.14] font-sans">
+          Verifiable Research Synthesis for Complex Documents
         </h1>
 
         <p className="mt-6 text-base sm:text-lg text-ink-muted max-w-2xl font-serif leading-relaxed">
-          Skip hallucinated answers. NexusRAG delivers verifiable research synthesis with sentence-level FAISS embeddings, LangGraph groundedness validation, and interactive PDF citation tracing.
+          NexusRAG analyzes PDFs, technical manuals, and research reports with sentence-level citations, groundedness validation, and inspectable retrieval graphs.
         </p>
 
         {/* Action Buttons */}
@@ -138,102 +121,97 @@ export function LandingPage({ onNavigate }) {
           <span>•</span>
           <span>Model: {statusData?.generation_model || 'gemini-2.5-flash'}</span>
           <span>•</span>
-          <span>Gate: 0.700 groundedness</span>
+          <span>Sufficiency Threshold: 0.650</span>
           <span>•</span>
           <span>Storage: {statusData?.database_type || 'sqlite'}</span>
         </div>
       </section>
 
-      {/* Framed Product Showcase: Elevated Browser Preview with Proof Testimonial (Reference 5) */}
+      {/* Product Architecture Showcase */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
-        <div className="relative rounded-2xl border border-border bg-surface shadow-2xl overflow-hidden">
+        <div className="relative rounded-xl border border-border bg-surface shadow-md overflow-hidden">
           {/* Framed Window Header Bar */}
           <div className="h-10 bg-surface-subtle border-b border-border px-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#EA4335]/80 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-[#FBBC05]/80 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-[#34A853]/80 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-sm bg-border-strong inline-block" />
+              <span className="text-xs font-medium text-ink">
+                Workspace Architecture Preview
+              </span>
             </div>
-            <span className="text-xs font-mono text-ink-muted">
-              NexusRAG — 3-Panel Verifiable Research Workspace
+            <span className="text-[11px] font-mono text-ink-muted">
+              3-Stage Grounded Pipeline
             </span>
-            <div className="w-12" />
           </div>
 
-          {/* Application Mockup Frame View */}
-          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-canvas/30 min-h-[320px]">
+          {/* Architecture Preview Grid */}
+          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-canvas/30 min-h-[300px]">
             {/* Panel 1: Knowledge Bases & Scope */}
             <div className="p-4 rounded-xl border border-border bg-surface flex flex-col gap-3 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-ink uppercase tracking-wider">
-                  1. Knowledge Base
+                <span className="text-[11px] font-semibold text-ink uppercase tracking-wider">
+                  1. Document Ingestion
                 </span>
-                <span className="w-2 h-2 rounded-full bg-status-success" />
+                <span className="text-[10px] font-mono text-status-success font-medium">Ready</span>
               </div>
               <p className="text-xs text-ink-muted font-serif">
                 Sentence-level character offset parsing with PyMuPDF and atomic FAISS vector indexing.
               </p>
               <div className="p-3 rounded-lg bg-surface-subtle border border-border font-mono text-[11px] text-ink">
-                annual_financial_report.pdf
-                <span className="block text-[10px] text-status-success mt-1 font-semibold">
-                  ✓ 18 chunks indexed (768-dim)
-                </span>
+                {documents.length > 0 ? (
+                  <>
+                    <div className="truncate font-semibold">{documents[0].original_filename}</div>
+                    <span className="block text-[10px] text-status-success mt-1 font-semibold">
+                      ✓ {documents[0].chunk_count || 1} chunks indexed (768-dim)
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-ink-muted italic">Awaiting document upload</div>
+                    <span className="block text-[10px] text-ink-muted mt-1">
+                      Supports PDF, Markdown, and TXT files
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
             {/* Panel 2: Grounded Synthesis with Citation Badges */}
             <div className="p-4 rounded-xl border border-border bg-surface flex flex-col gap-3 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-ink uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-ink uppercase tracking-wider">
                   2. Grounded Synthesis
                 </span>
                 <span className="text-[10px] font-mono font-bold text-status-success px-1.5 py-0.5 rounded bg-status-success/10">
-                  Passed 0.700
+                  Validated
                 </span>
               </div>
-              <div className="font-serif text-xs text-ink leading-relaxed bg-surface-subtle/40 p-3 rounded-lg border border-border/60">
-                "Operating revenue rose to $120.4 million in Q3 <span className="bg-[#B84A28] text-white px-1.5 py-0.2 rounded font-mono text-[10px] font-bold inline-block">[1]</span>, driven by enterprise cloud services expansion <span className="bg-[#B84A28] text-white px-1.5 py-0.2 rounded font-mono text-[10px] font-bold inline-block">[2]</span>."
-              </div>
-              <div className="flex items-center gap-2 text-[10px] font-mono text-status-success font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Citation Integrity: 100% verified</span>
+              <p className="text-xs text-ink-muted font-serif">
+                LangGraph orchestrates candidate retrieval, cross-scoring, and server-side citation validation before returning answers.
+              </p>
+              <div className="flex items-center gap-2 text-[10px] font-mono text-status-success font-semibold p-2.5 rounded-lg bg-surface-subtle border border-border">
+                <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>Every citation links to an exact character offset in the source document.</span>
               </div>
             </div>
 
             {/* Panel 3: Verifiable Excerpt Card */}
             <div className="p-4 rounded-xl border border-border bg-surface flex flex-col gap-3 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-ink uppercase tracking-wider">
-                  3. Exact Source Passage
+                <span className="text-[11px] font-semibold text-ink uppercase tracking-wider">
+                  3. Verifiable Passage
                 </span>
-                <span className="text-[10px] font-mono text-ink-muted">Page 4</span>
+                <span className="text-[10px] font-mono text-ink-muted">Traceable</span>
               </div>
-              <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-800/40 font-serif text-[11px] text-ink italic leading-relaxed">
-                "[Page 4, Ch 2] Total operating profit for the infrastructure unit closed at $120.4M..."
-              </div>
+              <p className="text-xs text-ink-muted font-serif">
+                Inspect exact page numbers, source excerpts, and reranker relevance scores in the integrated document reader.
+              </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onNavigate(VIEWS.RESEARCH)}
               >
-                Try Interactive Desk
+                Open Research Workspace
               </Button>
-            </div>
-          </div>
-
-          {/* Floating Proof Testimonial Card (Reference 5 Floating Proof Card) */}
-          <div className="absolute bottom-6 right-6 z-20 max-w-xs bg-surface border border-border rounded-xl shadow-xl p-3.5 hidden sm:flex flex-col gap-2">
-            <p className="text-xs font-serif text-ink italic leading-relaxed">
-              "The citation highlighting and groundedness verification are SO simple and useful. It's been the best RAG experience we've had."
-            </p>
-            <div className="flex items-center gap-2 pt-1 border-t border-border text-[11px]">
-              <div className="w-5 h-5 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-[10px]">
-                SF
-              </div>
-              <div>
-                <span className="font-semibold text-ink block leading-none">Verified Researcher</span>
-                <span className="text-[10px] text-ink-muted">ShadowFox AI Internship</span>
-              </div>
             </div>
           </div>
         </div>
@@ -246,28 +224,28 @@ export function LandingPage({ onNavigate }) {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 rounded-2xl bg-surface border border-border flex flex-col gap-3 shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
+          <div className="p-6 rounded-xl bg-surface border border-border flex flex-col gap-3 shadow-2xs">
+            <div className="w-10 h-10 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
               <Layers className="w-5 h-5" />
             </div>
             <h3 className="text-sm font-semibold text-ink">LangGraph 9-Node DAG</h3>
             <p className="text-xs text-ink-muted leading-relaxed font-serif">
-              Every query routes through a deterministic Directed Acyclic Graph with input validation, query rewriting, FAISS retrieval, cross-scoring reranking, and sufficiency gates.
+              Every query routes through a structured Directed Acyclic Graph with input validation, query rewriting, FAISS retrieval, cross-scoring reranking, and sufficiency gates.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-surface border border-border flex flex-col gap-3 shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
+          <div className="p-6 rounded-xl bg-surface border border-border flex flex-col gap-3 shadow-2xs">
+            <div className="w-10 h-10 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-semibold text-ink">Server-Side Citation Strip</h3>
+            <h3 className="text-sm font-semibold text-ink">Server-Side Citation Verification</h3>
             <p className="text-xs text-ink-muted leading-relaxed font-serif">
-              Hallucinated citation numbers are stripped server-side. Every emitted citation chip links deterministically to the exact database chunk and page offset.
+              Hallucinated citation references are stripped server-side. Every emitted citation chip links directly to verified database chunks and character spans.
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-surface border border-border flex flex-col gap-3 shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
+          <div className="p-6 rounded-xl bg-surface border border-border flex flex-col gap-3 shadow-2xs">
+            <div className="w-10 h-10 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
               <Activity className="w-5 h-5" />
             </div>
             <h3 className="text-sm font-semibold text-ink">Full Retrieval Inspector</h3>
@@ -284,7 +262,7 @@ export function LandingPage({ onNavigate }) {
           <div className="flex items-center gap-2">
             <span className="font-semibold text-ink">NexusRAG</span>
             <span>•</span>
-            <span>ShadowFox AI Track Advanced Level</span>
+            <span>Research Engine • Open Source Workspace</span>
           </div>
 
           <div className="flex items-center gap-4 text-xs font-medium">

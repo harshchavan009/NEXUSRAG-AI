@@ -163,3 +163,4 @@ Begin with **Step 1 only**.
 4. Continue to Steps 2 and 3, then **stop and wait for my approval**.
 
 I want a NexusRAG that a stranger would believe is a real, shipped product: separate public site and app, real proof, original words, every feature working, honest claims, and live on a real domain.
+

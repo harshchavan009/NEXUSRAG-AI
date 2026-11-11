@@ -127,3 +127,25 @@ def test_document_deletion_removes_physical_file(client, workspace_a_auth):
     get_res = client.get(f"/api/v1/documents/{doc_id}")
     assert get_res.status_code == 404
 
+def test_load_sample_documents_endpoint(client, workspace_a_auth):
+    client.cookies.set(settings.SESSION_COOKIE_NAME, workspace_a_auth["token"])
+    
+    response = client.post(
+        "/api/v1/documents/sample",
+        headers={"X-CSRF-Token": workspace_a_auth["csrf"]}
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert len(data["uploaded"]) >= 3
+    filenames = [item["filename"] for item in data["uploaded"]]
+    assert any("clean_energy" in fn for fn in filenames)
+    assert any("corporate_governance" in fn for fn in filenames)
+
+    # Test idempotency (calling again reports existing or uploaded gracefully)
+    response_repeat = client.post(
+        "/api/v1/documents/sample",
+        headers={"X-CSRF-Token": workspace_a_auth["csrf"]}
+    )
+    assert response_repeat.status_code == 201
+    assert len(response_repeat.json()["uploaded"]) >= 3
+

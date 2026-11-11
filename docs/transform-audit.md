@@ -244,3 +244,4 @@ The core RAG engine is robust, calibrated, and secure. However, to transform Nex
 2. Eliminate all fabricated content, fake reviews, and copied reference copy.
 3. Replace dead widgets with functional features (sample document onboarding, collection rename, bulk operations, command palette).
 4. Build the complete ecosystem of supporting public pages (Help Center, API Docs, Security, Status, Contact, Legal).
+

@@ -15,7 +15,7 @@ from backend.app.schemas.document import (
 from backend.app.schemas.common import ActionStatusResponse
 from backend.app.core.dependencies import get_or_create_workspace, verify_csrf
 from backend.app.core.rate_limit import check_upload_rate_limit
-from backend.app.core.exceptions import NotFoundException, APIException
+from backend.app.core.exceptions import NotFoundException, APIException, DuplicateException
 from backend.app.services.document_service import DocumentService
 from backend.app.services.storage_service import StorageService
 from backend.app.services.ingestion_service import IngestionService
@@ -90,6 +90,76 @@ async def upload_documents(
                     file_size_bytes=len(content) if 'content' in locals() else 0,
                     status="failed",
                     message=f"Upload processing failed: {str(e)}"
+                )
+            )
+
+    return DocumentUploadResponse(
+        uploaded=uploaded_items,
+        failed=failed_items
+    )
+
+@router.post("/sample", response_model=DocumentUploadResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_csrf)])
+async def load_sample_documents(
+    background_tasks: BackgroundTasks,
+    workspace: Workspace = Depends(get_or_create_workspace),
+    db: Session = Depends(get_db)
+):
+    """
+    One-click ingestion of authentic sample research documents.
+    Loads reference texts into the current workspace for instant query evaluation.
+    """
+    from pathlib import Path
+    sample_dir = Path("data/sample_documents")
+    if not sample_dir.exists():
+        sample_dir = Path(__file__).resolve().parents[4] / "data" / "sample_documents"
+
+    sample_files = sorted(list(sample_dir.glob("*.*")))
+    uploaded_items: List[UploadJobItem] = []
+    failed_items: List[UploadJobItem] = []
+
+    for sample_path in sample_files:
+        try:
+            content = sample_path.read_bytes()
+            doc = DocumentService.handle_upload(
+                workspace_id=workspace.id,
+                filename=sample_path.name,
+                content=content,
+                collection_id=None,
+                db=db
+            )
+            background_tasks.add_task(_run_ingestion_background, doc.id)
+            uploaded_items.append(
+                UploadJobItem(
+                    document_id=doc.id,
+                    filename=doc.filename,
+                    file_size_bytes=doc.file_size_bytes,
+                    status=doc.status,
+                    message="Sample document ingested successfully."
+                )
+            )
+        except DuplicateException:
+            existing = db.query(Document).filter(
+                Document.workspace_id == workspace.id,
+                Document.filename == sample_path.name
+            ).first()
+            if existing:
+                uploaded_items.append(
+                    UploadJobItem(
+                        document_id=existing.id,
+                        filename=existing.filename,
+                        file_size_bytes=existing.file_size_bytes,
+                        status=existing.status,
+                        message="Sample document already loaded in this workspace."
+                    )
+                )
+        except Exception as e:
+            failed_items.append(
+                UploadJobItem(
+                    document_id="",
+                    filename=sample_path.name,
+                    file_size_bytes=0,
+                    status="failed",
+                    message=str(e)
                 )
             )
 

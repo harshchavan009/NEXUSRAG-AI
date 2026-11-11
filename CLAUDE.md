@@ -3,7 +3,7 @@
 ## 1. Product Summary
 - **Product Name:** NexusRAG
 - **Category:** Advanced Production-Style Retrieval-Augmented Generation Workspace
-- **Tagline:** "Ask your documents. See the passage that answers."
+- **Tagline:** "Trace every answer to the sentence that proves it."
 - **Context:** ShadowFox Internship — Advanced Level AI Engineer Track. Wraps and upgrades all prior specifications.
 - **Core Mission:** A reference-driven, verifiable document research workspace that parses PDF, TXT, and Markdown files, indexes semantic vectors via FAISS with inner-product cosine similarity and explicit chunk-ID mapping, executes multi-stage retrieval workflows with LangGraph, and grounds every answer with server-side citation validation and an interactive trace inspector.
 
@@ -164,4 +164,11 @@ RAG Assistant/
 - [x] **Phase 7: Comprehensive Verification & Security Audit** (Completed — 47/47 backend tests, 16/16 frontend tests, 0 vulnerabilities in pip-audit and npm audit, 0 secrets, WCAG 2.1 AA compliant)
 - [x] **Phase 8: Master 26-Section Documentation & Diagrams** (Completed — 26-chapter master README, OpenAPI docs, Dockerfile & Compose, video script, legal drafts)
 - [x] **UI/UX Elevation Across All 5 Reference Screens** (Completed — Ask-First Home with left sidebar tree and model/length chips, Documents table with color badges and byte-level upload tray, PDF annotator with anchored citation popover, Research reader with document tabs, Slite-style marketing landing page with curved accent)
-- [ ] **Phase 9: Production Go-Live Deployment & Submission Pack**
+- [x] **Transformation Phase T1: Blockers & Honesty Cleanup** (Completed — Purged fabricated hero mockups and fake testimonial, deployed original copy deck, replaced dead tiles with 1-click sample document ingestion and functional table controls, dropped dead color dots and stuck footer values, fixed workspace session state in settings, added `POST /api/v1/documents/sample`, verified with 48/48 backend tests, 16/16 frontend tests, and 42 multi-viewport screenshots).
+- [ ] **Transformation Phase T2: Architectural Separation & Real Dashboard** (Decouple `/` from `/app/*`, build live aggregate dashboard, remove developer status bar).
+- [ ] **Transformation Phase T3: Product Completeness & First-Run Onboarding**
+- [ ] **Transformation Phase T4: Public Site & Documentation Ecosystem**
+- [ ] **Transformation Phase T5: Automated Testing & Evaluation**
+- [ ] **Transformation Phase T6: Comprehensive Security Audit**
+- [ ] **Transformation Phase T7: Cloud Production Go-Live**
+- [ ] **Transformation Phase T8: Final Deliverables & Submission Package**

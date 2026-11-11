@@ -475,19 +475,17 @@ export function ResearchDeskPage({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Floating Bottom Reader / Pagination Controls (Reference 2 Bottom Controls) */}
-        <div className="h-10 bg-surface border-t border-border px-4 flex items-center justify-between text-xs text-ink-muted select-none flex-shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-amber-400 cursor-pointer" title="Yellow highlight" />
-            <span className="w-3 h-3 rounded-full bg-green-400 cursor-pointer" title="Green highlight" />
-            <span className="w-3 h-3 rounded-full bg-blue-400 cursor-pointer" title="Blue highlight" />
-            <span className="w-3 h-3 rounded-full bg-purple-400 cursor-pointer" title="Purple highlight" />
+        {/* Active Research Desk Scope Bar */}
+        <div className="h-8 bg-surface-subtle/60 border-t border-border px-4 flex items-center justify-between text-xs text-ink-muted select-none flex-shrink-0">
+          <div className="flex items-center gap-2 text-[11px]">
+            <span className="w-2 h-2 rounded-full bg-status-success" />
+            <span>Active Research Session</span>
           </div>
 
-          <div className="flex items-center gap-3 font-mono text-[11px]">
-            <span>100%</span>
+          <div className="flex items-center gap-2 font-mono text-[11px] text-ink-faint">
+            <span>{documents.length} {documents.length === 1 ? 'document' : 'documents'} indexed</span>
             <span>•</span>
-            <span>1 of {documents.length || 1} files</span>
+            <span>{collections.length} {collections.length === 1 ? 'collection' : 'collections'}</span>
           </div>
         </div>
 
@@ -587,26 +585,26 @@ export function ResearchDeskPage({
                 </span>
                 <div className="flex flex-col gap-2">
                   <button
-                    onClick={() => handleSend('Summarize the primary thesis and findings of the selected documents.')}
+                    onClick={() => handleSend('Summarize the primary thesis and findings across the indexed documents.')}
                     className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs"
                   >
-                    <span className="font-medium text-ink">Summarize PDF</span>
+                    <span className="font-medium text-ink">Summarize primary thesis</span>
                     <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand" />
                   </button>
 
                   <button
-                    onClick={() => handleSend('Format full academic APA and IEEE citations for all retrieved documents.')}
+                    onClick={() => handleSend('Extract the core empirical methodologies and quantitative data points.')}
                     className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs"
                   >
-                    <span className="font-medium text-ink">Format citation</span>
+                    <span className="font-medium text-ink">Extract methodologies</span>
                     <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand" />
                   </button>
 
                   <button
-                    onClick={() => handleSend('Audit groundedness and report any unverified or hallucinated assertions.')}
+                    onClick={() => handleSend('Compare the key assertions and identify any contradictions or open questions.')}
                     className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs"
                   >
-                    <span className="font-medium text-ink">Research guidance</span>
+                    <span className="font-medium text-ink">Compare assertions</span>
                     <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand" />
                   </button>
                 </div>

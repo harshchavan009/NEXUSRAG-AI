@@ -32,6 +32,7 @@ import {
   useCreateCollection,
   useCreateSession,
   useDeleteDocument,
+  useLoadSampleDocuments,
   useSystemStatus
 } from '../api/queries';
 import { VIEWS } from '../components/layout/RailNav';
@@ -47,6 +48,9 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [filterQuery, setFilterQuery] = useState('');
   const [activeFolderFilter, setActiveFolderFilter] = useState(null);
+  const [sortAsc, setSortAsc] = useState(true);
+  const [showSummaryColumn, setShowSummaryColumn] = useState(true);
+  const [isSampleLoading, setIsSampleLoading] = useState(false);
 
   const docsQuery = useDocuments();
   const collsQuery = useCollections();
@@ -62,6 +66,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
   const createCollectionMutation = useCreateCollection();
   const createSessionMutation = useCreateSession();
   const deleteDocMutation = useDeleteDocument();
+  const loadSampleMutation = useLoadSampleDocuments();
 
   const handleAskSubmit = (e) => {
     e.preventDefault();
@@ -85,8 +90,19 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
   };
 
   const handleCreateNewSession = async () => {
-    const res = await createSessionMutation.mutateAsync('Research Session');
+    await createSessionMutation.mutateAsync('Research Session');
     onNavigate(VIEWS.RESEARCH);
+  };
+
+  const handleLoadSamples = async () => {
+    setIsSampleLoading(true);
+    try {
+      await loadSampleMutation.mutateAsync();
+    } catch (err) {
+      console.error('Failed to load sample documents:', err);
+    } finally {
+      setIsSampleLoading(false);
+    }
   };
 
   // Filter documents by search string & optional folder selection
@@ -99,6 +115,12 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
     return matchesSearch && matchesFolder;
   });
 
+  const sortedDocs = [...filteredDocs].sort((a, b) => {
+    const nameA = (a.original_filename || a.filename || '').toLowerCase();
+    const nameB = (b.original_filename || b.filename || '').toLowerCase();
+    return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+  });
+
   return (
     <div className="flex-1 flex h-full overflow-hidden bg-canvas">
       {/* Left Sub-Navigation Rail (Design Reference 4 Layout) */}
@@ -107,7 +129,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
           {/* Workspace Switcher */}
           <div className="flex items-center justify-between pb-2 border-b border-border">
             <button className="flex items-center gap-1.5 text-xs font-semibold text-ink hover:text-brand transition-colors">
-              <span className="truncate max-w-[120px]">Workspace 1</span>
+              <span className="truncate max-w-[120px]">Current Workspace</span>
               <ChevronDown className="w-3.5 h-3.5 text-ink-muted" />
             </button>
             <button
@@ -144,15 +166,15 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
             </button>
           </nav>
 
-          {/* Chats Section */}
+          {/* Sessions Section */}
           <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between px-2 text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
-              <span>Chats</span>
+            <div className="flex items-center justify-between px-2 text-[11px] font-semibold text-ink-muted">
+              <span>Research Sessions</span>
               <span className="font-mono text-[10px]">{sessions.length}</span>
             </div>
             <div className="flex flex-col gap-0.5 text-xs">
               {sessions.length === 0 ? (
-                <span className="px-2 py-1 text-[11px] text-ink-faint italic">No active chats</span>
+                <span className="px-2 py-1 text-[11px] text-ink-faint italic">No active sessions</span>
               ) : (
                 sessions.slice(0, 5).map((s) => (
                   <button
@@ -168,21 +190,21 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
             </div>
           </div>
 
-          {/* Folders Section */}
+          {/* Collections Section */}
           <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between px-2 text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
-              <span>Folders</span>
+            <div className="flex items-center justify-between px-2 text-[11px] font-semibold text-ink-muted">
+              <span>Collections</span>
               <button
                 onClick={() => setIsCollectionModalOpen(true)}
                 className="text-ink-faint hover:text-brand"
-                title="Create Folder"
+                title="Create Collection"
               >
                 <Plus className="w-3 h-3" />
               </button>
             </div>
             <div className="flex flex-col gap-0.5 text-xs">
               {collections.length === 0 ? (
-                <span className="px-2 py-1 text-[11px] text-ink-faint italic">No folders yet</span>
+                <span className="px-2 py-1 text-[11px] text-ink-faint italic">No collections yet</span>
               ) : (
                 collections.map((c) => (
                   <button
@@ -241,13 +263,13 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
           </Button>
         </div>
 
-        {/* Ask-First Composer Section (Design Reference 4) */}
+        {/* Ask-First Composer Section */}
         <section className="flex flex-col items-center text-center max-w-3xl mx-auto w-full">
           <h1 className="text-3xl sm:text-4xl font-semibold text-ink tracking-tight font-sans">
-            <span className="sr-only">Welcome. What will you discover today?</span>
-            <span aria-hidden="true" className="block text-3xl sm:text-4xl font-semibold text-ink">Welcome</span>
-            <span aria-hidden="true" className="block text-xl sm:text-2xl text-ink-muted mt-1 font-normal">
-              What will you discover today?
+            <span className="sr-only">Research Workspace. Query your indexed collections.</span>
+            <span aria-hidden="true" className="block text-3xl sm:text-4xl font-semibold text-ink">Research Workspace</span>
+            <span aria-hidden="true" className="block text-base sm:text-lg text-ink-muted mt-1 font-normal">
+              Query your indexed collections with grounded citations
             </span>
           </h1>
 
@@ -311,7 +333,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
                 </select>
               </div>
 
-              {/* Up-Arrow Submit Button (Reference 4 Style) */}
+              {/* Up-Arrow Submit Button */}
               <button
                 type="submit"
                 disabled={!askQuery.trim()}
@@ -329,66 +351,91 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
             </div>
           </form>
 
-          {/* 4 Quick Action Tiles (Reference 4 Grid) */}
+          {/* 4 Functional Quick Action Tiles */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full mt-4">
+            <button
+              onClick={handleLoadSamples}
+              disabled={isSampleLoading}
+              className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-surface border border-border hover:border-brand hover:bg-surface-subtle/80 transition-all text-center group shadow-2xs disabled:opacity-50"
+              title="Ingest verified sample research reports"
+            >
+              <div className="w-8 h-8 rounded-lg bg-surface-subtle group-hover:bg-brand/10 text-brand flex items-center justify-center transition-colors mb-1.5">
+                <FileText className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-medium text-ink">
+                {isSampleLoading ? 'Loading Samples...' : 'Add Sample Documents'}
+              </span>
+            </button>
+
             <button
               onClick={() => setIsUploadModalOpen(true)}
               className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-surface border border-border hover:border-brand hover:bg-surface-subtle/80 transition-all text-center group shadow-2xs"
+              title="Upload PDFs, Markdown or Text files"
             >
               <div className="w-8 h-8 rounded-lg bg-surface-subtle group-hover:bg-brand/10 text-brand flex items-center justify-center transition-colors mb-1.5">
                 <Upload className="w-4 h-4" />
               </div>
-              <span className="text-xs font-medium text-ink">Upload</span>
-            </button>
-
-            <button
-              onClick={() => onNavigate(VIEWS.LIBRARY)}
-              className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-surface border border-border hover:border-brand hover:bg-surface-subtle/80 transition-all text-center group shadow-2xs"
-            >
-              <div className="w-8 h-8 rounded-lg bg-surface-subtle group-hover:bg-brand/10 text-brand flex items-center justify-center transition-colors mb-1.5">
-                <Folder className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-medium text-ink">Import</span>
+              <span className="text-xs font-medium text-ink">Upload Files</span>
             </button>
 
             <button
               onClick={handleCreateNewSession}
               className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-surface border border-border hover:border-brand hover:bg-surface-subtle/80 transition-all text-center group shadow-2xs"
+              title="Start a new multi-turn research synthesis thread"
             >
               <div className="w-8 h-8 rounded-lg bg-surface-subtle group-hover:bg-brand/10 text-brand flex items-center justify-center transition-colors mb-1.5">
                 <Plus className="w-4 h-4" />
               </div>
-              <span className="text-xs font-medium text-ink">Create</span>
+              <span className="text-xs font-medium text-ink">New Session</span>
             </button>
 
             <button
               onClick={() => onNavigate(VIEWS.LANDING)}
               className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-surface border border-border hover:border-brand hover:bg-surface-subtle/80 transition-all text-center group shadow-2xs"
+              title="Explore architecture and system documentation"
             >
               <div className="w-8 h-8 rounded-lg bg-surface-subtle group-hover:bg-brand/10 text-brand flex items-center justify-center transition-colors mb-1.5">
                 <BookOpen className="w-4 h-4" />
               </div>
-              <span className="text-xs font-medium text-ink">Learn</span>
+              <span className="text-xs font-medium text-ink">System Guide</span>
             </button>
           </div>
         </section>
 
-        {/* Document Library Table (Reference 4 Table Layout) */}
+        {/* Document Library Table */}
         <section className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {/* View Settings, Sort, Filter Controls */}
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-surface text-xs font-medium text-ink hover:bg-surface-subtle transition-colors">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-ink-muted" />
-                <span>View settings</span>
+              <button
+                onClick={() => setShowSummaryColumn((prev) => !prev)}
+                className={clsx(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-medium transition-colors",
+                  showSummaryColumn ? "border-brand/40 bg-brand/5 text-brand" : "border-border bg-surface text-ink hover:bg-surface-subtle"
+                )}
+                title="Toggle summary column display"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span>{showSummaryColumn ? "Hide Summaries" : "Show Summaries"}</span>
               </button>
 
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-surface text-xs font-medium text-ink hover:bg-surface-subtle transition-colors">
+              <button
+                onClick={() => setSortAsc((prev) => !prev)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-surface text-xs font-medium text-ink hover:bg-surface-subtle transition-colors"
+                title={`Sort by name (${sortAsc ? "A-Z" : "Z-A"})`}
+              >
                 <ArrowUpDown className="w-3.5 h-3.5 text-ink-muted" />
-                <span>Sort</span>
+                <span>Sort ({sortAsc ? "A-Z" : "Z-A"})</span>
               </button>
 
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-surface text-xs font-medium text-ink hover:bg-surface-subtle transition-colors">
+              <button
+                onClick={() => {
+                  const el = document.getElementById('search-library-input');
+                  if (el) el.focus();
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border bg-surface text-xs font-medium text-ink hover:bg-surface-subtle transition-colors"
+                title="Focus search input"
+              >
                 <Filter className="w-3.5 h-3.5 text-ink-muted" />
                 <span>Filter</span>
               </button>
@@ -428,31 +475,31 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
                       <input type="checkbox" className="rounded border-border" disabled />
                     </th>
                     <th className="py-2.5 px-3">Title</th>
-                    <th className="py-2.5 px-3">Authors / Source</th>
+                    <th className="py-2.5 px-3">Collection / Source</th>
                     <th className="py-2.5 px-3">Added</th>
-                    <th className="py-2.5 px-3">Viewed</th>
+                    <th className="py-2.5 px-3">Scope</th>
                     <th className="py-2.5 px-3">File type</th>
-                    <th className="py-2.5 px-3 w-2/5">Summary</th>
+                    {showSummaryColumn && <th className="py-2.5 px-3 w-2/5">Summary</th>}
                     <th className="py-2.5 px-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {docsLoading ? (
                     <tr>
-                      <td colSpan={8} className="py-8 text-center text-ink-muted">
+                      <td colSpan={showSummaryColumn ? 8 : 7} className="py-8 text-center text-ink-muted">
                         Loading indexed documents...
                       </td>
                     </tr>
-                  ) : filteredDocs.length === 0 ? (
+                  ) : sortedDocs.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-ink-muted">
+                      <td colSpan={showSummaryColumn ? 8 : 7} className="py-12 text-center text-ink-muted">
                         {documents.length === 0
-                          ? 'No documents indexed yet. Upload a PDF, Markdown, or TXT file to begin.'
+                          ? 'No documents indexed yet. Click "Add Sample Documents" or upload a file to begin.'
                           : 'No documents match the search filter.'}
                       </td>
                     </tr>
                   ) : (
-                    filteredDocs.map((doc) => (
+                    sortedDocs.map((doc) => (
                       <tr
                         key={doc.id}
                         className="hover:bg-surface-subtle/50 transition-colors group cursor-pointer"
@@ -470,17 +517,19 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
                         </td>
 
                         <td className="py-3 px-3 text-ink-muted truncate max-w-[120px]">
-                          {doc.collection_id
-                            ? collections.find((c) => c.id === doc.collection_id)?.name || 'General'
-                            : 'Library Inquiry'}
+                          {doc.collection_name ||
+                            (doc.collection_id
+                              ? collections.find((c) => c.id === doc.collection_id)?.name
+                              : null) ||
+                            'Unassigned'}
                         </td>
 
                         <td className="py-3 px-3 text-ink-muted whitespace-nowrap">
-                          Today
+                          {doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Recent'}
                         </td>
 
                         <td className="py-3 px-3 text-ink-muted whitespace-nowrap">
-                          {doc.page_count} p • {doc.chunk_count} ch
+                          {doc.page_count ? `${doc.page_count} p` : '1 p'} • {doc.chunk_count || 0} chunks
                         </td>
 
                         <td className="py-3 px-3">
@@ -489,11 +538,13 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
                           </span>
                         </td>
 
-                        <td className="py-3 px-3 font-serif text-[11px] text-ink-muted leading-relaxed line-clamp-2">
-                          {doc.summary || (
-                            <span className="italic text-ink-faint">Summary generated upon ingestion...</span>
-                          )}
-                        </td>
+                        {showSummaryColumn && (
+                          <td className="py-3 px-3 font-serif text-[11px] text-ink-muted leading-relaxed line-clamp-2">
+                            {doc.summary || (
+                              <span className="italic text-ink-faint">Summary generated upon ingestion...</span>
+                            )}
+                          </td>
+                        )}
 
                         <td className="py-3 px-3 text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">

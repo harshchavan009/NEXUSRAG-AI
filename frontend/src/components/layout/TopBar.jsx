@@ -35,18 +35,21 @@ export function TopBar({ title, subtitle, onSearchClick }) {
           </kbd>
         </button>
 
-        {/* Live Health & Tenant Badge */}
-        <div className="flex items-center gap-3 pl-2 border-l border-border">
-          <StatusDot
-            status={statusData?.status || 'checking'}
-            label={statusData?.status === 'healthy' ? 'FAISS Ready' : 'System Ready'}
-          />
+        {/* Workspace Health Indicator */}
+        <div className="flex items-center gap-2 pl-2">
+          {statusData?.status && statusData.status !== 'healthy' && (
+            <StatusDot
+              status={statusData.status}
+              label="Service Degraded"
+            />
+          )}
 
           <span
-            className="text-[11px] font-mono text-ink-muted px-2 py-0.5 rounded bg-surface-subtle border border-border"
-            title={`Workspace ID: ${workspaceData?.workspace_id || 'Connecting...'}`}
+            className="text-[11px] font-medium text-ink-muted px-2 py-0.5 rounded bg-surface-subtle border border-border flex items-center gap-1.5"
+            title="Session data is strictly isolated"
           >
-            {workspaceData?.workspace_id ? `ws:${workspaceData.workspace_id.slice(0, 8)}` : 'ws:visitor'}
+            <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
+            <span>Workspace Active</span>
           </span>
         </div>
       </div>

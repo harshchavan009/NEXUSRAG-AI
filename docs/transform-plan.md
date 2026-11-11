@@ -220,3 +220,4 @@ NexusRAG requires a container runtime with persistent disk volumes for uploaded 
 - **Phase T8: Final Deliverables & Submission Package**
   - Complete 26-chapter root `README.md`.
   - Author video walkthrough script and one-page technical summary.
+

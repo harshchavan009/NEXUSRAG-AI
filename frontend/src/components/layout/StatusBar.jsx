@@ -27,7 +27,7 @@ export function StatusBar() {
       <div className="flex items-center gap-4">
         <span className="hidden sm:inline" title="Session Isolation Security">
           <ShieldCheck className="w-3 h-3 inline mr-1 text-status-success" />
-          256-bit isolation
+          Session Isolated
         </span>
         <span title="NexusRAG Engine Version">v{statusData?.version || '1.0.0'}</span>
       </div>

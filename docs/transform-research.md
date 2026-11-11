@@ -115,3 +115,4 @@ Rather than copying slogans or visual gimmicks, this research abstracts **struct
 | **Reader View** | Source Serif 4 typography with translucent passage wash | Readwise Reader | Maximizes reading comfort during intensive academic or legal document analysis. |
 | **Inspector** | Millisecond node waterfall & candidate reranker tables | Langfuse / LangSmith | Provides enterprise-grade transparency into the internal LangGraph state machine. |
 | **Documentation** | Two-tier layout: User Guides first, Technical Specs second | Stripe Docs / Mintlify | Satisfies both non-technical document researchers and AI engineers inspecting the system. |
+

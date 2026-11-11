@@ -54,6 +54,7 @@ vi.mock('../api/queries', () => ({
   }),
   useDocumentDetail: () => ({ data: null, isLoading: false }),
   useDeleteDocument: () => ({ mutate: vi.fn(), isPending: false }),
+  useLoadSampleDocuments: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
   useReindexDocument: () => ({ mutate: vi.fn(), isPending: false }),
   useSessions: () => ({ data: [], isLoading: false }),
   useSessionDetail: () => ({ data: null, isLoading: false }),
@@ -82,7 +83,7 @@ describe('App Navigation & 7 Core View Rendering', () => {
 
   it('renders Dashboard workspace view initially with ask-first composer and ingested documents', () => {
     renderWithProviders(<App />);
-    expect(screen.getByText('Welcome. What will you discover today?')).toBeInTheDocument();
+    expect(screen.getByText('Research Workspace. Query your indexed collections.')).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Ask a question about your documents/i)).toBeInTheDocument();
     
     // Check real backend summary column in recent documents table
@@ -96,9 +97,8 @@ describe('App Navigation & 7 Core View Rendering', () => {
     fireEvent.click(overviewBtn);
 
     // Verify editorial landing headline is rendered
-    expect(screen.getByText(/Ask your documents\./i)).toBeInTheDocument();
-    expect(screen.getByText(/See the passage that answers\./i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Open Research Workspace/i })).toBeInTheDocument();
+    expect(screen.getByText(/Verifiable Research Synthesis for Complex Documents/i)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /Open Research Workspace/i }).length).toBeGreaterThanOrEqual(1);
   });
 
   it('navigates to Knowledge Bases view and displays collections rail and upload zone', () => {
@@ -111,14 +111,14 @@ describe('App Navigation & 7 Core View Rendering', () => {
     expect(screen.getAllByText('Clean Energy').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('navigates to Settings view and displays active 256-bit visitor session and Zero Static Data table', () => {
+  it('navigates to Settings view and displays active visitor session and Pipeline telemetry table', () => {
     renderWithProviders(<App />);
     const settingsBtn = screen.getByRole('button', { name: 'System Settings' });
     fireEvent.click(settingsBtn);
 
     expect(screen.getByText('System & Workspace Settings')).toBeInTheDocument();
     expect(screen.getByText(/Storage & Health Telemetry/i)).toBeInTheDocument();
-    expect(screen.getByText(/Zero Static Data Compliance Verification/i)).toBeInTheDocument();
+    expect(screen.getByText(/Retrieval Engine & Pipeline Telemetry/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Purge All Workspace Data/i })).toBeInTheDocument();
   });
 });

@@ -378,18 +378,6 @@ export function PDFViewer({
                 </button>
               </div>
 
-              {/* Color filter pills */}
-              <div className="flex items-center gap-2 text-[11px] text-ink-muted">
-                <span>Filter by color:</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-400 cursor-pointer" />
-                  <span className="w-3 h-3 rounded-full bg-amber-400 cursor-pointer" />
-                  <span className="w-3 h-3 rounded-full bg-green-400 cursor-pointer" />
-                  <span className="w-3 h-3 rounded-full bg-blue-400 cursor-pointer" />
-                  <span className="w-3 h-3 rounded-full bg-purple-400 cursor-pointer" />
-                </div>
-              </div>
-
               {/* Excerpt Cards List */}
               <div className="flex flex-col gap-2.5 mt-2">
                 {commentsList.length === 0 ? (

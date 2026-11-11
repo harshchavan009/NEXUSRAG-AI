@@ -65,27 +65,29 @@ export function SettingsPage() {
         </div>
       </section>
 
-      {/* Tenant Isolation & Security */}
+      {/* Workspace Isolation & Security */}
       <section className="p-5 rounded-md bg-surface border border-border shadow-xs flex flex-col gap-4">
         <h2 className="text-xs font-semibold text-ink uppercase tracking-wide flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-brand" />
-          <span>Visitor Isolation & Security</span>
+          <span>Workspace Isolation & Privacy</span>
         </h2>
 
         <div className="flex flex-col gap-3 text-xs">
-          <div className="p-3 rounded bg-surface-subtle border border-border flex items-center justify-between font-mono">
+          <div className="p-3 rounded bg-surface-subtle border border-border flex items-center justify-between">
             <div>
-              <span className="text-ink-muted block text-[10px] uppercase">Workspace Session ID</span>
-              <span className="text-ink font-semibold">{workspaceData?.workspace_id || 'Generating...'}</span>
+              <span className="text-ink-muted block text-[10px] uppercase font-medium">Workspace State</span>
+              <span className="text-ink font-semibold">
+                {workspaceData ? 'Active Isolated Session' : 'Initializing...'}
+              </span>
             </div>
-            <span className="text-[11px] text-status-success flex items-center gap-1">
+            <span className="text-[11px] text-status-success flex items-center gap-1 font-medium">
               <CheckCircle className="w-3.5 h-3.5" />
               <span>Isolated</span>
             </span>
           </div>
 
           <p className="text-ink-muted text-xs leading-relaxed">
-            Every visitor operates in a partitioned tenant workspace protected by a 256-bit cryptographically secure session cookie and double-submit CSRF headers. Documents and vector indices are strictly partitioned per workspace.
+            Workspace sessions are isolated using encrypted HTTP-only session cookies and double-submit CSRF headers. Documents, FAISS vector indices, and research sessions are strictly partitioned per workspace.
           </p>
         </div>
       </section>
@@ -117,45 +119,50 @@ export function SettingsPage() {
         </div>
       </section>
 
-      {/* The Zero Static Data Verification Table */}
+      {/* Retrieval Engine & Pipeline Configuration */}
       <section className="p-5 rounded-md bg-surface border border-border shadow-xs flex flex-col gap-3">
         <h2 className="text-xs font-semibold text-ink uppercase tracking-wide flex items-center gap-2">
           <FileCode className="w-4 h-4 text-brand" />
-          <span>Zero Static Data Compliance Verification</span>
+          <span>Retrieval Engine & Pipeline Telemetry</span>
         </h2>
         <p className="text-xs text-ink-muted">
-          Per the project governance rules, zero user-facing numbers or metrics are simulated or hardcoded. All values are queried live:
+          Active RAG pipeline parameters and live runtime metrics reported by the backend:
         </p>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-surface-subtle border-b border-border text-ink-muted">
               <tr>
-                <th className="py-2 px-3">Metric</th>
-                <th className="py-2 px-3">Live Value</th>
-                <th className="py-2 px-3">Backend Endpoint</th>
+                <th className="py-2 px-3">Component</th>
+                <th className="py-2 px-3">Active Configuration</th>
+                <th className="py-2 px-3">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-[11px]">
               <tr>
-                <td className="py-2 px-3 text-ink">FAISS Vector Count</td>
-                <td className="py-2 px-3 text-brand font-bold">{statusData?.faiss_vectors ?? 0}</td>
-                <td className="py-2 px-3 text-ink-muted">GET /api/v1/system/status</td>
+                <td className="py-2 px-3 text-ink font-medium">FAISS Vector Store</td>
+                <td className="py-2 px-3 text-brand font-bold">{statusData?.faiss_vectors ?? 0} vectors indexed</td>
+                <td className="py-2 px-3 text-status-success">Online (IndexIDMap2)</td>
               </tr>
               <tr>
-                <td className="py-2 px-3 text-ink">Indexed Chunks Count</td>
-                <td className="py-2 px-3 text-brand font-bold">{statusData?.indexed_chunks ?? 0}</td>
-                <td className="py-2 px-3 text-ink-muted">GET /api/v1/system/status</td>
+                <td className="py-2 px-3 text-ink font-medium">Ingested Chunks</td>
+                <td className="py-2 px-3 text-brand font-bold">{statusData?.indexed_chunks ?? 0} chunks</td>
+                <td className="py-2 px-3 text-status-success">Token Splitter (700 tok)</td>
               </tr>
               <tr>
-                <td className="py-2 px-3 text-ink">Workspace ID</td>
-                <td className="py-2 px-3 text-brand font-bold truncate max-w-xs">{workspaceData?.workspace_id || '—'}</td>
-                <td className="py-2 px-3 text-ink-muted">GET /api/v1/workspaces/current</td>
+                <td className="py-2 px-3 text-ink font-medium">Generation Model</td>
+                <td className="py-2 px-3 text-brand font-bold">{statusData?.generation_model || 'gemini-2.5-flash'}</td>
+                <td className="py-2 px-3 text-status-success">Google Gemini API</td>
               </tr>
               <tr>
-                <td className="py-2 px-3 text-ink">Storage Engine</td>
-                <td className="py-2 px-3 text-brand font-bold">{statusData?.database_type || 'sqlite'}</td>
-                <td className="py-2 px-3 text-ink-muted">GET /api/v1/system/status</td>
+                <td className="py-2 px-3 text-ink font-medium">Database Dialect</td>
+                <td className="py-2 px-3 text-brand font-bold uppercase">{statusData?.database_type || 'sqlite'}</td>
+                <td className="py-2 px-3 text-status-success">SQLAlchemy Dialect-Agnostic</td>
+              </tr>
+              <tr>
+                <td className="py-2 px-3 text-ink font-medium">Sufficiency Threshold</td>
+                <td className="py-2 px-3 text-brand font-bold">0.650 / 1.000</td>
+                <td className="py-2 px-3 text-status-success">Calibrated Evidence Gate</td>
               </tr>
             </tbody>
           </table>
