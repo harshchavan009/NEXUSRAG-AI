@@ -165,4 +165,3 @@ RAG Assistant/
 - [x] **Phase 8: Master 26-Section Documentation & Diagrams** (Completed — 26-chapter master README, OpenAPI docs, Dockerfile & Compose, video script, legal drafts)
 - [x] **UI/UX Elevation Across All 5 Reference Screens** (Completed — Ask-First Home with left sidebar tree and model/length chips, Documents table with color badges and byte-level upload tray, PDF annotator with anchored citation popover, Research reader with document tabs, Slite-style marketing landing page with curved accent)
 - [ ] **Phase 9: Production Go-Live Deployment & Submission Pack**
-
