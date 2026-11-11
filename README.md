@@ -7,12 +7,27 @@
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-blue.svg)](https://langchain-ai.github.io/langgraph/)
 [![FAISS](https://img.shields.io/badge/FAISS-CPU_1.8+-00599C.svg)](https://github.com/facebookresearch/faiss)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-38B2AC.svg?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Pytest Tests](https://img.shields.io/badge/Backend_Tests-47_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
-[![Vitest Tests](https://img.shields.io/badge/Frontend_Tests-16_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![Pytest Tests](https://img.shields.io/badge/Backend_Tests-48_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![Vitest Tests](https://img.shields.io/badge/Frontend_Tests-19_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![Playwright E2E](https://img.shields.io/badge/E2E_Journeys-8%2F8_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
 [![Security Audit](https://img.shields.io/badge/Vulnerabilities-0_Reported-brightgreen.svg)](#20-defense-in-depth-security-review--threat-model)
 
-> **"Ask your documents. See the passage that answers."**  
+> **"Trace every answer to the sentence that proves it."**  
 > NexusRAG is an advanced, production-style Retrieval-Augmented Generation workspace engineered for the **Advanced-Level AI Engineer Track at ShadowFox**.
+
+---
+
+## Visual Overview
+
+| Research Desk & Grounded Synthesis | Retrieval Inspector & Observability Trace |
+|:---:|:---:|
+| ![Research Desk](docs/screenshots/phase_t5/j3_research_desk_response.png) | ![Retrieval Inspector](docs/screenshots/phase_t5/j4_retrieval_inspector.png) |
+| *Grounded SSE synthesis with bracketed citation chips linked to exact passages* | *9-node LangGraph trace, candidate scoring, and millisecond duration waterfall* |
+
+| First-Run Ingestion & Knowledge Base | Spec Page 7 Settings & Telemetry |
+|:---:|:---:|
+| ![Knowledge Bases](docs/screenshots/phase_t5/j2_onboarding_and_knowledge_base.png) | ![Settings Page](docs/screenshots/phase_t5/j5_settings_page_spec_7.png) |
+| *1-click sample document ingestion with real-time byte progress* | *AI provider configuration, chunk parameters, and dual-dialect database telemetry* |
 
 ---
 
@@ -49,24 +64,25 @@
 
 ## 1. Product Overview & Philosophy
 
-NexusRAG was conceived to bridge the gap between academic RAG demos and robust enterprise document assistants. Traditional RAG applications frequently suffer from hallucinated claims, missing citations, fragile vector mappings, and synthetic frontend metrics.
+NexusRAG was engineered to eliminate the gap between academic RAG prototypes and verifiable, production-grade enterprise document assistants. Traditional RAG setups suffer from context window dilution, unverified claims, fabricated citations, and simulated frontend metrics.
 
-NexusRAG establishes four engineering principles:
-1. **Verification-First State Machine:** Answers are produced through a strictly typed 9-node LangGraph DAG that verifies evidence sufficiency before generation and validates citations server-side after generation.
-2. **Deterministic Citations:** Every claim links directly to physical document pages and character offset ranges.
-3. **The Zero Static Data Rule:** Zero mock numbers, fake latency timers, or hardcoded metrics in user-facing views. Every count, status, and telemetry metric is queried live from the database and vector store.
-4. **Calibrated Transparency:** When evidence is insufficient, NexusRAG executes an honest, designed abstention rather than producing plausible hallucinations.
+NexusRAG establishes four engineering pillars:
+1. **Verification-First State Machine:** Answers are generated via a strictly typed 9-node LangGraph execution state machine that checks evidence sufficiency before generation and validates citations server-side after generation.
+2. **Physical Citation Grounding:** Every claim links directly to physical document pages and exact character offsets. Clicking a citation opens the integrated Document Reader focused on the highlighted excerpt.
+3. **The Zero Static Data Rule:** Zero mock numbers, fake latency timers, or hardcoded telemetry metrics in user-facing views. Every count, status, and system metric is queried dynamically from SQLite/PostgreSQL and FAISS.
+4. **Calibrated Transparency:** When evidence is insufficient, NexusRAG executes an honest, designed abstention rather than delivering plausible hallucinations.
 
 ---
 
 ## 2. Executive Summary & Problem Statement
 
-Enterprises require document intelligence solutions that handle complex, multi-page PDFs, technical Markdown, and raw transcripts with strict auditability. Standard LLM prompts suffer from context window dilution, leading to:
+Organizations require document assistants that handle multi-page PDFs, technical Markdown, and raw transcripts with strict auditability. Standard RAG architectures frequently fail in production:
 - **Loss in the Middle:** Key details buried in 50+ retrieved chunks are overlooked by the model.
-- **Citation Hallucination:** Models fabricate citation numbers that do not match the provided passages.
-- **Data Bleeding:** Multi-tenant environments leak confidential document excerpts between users.
+- **Citation Hallucination:** Models fabricate citation numbers that do not match the supplied context passages.
+- **Cross-Tenant Data Bleeding:** Multi-tenant environments leak confidential document excerpts between users.
+- **Simulated Reliability:** Prototypes present hardcoded status tags and static latency indicators.
 
-NexusRAG solves these problems through an isolated visitor workspace architecture, token-aware sentence chunking, atomic FAISS vector indexing with 64-bit ID mapping, and an evidence sufficiency gate threshold ($0.650$) that partitions answerable inquiries from out-of-domain noise.
+NexusRAG solves these failures through session-scoped cryptographic workspace isolation, token-aware sentence chunking, atomic FAISS vector indexing with 64-bit ID mapping, and an evidence sufficiency gate threshold ($0.650$) that cleanly partitions answerable inquiries from out-of-domain noise.
 
 ---
 
@@ -74,7 +90,7 @@ NexusRAG solves these problems through an isolated visitor workspace architectur
 
 ```mermaid
 graph TD
-    User["User Browser (React 18 / Vite / Tailwind)"] -->|"HTTPS / Secure Cookie + CSRF"| ReverseProxy["Cloudflare / Nginx / Reverse Proxy"]
+    User["User Browser (React 18 / Vite / Tailwind)"] -->|"HTTPS / Secure Cookie + CSRF"| ReverseProxy["Cloudflare / Nginx / Single-Container Port 8000"]
     ReverseProxy -->|"HTTP / SSE"| FastAPI["FastAPI Application Server (Python 3.11+)"]
     
     subgraph "Core Backend Services"
@@ -93,10 +109,10 @@ graph TD
         LangGraphEngine --> CitationValidator["Server-Side Citation & Groundedness Validator"]
     end
     
-    subgraph "Storage & Persistence Layer"
-        DocumentService --> LocalUploads["/storage/uploads/ (Persistent Disk)"]
-        FAISSService --> FAISSFiles["/storage/faiss/index.faiss (Atomic Rename)"]
-        FastAPI --> PostgreSQL[("PostgreSQL 16 Database (Relational State & Traces)")]
+    subgraph "Storage & Dual-Dialect Persistence Layer"
+        DocumentService --> LocalUploads["/app/storage/uploads/ (Persistent Volume)"]
+        FAISSService --> FAISSFiles["/app/storage/faiss/index.faiss (Atomic Rename)"]
+        FastAPI --> RelationalDB[("PostgreSQL 16 Alpine / SQLite 3")]
     end
 ```
 
@@ -106,18 +122,21 @@ graph TD
 
 NexusRAG implements an original visual identity inspired by study of 5 core enterprise references (Notion, Linear, NotebookLM, Readwise Reader, and Arize Phoenix/LangSmith):
 
-- **Palette (Option 1):** Warm Sand canvas (`#F7F6F2`), crisp white surfaces, Burnished Terracotta (`#B84A28`) primary brand accent, and Warm Amber Ochre (`#D96E43`) citation highlight.
+- **Palette:** Warm Sand canvas (`#F7F6F2`), crisp white surfaces, Burnished Terracotta (`#B84A28`) primary brand accent, and Warm Amber Ochre (`#D96E43`) citation highlight.
 - **Dark Theme:** Slate Graphite (`#0F1115`) canvas, elevated obsidian slate (`#16191F`) surfaces, bone white (`#ECEEF2`) typography.
-- **Strict Geometric Restraint:** Disciplined corner radii (`rounded-xs`, `rounded`, `rounded-md`). Strictly **zero pill-shaped buttons, search inputs, or status badges**.
-- **Status Indicator:** Discrete 6px dot plus monospace label (`bg-status-success`, `bg-citation animate-pulse`, `bg-status-error`).
+- **Strict Geometric Restraint:** Disciplined corner radii (`rounded-xs`, `rounded`, `rounded-md`). Strictly zero pill-shaped buttons, search inputs, or status badges.
+- **Status Indicator:** Discrete 6px status dot plus Inter sans label (`bg-status-success`, `bg-citation animate-pulse`, `bg-status-error`).
+- **Architectural Separation:**
+  - **Public Site (`/`):** Dedicated marketing layout with hero proof, features, technical architecture, and documentation ecosystem.
+  - **App Shell (`/app/*`):** Isolated workspace layout with collapsible rail navigation, global command palette (`Cmd+K`), and live operational views.
 - **7 Core Operational Views:**
   1. `LandingPage.jsx`: Warm paper editorial hero, live vector index proof, single product frame.
   2. `DashboardPage.jsx`: Ask-first question composer with scope picker, quick action tiles, and recent document table with real generated summaries.
-  3. `KnowledgeBasesPage.jsx`: High-density library table, left collections tree, right upload tray with per-file byte progress and cancel handles.
-  4. `ResearchDeskPage.jsx`: 3-panel desk, Source Serif 4 synthesis with real-time SSE token stream, interactive `[1]` chips, right evidence panel (Passage, Citation, Trace tabs).
-  5. `DocumentReaderPage.jsx`: Multi-document tabs with PDF.js canvas rendering, page/zoom controls, amber passage highlights.
-  6. `RetrievalInspectorPage.jsx`: LangSmith/Phoenix style DAG execution timeline with node duration waterfalls in ms, candidate pool table, reranking rationales, sufficiency gate ($0.65$), groundedness verification ($0.70$).
-  7. `SettingsPage.jsx`: Live database and FAISS vector metrics, 256-bit visitor session ID, export JSON button, double-confirmed workspace purge modal, Zero Static Data verification table.
+  3. `KnowledgeBasesPage.jsx`: High-density library table, collection tree, 1-click sample document onboarding, and upload tray with real byte progress.
+  4. `ResearchDeskPage.jsx`: 3-panel desk, Source Serif 4 synthesis with real-time SSE token stream, interactive `[1]` citation chips, and evidence panel.
+  5. `DocumentReaderPage.jsx`: Multi-document tabs with PDF canvas rendering, page controls, and amber passage highlights.
+  6. `RetrievalInspectorPage.jsx`: LangSmith/Phoenix style DAG execution timeline with node duration waterfalls in ms, candidate pool table, reranking rationales, sufficiency gate ($0.650$), and groundedness verification ($0.700$).
+  7. `SettingsPage.jsx`: Spec Page 7 compliant AI provider configuration, model selector, chunk tuning, Top-K retrieval, dual-dialect database telemetry, export JSON, and double-confirmed workspace purge.
 
 ---
 
@@ -132,7 +151,7 @@ NexusRAG implements an original visual identity inspired by study of 5 core ente
 
 ## 6. Multi-Format Ingestion Pipeline
 
-- **PDF Ingestion (`PyMuPDF / fitz`):** Extracts per-page text, tracks exact physical character offsets (`start_char`, `end_char`), and detects scanned or image-only pages (< 20 characters per page triggers OCR warning).
+- **PDF Ingestion (`PyMuPDF / fitz`):** Extracts per-page text, tracks physical character offsets (`start_char`, `end_char`), and detects scanned or image-only pages (< 20 characters per page triggers OCR warning).
 - **Markdown Ingestion:** Preserves structural header hierarchy (`#`, `##`, `###`), tables, and code fences.
 - **Text Ingestion:** UTF-8 parser with Latin-1 fallback, normalizing line endings and stripping null control characters.
 
@@ -217,12 +236,12 @@ flowchart TD
 All passages are isolated inside XML context delimiters:
 ```xml
 <context>
-  <passage id="1" document="clean_energy_report_2024.txt" page="1">
-    Solar and wind accounted for 85% of new generation capacity in 2024.
+  <passage id="1" document="renewable_microgrids_2024.pdf" page="2">
+    Microgrids operating with localized photovoltaic generation demonstrated a 34% reduction in peak transmission losses.
   </passage>
 </context>
 ```
-System prompts strictly forbid external knowledge and require bracketed citations `[1]`, `[2]` pointing to passage IDs.
+System prompts strictly instruct the model to base claims on the provided context and format bracketed citations `[1]`, `[2]` pointing to passage IDs.
 
 ---
 
@@ -244,16 +263,16 @@ System prompts strictly forbid external knowledge and require bracketed citation
 ## 17. Real-Time Server-Sent Events (SSE) Streaming
 
 Exposes `POST /api/v1/query/stream` yielding:
-1. `event: stage` — Graph node transitions (`rewriting`, `retrieving`, `reranking`, `generating`).
-2. `event: token` — Real-time streaming answer tokens.
-3. `event: final` — Answer string, verified citation array, and execution timings in ms.
-4. `event: error` — Standardized error payload.
+1. `event: stage` - Graph node transitions (`rewriting`, `retrieving`, `reranking`, `generating`).
+2. `event: token` - Real-time streaming answer tokens.
+3. `event: final` - Answer string, verified citation array, and execution timings in ms.
+4. `event: error` - Standardized error payload.
 
 ---
 
 ## 18. Retrieval Inspector & Execution Trace Observability
 
-Inspired by LangSmith and Phoenix, `/inspector/{run_id}` visualizes:
+Inspired by LangSmith and Phoenix, `/app/inspector` visualizes:
 - Raw query vs. rewritten standalone query.
 - Full candidate retrieval list with similarity scores.
 - Reranked candidates and relevance rationales.
@@ -272,20 +291,21 @@ Evaluated across a gold-standard dataset of 10 standardized queries (6 in-domain
 | **Recall@4** | $\ge 0.800$ | **1.0000 (100.0%)** | **PASSED** |
 | **Mean Reciprocal Rank (MRR)** | $\ge 0.800$ | **1.0000 (100.0%)** | **PASSED** |
 | **Gate Calibration Accuracy** | $\ge 0.900$ | **1.0000 (100.0%)** | **PASSED (10/10 Correct)** |
-| **Citation Faithfulness Rate** | $\ge 0.900$ | **1.0000 (100.0%)** | **PASSED (100.0%)** |
-| **Median Retrieval Latency (p50)** | $< 100 \text{ ms}$ | **1.61 ms** | **PASSED** |
-| **Tail Retrieval Latency (p95)** | $< 250 \text{ ms}$ | **3.01 ms** | **PASSED** |
-| **Backend Test Suite** | 100% Passing | **47 / 47 Passed (88% Coverage)** | **PASSED** |
-| **Frontend Test Suite** | 100% Passing | **16 / 16 Passed** | **PASSED** |
+| **Citation Integrity Rate** | $\ge 0.900$ | **1.0000 (100.0%)** | **PASSED (100.0%)** |
+| **Median Retrieval Latency (p50)** | $< 100 \text{ ms}$ | **1.69 ms** | **PASSED** |
+| **Tail Retrieval Latency (p95)** | $< 250 \text{ ms}$ | **4.32 ms** | **PASSED** |
+| **Backend Test Suite** | 100% Passing | **48 / 48 Passed (89% Coverage)** | **PASSED** |
+| **Frontend Test Suite** | 100% Passing | **19 / 19 Passed** | **PASSED** |
+| **Playwright User Journeys** | 8/8 Completed | **8 / 8 User Journeys Verified** | **PASSED** |
 
 ---
 
 ## 20. Defense-in-Depth Security Review & Threat Model
 
 - **Dependency Vulnerabilities:**
-  - `python3 -m pip_audit -r backend/requirements.txt` $\implies$ **0 known vulnerabilities**.
-  - `npm --prefix frontend audit` $\implies$ **0 vulnerabilities** (Vite 6 & PDF.js 4.10).
-- **Secret Hygiene:** `detect-secrets scan` $\implies$ **0 committed secrets or private keys**.
+  - `python3 -m pip_audit -r backend/requirements.txt`: **0 known vulnerabilities**.
+  - `npm --prefix frontend audit`: **0 known vulnerabilities**.
+- **Secret Hygiene:** `detect-secrets scan` across working tree and entire Git history: **0 committed secrets or private keys**.
 - **Sliding Window Rate Limiter:** 60 requests / minute per client with `X-RateLimit-*` headers and HTTP 429 + `Retry-After`.
 - **Upload Abuse Defense:** 25MB file cap, magic byte verification, filename traversal stripping (`../../../../etc/passwd` $\to$ `passwd`), and SHA-256 duplicate detection.
 - **Prompt Injection Defense:** Untrusted context isolated within XML tags; verified resistant to system override attacks.
@@ -304,23 +324,24 @@ Evaluated across a gold-standard dataset of 10 standardized queries (6 in-domain
 
 - Visible focus rings: `focus:ring-2 focus:ring-brand/40 focus:ring-offset-1`.
 - Dialogs adhere to WAI-ARIA modal specifications (`role="dialog"`, `aria-modal="true"`, Escape-key dismissal).
+- Semantic landmark elements (`<main>`, `<header>`, `<nav>`, `<aside>`) across all views.
 - Responsive to `@media (prefers-reduced-motion: reduce)`.
 
 ---
 
 ## 22. The Zero Static Data Rule & Compliance Table
 
-Zero hardcoded numbers or simulated metrics exist in the user-facing interface:
+Zero hardcoded numbers, fake metrics, or simulated statuses exist in the user-facing interface:
 
 | View | Metric Displayed | Backend Data Source | Verified Live? |
 |---|---|---|---|
 | **Landing Page** | Live Vector Count | `GET /api/v1/health/system` (`faiss_vectors`) | **YES** |
 | **Landing Page** | Database Engine | `GET /api/v1/health/system` (`database_type`) | **YES** |
-| **Dashboard** | Document Summary Column | `Document.summary` (Generated during ingestion) | **YES** |
 | **Dashboard** | Total Documents Count | `GET /api/v1/workspaces/current` (`stats.documents`) | **YES** |
 | **Dashboard** | Total Indexed Chunks | `GET /api/v1/workspaces/current` (`stats.chunks`) | **YES** |
+| **Dashboard** | Document Summaries | `Document.summary` (Generated during ingestion) | **YES** |
 | **Knowledge Bases** | Upload Progress & Bytes | Real browser `xhr.upload.onprogress` | **YES** |
-| **Status Bar** | System Telemetry | `GET /api/v1/health/system` | **YES** |
+| **Settings** | Spec Page 7 Config | `GET /api/v1/system/status` & `/api/v1/workspaces/current` | **YES** |
 | **Inspector** | Node Latency Waterfall | `WorkflowRun.stage_durations` in milliseconds | **YES** |
 
 ---
@@ -351,7 +372,7 @@ cd NEXUSRAG-AI
 
 # 2. Configure environment
 cp .env.example .env
-# Edit .env to set your GEMINI_API_KEY (or use default mock mode for testing)
+# Edit .env to set your GEMINI_API_KEY (or use default mock mode for offline testing)
 
 # 3. Setup Backend
 python3 -m venv .venv
@@ -366,9 +387,9 @@ cd frontend
 npm install
 cd ..
 
-# 5. Run Test Battery (63 tests)
+# 5. Run Test Battery (67 tests)
 pytest backend/tests -v
-npm --prefix frontend test
+npm --prefix frontend test -- --run
 ```
 
 ### Starting Native Development Servers
@@ -386,45 +407,56 @@ Open `http://localhost:5173` in your browser.
 
 ## 25. Docker & Containerized Deployment
 
-NexusRAG provides production containerization:
+### Local Docker Compose
+NexusRAG provides full production containerization orchestrating FastAPI, PostgreSQL 16 Alpine, and persistent volumes:
 
 ```bash
 # Start backend, database, and frontend via Docker Compose
-docker-compose up --build
+docker-compose up --build -d
 ```
 Persistent volumes are maintained under:
-- `storage/uploads/` — Raw uploaded PDFs and documents.
-- `storage/faiss/` — Atomic FAISS vector indexes.
-- Database volume — PostgreSQL database storage.
+- `nexus_storage` (`/app/storage`) - Uploaded files (`uploads/`) and atomic FAISS index files (`faiss/`).
+- `nexusrag_pgdata` (`/var/lib/postgresql/data`) - Relational PostgreSQL metadata and persisted trace logs.
+
+### Production Cloud Deployment (Railway / Render / VPS)
+NexusRAG includes turnkey production manifests:
+- **Railway:** `railway.json` provides single-container deployment with persistent volume mounted at `/app/storage`.
+- **Render:** `render.yaml` orchestrates the web service alongside managed PostgreSQL.
+- **Single-Container Full-Stack:** FastAPI compiles and hosts the React production build directly, providing unified single-port (8000) execution with zero CORS latency and native same-site cookie security.
 
 ---
 
 ## 26. ShadowFox Internship Traceability Matrix & Submission Pack
 
-| Assignment Requirement | Implementation in NexusRAG | Verification Evidence |
-|---|---|---|
-| **Multi-Format Ingestion** | PyMuPDF (PDF), CommonMark (MD), UTF-8/Latin-1 (TXT) | `test_parsers.py` (5 tests passing) |
-| **Token Chunking** | 400-token chunks with 50 overlap & sentence preservation | `test_chunking.py` (2 tests passing) |
-| **FAISS Vector Store** | `faiss.IndexIDMap2` wrapping `IndexFlatIP` with unit norm | `test_faiss_store.py` (1 test passing) |
-| **Scoped Retrieval** | Filter candidate chunks by collection ID and document ID | `test_rag_graph.py` (9 tests passing) |
-| **Reranking Logic** | Lexical & semantic scoring with normalized $[0, 1]$ ranking | `test_rag_graph.py` |
-| **Evidence Sufficiency** | $0.650$ threshold gate; clean abstention on irrelevant queries | `test_evaluation_benchmark.py` (100% accuracy) |
-| **Grounded Generation** | XML `<context>` delimiters; server-side regex citation check | `test_rag_graph.py`, `test_security_audit.py` |
-| **Observability Trace** | Persisted `WorkflowRun` trace with node durations in ms | `test_rag_service.py` |
-| **Real-Time Streaming** | SSE streaming (`POST /api/v1/query/stream`) | `test_rag_service.py` |
-| **Tenant Isolation** | 256-bit entropy session cookie + Double-Submit CSRF | `test_isolation_security.py`, `test_security_audit.py` |
-| **Security Audits** | 0 vulnerabilities (`pip-audit`, `npm audit`), 0 secrets | `docs/security-review.md` |
-| **Zero Static Data** | All UI counts and metrics backed by PostgreSQL/FAISS | `SettingsPage.jsx`, `test_crud_endpoints.py` |
+| Assignment Requirement | Implementation in NexusRAG | Verification Evidence | Status |
+|---|---|---|---|
+| **Multi-Format Ingestion** | PyMuPDF (PDF), CommonMark (MD), UTF-8/Latin-1 (TXT) | `test_parsers.py` (5 tests passing) | **PASSED** |
+| **Token Chunking** | 400-token chunks with 50-token overlap & sentence bounds | `test_chunking.py` (2 tests passing) | **PASSED** |
+| **FAISS Vector Store** | `faiss.IndexIDMap2` wrapping `IndexFlatIP` with unit norm | `test_faiss_store.py` (1 test passing) | **PASSED** |
+| **Scoped Retrieval** | Filter candidate chunks by collection ID and document ID | `test_rag_graph.py` (9 tests passing) | **PASSED** |
+| **Reranking Logic** | Lexical & semantic scoring with normalized $[0, 1]$ ranking | `test_rag_graph.py` | **PASSED** |
+| **Evidence Sufficiency** | $0.650$ threshold gate; clean abstention on irrelevant queries | `test_evaluation_benchmark.py` (10/10 correct) | **PASSED** |
+| **Grounded Generation** | XML `<context>` delimiters; server-side regex citation check | `test_rag_graph.py`, `test_security_audit.py` | **PASSED** |
+| **Observability Trace** | Persisted `WorkflowRun` trace with node durations in ms | `test_rag_service.py` | **PASSED** |
+| **Real-Time Streaming** | SSE streaming (`POST /api/v1/query/stream`) | `test_rag_service.py` | **PASSED** |
+| **Tenant Isolation** | 256-bit entropy session cookie + Double-Submit CSRF | `test_isolation_security.py` (5 tests passing) | **PASSED** |
+| **Security Audits** | 0 vulnerabilities (`pip-audit`, `npm audit`), 0 secrets | `docs/security-review.md` | **PASSED** |
+| **Zero Static Data** | All UI counts and metrics backed by PostgreSQL/FAISS | `SettingsPage.jsx`, `test_crud_endpoints.py` | **PASSED** |
+| **Public Site & App Split** | Public marketing at `/`, isolated app workspace at `/app/*` | `App.jsx`, `PublicLayout.jsx`, `AppShell.jsx` | **PASSED** |
+| **First-Run Onboarding** | 1-click sample document ingestion with real byte progress | `KnowledgeBasesPage.jsx`, `test_upload_validation.py` | **PASSED** |
+| **Settings Page 7** | Spec Page 7 AI provider, models, chunking, storage config | `SettingsPage.jsx`, `Playwright Journey 5` | **PASSED** |
 
-### Internship Deliverables
-- **GitHub Repository:** [https://github.com/harshchavan009/NEXUSRAG-AI.git](https://github.com/harshchavan009/NEXUSRAG-AI.git)
-- **Evaluation Whitepaper:** [`docs/evaluation.md`](docs/evaluation.md)
-- **Security Whitepaper:** [`docs/security-review.md`](docs/security-review.md)
-- **Retrieval Pipeline Spec:** [`docs/rag-pipeline.md`](docs/rag-pipeline.md)
-- **OpenAPI Reference:** [`docs/api-reference.md`](docs/api-reference.md)
-- **3-to-5 Min Video Script:** [`docs/demo-video-script.md`](docs/demo-video-script.md)
+### Submission Pack Documentation
+- **Executive Technical Summary:** [`docs/technical-summary.md`](docs/technical-summary.md)
+- **Demonstration Video Script & Shot List:** [`docs/demo-video-script.md`](docs/demo-video-script.md)
+- **AI Key Cost-Safety & Security Checklist:** [`docs/cost-safety-checklist.md`](docs/cost-safety-checklist.md)
+- **Quantitative Evaluation Whitepaper:** [`docs/evaluation.md`](docs/evaluation.md)
+- **Defense-in-Depth Security Review:** [`docs/security-review.md`](docs/security-review.md)
+- **System Architecture Whitepaper:** [`docs/architecture.md`](docs/architecture.md)
+- **RAG Pipeline State Machine Specification:** [`docs/rag-pipeline.md`](docs/rag-pipeline.md)
+- **OpenAPI Specification & Contract:** [`docs/api-reference.md`](docs/api-reference.md)
+- **Transformation Roadmap & Audit:** [`docs/transform-plan.md`](docs/transform-plan.md) and [`docs/transform-audit.md`](docs/transform-audit.md)
 
 ---
 
-**Developed with precision for the ShadowFox AI Engineer Track.**
-
+**Engineered with precision for the ShadowFox Advanced-Level AI Engineer Track.**

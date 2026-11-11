@@ -1,7 +1,7 @@
 # AI Provider Key Cost-Safety & Security Checklist
 
-**Document Version:** 1.0.0  
-**Phase:** Phase 9 Preparation (Operational Security & Cost Governance)  
+**Document Version:** 1.1.0  
+**Phase:** Phase T8 Deliverable (Operational Security & Cost Governance)  
 **Target Provider:** Google Gemini API (Google Cloud / AI Studio) & OpenAI API  
 
 ---
