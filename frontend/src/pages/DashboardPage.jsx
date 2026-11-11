@@ -121,7 +121,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
   const totalPages = documents.reduce((sum, d) => sum + (d.page_count || 1), 0);
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto bg-canvas p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
+    <main className="flex-1 flex flex-col h-full overflow-y-auto bg-canvas p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
       {/* 1. Header Bar with Overview and Quick CTAs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/50">
         <div>
@@ -633,6 +633,6 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
           </div>
         </form>
       </Modal>
-    </div>
+    </main>
   );
 }

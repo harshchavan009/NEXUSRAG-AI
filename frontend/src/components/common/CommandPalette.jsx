@@ -139,6 +139,9 @@ export function CommandPalette({ isOpen, onClose, onNavigate, onOpenDocument }) 
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command Palette"
       className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/50 backdrop-blur-xs select-none"
       onClick={onClose}
     >

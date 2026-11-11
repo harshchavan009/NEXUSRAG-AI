@@ -1,0 +1,74 @@
+{
+  "passed": 8,
+  "failed": 0,
+  "journeys": [
+    {
+      "name": "Journey 1: Public Site & Architecture Separation",
+      "status": "PASSED",
+      "notes": [
+        "RailNav is properly hidden on public site (Architecture Separation confirmed).",
+        "PublicHeader rendered cleanly with navigation links.",
+        "Hero Title confirmed original: 'Verifiable Research Synthesis for Complex Documents'",
+        "Seamless transition to Application Shell at http://localhost:5173/app/dashboard.",
+        "RailNav mounted with 6 navigational destinations."
+      ]
+    },
+    {
+      "name": "Journey 2: First-Run Onboarding & Sample Docs Ingestion",
+      "status": "PASSED",
+      "notes": [
+        "Clicked sample documents ingestion button.",
+        "Dashboard live aggregate metrics verified: 4 documents, 5 chunks.",
+        "Knowledge Bases table populated with 4 indexed research papers."
+      ]
+    },
+    {
+      "name": "Journey 3: Research Query & Streaming Synthesis",
+      "status": "PASSED",
+      "notes": [
+        "Submitted research question via Ask-First Composer.",
+        "Streaming SSE synthesis received and rendered markdown response.",
+        "Citation badge [1] rendered with source provenance.",
+        "Clicked citation badge [1] -> Panel 3 inspected passage.",
+        "Clicked 'Open in Document Reader' -> Navigated to Document Reader with highlight."
+      ]
+    },
+    {
+      "name": "Journey 4: Retrieval Inspector & Execution Trace",
+      "status": "PASSED",
+      "notes": [
+        "Retrieval Inspector loaded with live run execution history."
+      ]
+    },
+    {
+      "name": "Journey 5: Command Palette & Settings Completion",
+      "status": "PASSED",
+      "notes": [
+        "Global Command Palette opened and verified.",
+        "Spec Page 7 Settings fully verified: Provider, Models, Chunking, Retrieval, and Dual-Dialect Storage."
+      ]
+    },
+    {
+      "name": "Journey 6: Honest Failure & Calibrated Abstention",
+      "status": "PASSED",
+      "notes": [
+        "Submitted out-of-domain adversarial query: 'What antimatter fuel ratio is required to initiate faster-than-light warp propulsion?'",
+        "System calibrated properly: abstained honestly without hallucinating answers."
+      ]
+    },
+    {
+      "name": "Journey 7: Cross-Tenant Isolation Verification",
+      "status": "PASSED",
+      "notes": [
+        "Visitor B has 0 documents (Zero Cross-Tenant Leakage verified)."
+      ]
+    },
+    {
+      "name": "Journey 8: Cross-Viewport & Responsive Verification",
+      "status": "PASSED",
+      "notes": [
+        "Captured 6 multi-viewport responsive dashboard proofs (1440, 820, 390px in light and dark mode)."
+      ]
+    }
+  ]
+}

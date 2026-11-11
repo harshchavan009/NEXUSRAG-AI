@@ -67,7 +67,7 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-canvas p-6 md:p-8 max-w-5xl mx-auto flex flex-col gap-8 font-sans">
+    <main className="flex-1 overflow-y-auto bg-canvas p-6 md:p-8 max-w-5xl mx-auto flex flex-col gap-8 font-sans">
       {/* Header */}
       <div className="pb-4 border-b border-border/60">
         <div className="flex items-center gap-2.5">
@@ -364,6 +364,6 @@ export function SettingsPage() {
           </div>
         </div>
       </Modal>
-    </div>
+    </main>
   );
 }

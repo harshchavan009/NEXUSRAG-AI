@@ -52,6 +52,18 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+
+        # Automatically issue secure session cookie if a fresh workspace was provisioned
+        if hasattr(request.state, "new_session_token") and request.state.new_session_token:
+            response.set_cookie(
+                key=settings.SESSION_COOKIE_NAME,
+                value=request.state.new_session_token,
+                max_age=settings.SESSION_MAX_AGE_SECONDS,
+                httponly=True,
+                secure=settings.SESSION_COOKIE_SECURE,
+                samesite=settings.SESSION_COOKIE_SAMESITE,
+                path="/"
+            )
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)

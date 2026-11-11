@@ -119,6 +119,23 @@ export function ResearchDeskPage({
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
+    let targetSessionId = activeSessionId;
+    if (!targetSessionId) {
+      if (sessions && sessions.length > 0) {
+        targetSessionId = sessions[0].id;
+        setActiveSessionId(targetSessionId);
+      } else {
+        try {
+          const newSession = await createSessionMutation.mutateAsync(query.slice(0, 40));
+          targetSessionId = newSession.id;
+          setActiveSessionId(targetSessionId);
+          refetchSessions();
+        } catch (err) {
+          console.error('Failed to create session for query:', err);
+        }
+      }
+    }
+
     const scopeObj = scopeOverride || {
       collection_ids: selectedScope === 'all' ? [] : [selectedScope],
       document_ids: [],
@@ -126,7 +143,7 @@ export function ResearchDeskPage({
 
     const payload = {
       query,
-      session_id: activeSessionId,
+      session_id: targetSessionId,
       scope: scopeObj,
       top_k: 4,
     };
@@ -370,7 +387,7 @@ export function ResearchDeskPage({
                 <Sparkles className="w-6 h-6" />
               </div>
               <h3 className="font-semibold text-ink text-sm">
-                Ask your documents. See the passage that answers.
+                Trace every answer to the sentence that proves it.
               </h3>
               <p className="text-xs font-serif leading-relaxed">
                 Submit a research inquiry below. NexusRAG executes our 9-node LangGraph pipeline to retrieve, rerank, and synthesize findings with verifiable citations.

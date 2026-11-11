@@ -54,6 +54,7 @@ def test_cross_tenant_collection_isolation(client, workspace_a_auth, workspace_b
     coll_id = res_create.json()["id"]
 
     # Workspace B attempts to list collections -> Collection A must NOT appear
+    client.cookies.clear()
     client.cookies.set(settings.SESSION_COOKIE_NAME, workspace_b_auth["token"])
     res_list_b = client.get("/api/v1/collections")
     assert res_list_b.status_code == 200
