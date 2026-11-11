@@ -13,11 +13,27 @@ import { DocumentReaderPage } from './pages/DocumentReaderPage';
 import { RetrievalInspectorPage } from './pages/RetrievalInspectorPage';
 import { SettingsPage } from './pages/SettingsPage';
 
+// Public Ecosystem Pages
+import { DocumentationPage } from './pages/public/DocumentationPage';
+import { SecurityPage } from './pages/public/SecurityPage';
+import { FAQPage } from './pages/public/FAQPage';
+import { StatusPage } from './pages/public/StatusPage';
+import { AboutPage } from './pages/public/AboutPage';
+import { LegalPage } from './pages/public/LegalPage';
+import { NotFoundPage } from './pages/public/NotFoundPage';
+
 export function App() {
   const [currentView, setCurrentView] = useState(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname;
       if (path === '/' || path === '') return VIEWS.LANDING;
+      if (path.includes('docs')) return VIEWS.DOCS;
+      if (path.includes('security')) return VIEWS.SECURITY;
+      if (path.includes('faq')) return VIEWS.FAQ;
+      if (path.includes('status')) return VIEWS.STATUS;
+      if (path.includes('about')) return VIEWS.ABOUT;
+      if (path.includes('privacy')) return VIEWS.PRIVACY;
+      if (path.includes('terms')) return VIEWS.TERMS;
       if (path.includes('knowledge') || path.includes('library')) return VIEWS.LIBRARY;
       if (path.includes('research')) return VIEWS.RESEARCH;
       if (path.includes('reader')) return VIEWS.READER;
@@ -60,6 +76,13 @@ export function App() {
     if (typeof window !== 'undefined') {
       const pathToView = {
         [VIEWS.LANDING]: '/',
+        [VIEWS.DOCS]: '/docs',
+        [VIEWS.SECURITY]: '/security',
+        [VIEWS.FAQ]: '/faq',
+        [VIEWS.STATUS]: '/status',
+        [VIEWS.ABOUT]: '/about',
+        [VIEWS.PRIVACY]: '/privacy',
+        [VIEWS.TERMS]: '/terms',
         [VIEWS.DASHBOARD]: '/app/dashboard',
         [VIEWS.LIBRARY]: '/app/knowledge',
         [VIEWS.RESEARCH]: '/app/research',
@@ -82,6 +105,13 @@ export function App() {
       } else if (typeof window !== 'undefined') {
         const path = window.location.pathname;
         if (path === '/' || path === '') setCurrentView(VIEWS.LANDING);
+        else if (path.includes('docs')) setCurrentView(VIEWS.DOCS);
+        else if (path.includes('security')) setCurrentView(VIEWS.SECURITY);
+        else if (path.includes('faq')) setCurrentView(VIEWS.FAQ);
+        else if (path.includes('status')) setCurrentView(VIEWS.STATUS);
+        else if (path.includes('about')) setCurrentView(VIEWS.ABOUT);
+        else if (path.includes('privacy')) setCurrentView(VIEWS.PRIVACY);
+        else if (path.includes('terms')) setCurrentView(VIEWS.TERMS);
         else if (path.includes('knowledge') || path.includes('library')) setCurrentView(VIEWS.LIBRARY);
         else if (path.includes('research')) setCurrentView(VIEWS.RESEARCH);
         else if (path.includes('reader')) setCurrentView(VIEWS.READER);
@@ -144,13 +174,31 @@ export function App() {
 
   const currentMeta = viewMeta[currentView] || { title: 'NexusRAG', subtitle: '' };
 
-  // If user is on the Public Landing Page, render the dedicated Public Website Layout
-  if (currentView === VIEWS.LANDING) {
+  // Public Ecosystem Routing
+  const publicViews = [
+    VIEWS.LANDING,
+    VIEWS.DOCS,
+    VIEWS.SECURITY,
+    VIEWS.FAQ,
+    VIEWS.STATUS,
+    VIEWS.ABOUT,
+    VIEWS.PRIVACY,
+    VIEWS.TERMS,
+    VIEWS.NOT_FOUND,
+  ];
+
+  if (publicViews.includes(currentView)) {
     return (
       <ToastProvider>
-        <div className="min-h-screen w-screen bg-canvas text-ink font-sans flex flex-col">
-          <LandingPage onNavigate={setCurrentView} />
-        </div>
+        {currentView === VIEWS.LANDING && <LandingPage onNavigate={setCurrentView} />}
+        {currentView === VIEWS.DOCS && <DocumentationPage onNavigate={setCurrentView} />}
+        {currentView === VIEWS.SECURITY && <SecurityPage onNavigate={setCurrentView} />}
+        {currentView === VIEWS.FAQ && <FAQPage onNavigate={setCurrentView} />}
+        {currentView === VIEWS.STATUS && <StatusPage onNavigate={setCurrentView} />}
+        {currentView === VIEWS.ABOUT && <AboutPage onNavigate={setCurrentView} />}
+        {currentView === VIEWS.PRIVACY && <LegalPage initialTab="privacy" onNavigate={setCurrentView} />}
+        {currentView === VIEWS.TERMS && <LegalPage initialTab="terms" onNavigate={setCurrentView} />}
+        {currentView === VIEWS.NOT_FOUND && <NotFoundPage onNavigate={setCurrentView} />}
       </ToastProvider>
     );
   }

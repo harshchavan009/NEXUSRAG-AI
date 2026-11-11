@@ -164,4 +164,26 @@ describe('App Navigation & 7 Core View Rendering', () => {
     expect(screen.queryByLabelText('NexusRAG Home')).toBeNull();
     expect(screen.queryByRole('button', { name: 'System Settings' })).toBeNull();
   });
+
+  it('renders dedicated public documentation and security pages without app chrome', () => {
+    window.history.pushState({}, '', '/docs');
+    renderWithProviders(<App />);
+    expect(screen.getByText(/NexusRAG User Guides & Architecture/i)).toBeInTheDocument();
+    expect(screen.getByText(/Ingesting Documents & Namespaces/i)).toBeInTheDocument();
+
+    // Click technical architecture tab
+    const techTab = screen.getByRole('button', { name: /Technical Architecture & DAG/i });
+    fireEvent.click(techTab);
+    expect(screen.getByText(/LangGraph 9-Node State Machine/i)).toBeInTheDocument();
+
+    window.history.pushState({}, '', '/security');
+    renderWithProviders(<App />);
+    expect(screen.getByText(/Calibrated Security & Tenant Isolation/i)).toBeInTheDocument();
+    expect(screen.getByText(/Vulnerability Disclosure Program/i)).toBeInTheDocument();
+
+    window.history.pushState({}, '', '/status');
+    renderWithProviders(<App />);
+    expect(screen.getByText(/System Status & Service Uptime/i)).toBeInTheDocument();
+    expect(screen.getByText(/All Core Systems Fully Operational/i)).toBeInTheDocument();
+  });
 });

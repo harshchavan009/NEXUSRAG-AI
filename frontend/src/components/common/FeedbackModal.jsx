@@ -84,3 +84,4 @@ export function FeedbackModal({ isOpen, onClose }) {
     </Modal>
   );
 }
+

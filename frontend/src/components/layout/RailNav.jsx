@@ -22,6 +22,14 @@ export const VIEWS = {
   READER: 'reader',
   INSPECTOR: 'inspector',
   SETTINGS: 'settings',
+  DOCS: 'docs',
+  SECURITY: 'security',
+  FAQ: 'faq',
+  STATUS: 'status',
+  ABOUT: 'about',
+  PRIVACY: 'privacy',
+  TERMS: 'terms',
+  NOT_FOUND: 'not_found',
 };
 
 export function RailNav({ currentView, onViewChange, isDark, onToggleTheme }) {

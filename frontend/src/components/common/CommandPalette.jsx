@@ -214,3 +214,4 @@ export function CommandPalette({ isOpen, onClose, onNavigate, onOpenDocument }) 
     </div>
   );
 }
+

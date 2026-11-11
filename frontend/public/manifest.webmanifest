@@ -1,0 +1,16 @@
+{
+  "name": "NexusRAG - Verifiable Document Research Workspace",
+  "short_name": "NexusRAG",
+  "description": "Trace every answer to the sentence that proves it. Reference-driven research workspace with sentence-level citations.",
+  "start_url": "/app/dashboard",
+  "display": "standalone",
+  "background_color": "#F7F6F2",
+  "theme_color": "#B84A28",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -158,3 +158,4 @@ Captured in [`docs/screenshots/phase_t3/`](file:///Users/harsh/Desktop/RAG%20Ass
 ## 5. Next Steps
 
 Phase T3 is fully realized and verified. Ready to proceed to **Phase T4: Public Site & Documentation Ecosystem** (Authentic screenshots on landing page, `/docs` technical and user guides, `/security`, `/faq`, and public legal pages).
+
