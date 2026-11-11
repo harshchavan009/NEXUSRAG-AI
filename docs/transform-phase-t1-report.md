@@ -202,3 +202,4 @@ Upon approval, proceed to execute **Phase T2**:
 1. **Decouple Layouts:** Clean separation between Public Website layout (`/`, `/how-it-works`, `/security`, `/faq`, `/docs`) and Authenticated Application Shell (`/app/dashboard`, `/app/knowledge`, `/app/research`, `/app/reader`, `/app/inspector`, `/app/settings`).
 2. **Build True Dashboard:** Live computed metric cards (Total Documents, Collections, Chunks, Active Research Threads), recent sessions feed, and quick actions.
 3. **Remove Developer Status Bar:** Strip `StatusBar.jsx` from normal user chrome; preserve degraded connectivity alerts only.
+

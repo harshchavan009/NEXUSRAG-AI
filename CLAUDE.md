@@ -165,10 +165,10 @@ RAG Assistant/
 - [x] **Phase 8: Master 26-Section Documentation & Diagrams** (Completed — 26-chapter master README, OpenAPI docs, Dockerfile & Compose, video script, legal drafts)
 - [x] **UI/UX Elevation Across All 5 Reference Screens** (Completed — Ask-First Home with left sidebar tree and model/length chips, Documents table with color badges and byte-level upload tray, PDF annotator with anchored citation popover, Research reader with document tabs, Slite-style marketing landing page with curved accent)
 - [x] **Transformation Phase T1: Blockers & Honesty Cleanup** (Completed — Purged fabricated hero mockups and fake testimonial, deployed original copy deck, replaced dead tiles with 1-click sample document ingestion and functional table controls, dropped dead color dots and stuck footer values, fixed workspace session state in settings, added `POST /api/v1/documents/sample`, verified with 48/48 backend tests, 16/16 frontend tests, and 42 multi-viewport screenshots).
-- [ ] **Transformation Phase T2: Architectural Separation & Real Dashboard** (Decouple `/` from `/app/*`, build live aggregate dashboard, remove developer status bar).
-- [ ] **Transformation Phase T3: Product Completeness & First-Run Onboarding**
-- [ ] **Transformation Phase T4: Public Site & Documentation Ecosystem**
-- [ ] **Transformation Phase T5: Automated Testing & Evaluation**
-- [ ] **Transformation Phase T6: Comprehensive Security Audit**
-- [ ] **Transformation Phase T7: Cloud Production Go-Live**
-- [ ] **Transformation Phase T8: Final Deliverables & Submission Package**
+- [x] **Transformation Phase T2: Architectural Separation & Real Dashboard** (Completed — Decoupled standalone public site at `/` from app shell at `/app/*`, eliminated persistent developer status bar, added 200px/64px expandable rail with accessible text labels and zero tooltip bugs, overhauled DashboardPage into true executive dashboard with 4 live metric cards, ask-first composer, 4 quick actions, split recent documents and sessions view, removed dead notification bell/avatar/shared column, verified with 48/48 pytest, 17/17 vitest, 18 multi-viewport screenshots).
+- [ ] **Transformation Phase T3: Product Completeness & First-Run Onboarding** (PostgreSQL verification/deviation justification, complete Page 7 settings panel, citation grounding verification, interactive tour).
+- [ ] **Transformation Phase T4: Public Site & Documentation Ecosystem** (Architecture diagrams, interactive demo mode, comprehensive legal and API reference).
+- [ ] **Transformation Phase T5: Automated Testing & Evaluation** (End-to-end Playwright journeys, stress testing, hallucination evaluation suite).
+- [ ] **Transformation Phase T6: Comprehensive Security Audit** (Threat model, OWASP Top 10 checklist, penetration test report, rate limiting proof).
+- [ ] **Transformation Phase T7: Cloud Production Go-Live** (Docker Compose, Render / Railway deployment, production migration).
+- [ ] **Transformation Phase T8: Final Deliverables & Submission Package** (Submission video, slide deck, repository packaging).

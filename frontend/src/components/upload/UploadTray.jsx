@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getCsrfToken } from '../../api/client';
+import { useSystemStatus } from '../../api/queries';
 import { Button } from '../common/Button';
 import clsx from 'clsx';
 
@@ -19,6 +20,8 @@ export function UploadTray({ collections = [], defaultCollectionId = null, onUpl
   const [filesQueue, setFilesQueue] = useState([]);
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
+  const { data: statusData } = useSystemStatus();
+  const maxMb = statusData?.max_file_size_mb || 25;
 
   const handleFiles = (incomingFiles) => {
     const newItems = Array.from(incomingFiles).map((file) => ({
@@ -39,7 +42,7 @@ export function UploadTray({ collections = [], defaultCollectionId = null, onUpl
   const uploadFileItem = async (item) => {
     const csrfToken = await getCsrfToken();
     const formData = new FormData();
-    formData.append('file', item.file);
+    formData.append('files', item.file);
     if (selectedCollectionId) {
       formData.append('collection_id', selectedCollectionId);
     }
@@ -190,7 +193,7 @@ export function UploadTray({ collections = [], defaultCollectionId = null, onUpl
             Drag And Drop Your Files Here
           </p>
           <p className="text-[11px] text-ink-muted mt-0.5">
-            PDF, Markdown, or TXT up to 25MB
+            PDF, Markdown, or TXT up to {maxMb}MB
           </p>
         </div>
         <button

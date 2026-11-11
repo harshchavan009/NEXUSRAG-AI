@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App } from '../App';
@@ -81,11 +81,26 @@ describe('App Navigation & 7 Core View Rendering', () => {
     );
   };
 
-  it('renders Dashboard workspace view initially with ask-first composer and ingested documents', () => {
+  beforeEach(() => {
+    window.history.pushState({}, '', '/app/dashboard');
+  });
+
+  it('renders Dashboard workspace view with 4 live metric cards, ask-first composer, and ingested documents', () => {
     renderWithProviders(<App />);
     expect(screen.getByText('Research Workspace. Query your indexed collections.')).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Ask a question about your documents/i)).toBeInTheDocument();
     
+    // Check 4 live aggregate metric cards (spec Page 7 & Transform Brief)
+    expect(screen.getByText('Total Documents')).toBeInTheDocument();
+    expect(screen.getByText('Vector Chunks')).toBeInTheDocument();
+    expect(screen.getByText('Active Sessions')).toBeInTheDocument();
+
+    // Check 4 operational quick action tiles
+    expect(screen.getByText('Add Sample Docs')).toBeInTheDocument();
+    expect(screen.getByText('Upload Files')).toBeInTheDocument();
+    expect(screen.getByText('New Thread')).toBeInTheDocument();
+    expect(screen.getByText('DAG Inspector')).toBeInTheDocument();
+
     // Check real backend summary column in recent documents table
     expect(screen.getByText('clean_energy_report_2024.txt')).toBeInTheDocument();
     expect(screen.getByText(/Global energy transition analysis covering solar and wind growth/i)).toBeInTheDocument();
@@ -96,7 +111,7 @@ describe('App Navigation & 7 Core View Rendering', () => {
     const overviewBtn = screen.getByRole('button', { name: 'Overview' });
     fireEvent.click(overviewBtn);
 
-    // Verify editorial landing headline is rendered
+    // Verify editorial landing headline is rendered in standalone layout
     expect(screen.getByText(/Verifiable Research Synthesis for Complex Documents/i)).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Open Research Workspace/i }).length).toBeGreaterThanOrEqual(1);
   });
@@ -120,5 +135,16 @@ describe('App Navigation & 7 Core View Rendering', () => {
     expect(screen.getByText(/Storage & Health Telemetry/i)).toBeInTheDocument();
     expect(screen.getByText(/Retrieval Engine & Pipeline Telemetry/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Purge All Workspace Data/i })).toBeInTheDocument();
+  });
+
+  it('renders standalone Public Landing Page when starting at root / without rail or app status bar', () => {
+    window.history.pushState({}, '', '/');
+    renderWithProviders(<App />);
+
+    expect(screen.getByText(/Verifiable Research Synthesis for Complex Documents/i)).toBeInTheDocument();
+    // Verify no app rail is present on public site
+    expect(screen.queryByLabelText('Main Navigation')).toBeNull();
+    expect(screen.queryByLabelText('NexusRAG Home')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'System Settings' })).toBeNull();
   });
 });

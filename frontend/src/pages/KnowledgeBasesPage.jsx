@@ -185,16 +185,6 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                 </button>
               </div>
             </div>
-
-            {/* Notification & Avatar icons */}
-            <div className="flex items-center gap-2 border-l border-border pl-3">
-              <button className="p-1.5 rounded-lg hover:bg-surface-subtle text-ink-muted hover:text-ink">
-                <Bell className="w-4 h-4" />
-              </button>
-              <div className="w-7 h-7 rounded-full bg-brand/10 text-brand border border-brand/20 flex items-center justify-center font-semibold text-xs">
-                R
-              </div>
-            </div>
           </div>
         </div>
 
@@ -243,7 +233,7 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                 <tr>
                   <th className="py-3 px-4">Name</th>
                   <th className="py-3 px-4">Size</th>
-                  <th className="py-3 px-4">Shared</th>
+                  <th className="py-3 px-4">Collection</th>
                   <th className="py-3 px-4">Type</th>
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4 text-right">Actions</th>
@@ -285,9 +275,11 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                         </td>
 
                         <td className="py-3 px-4 text-xs text-ink-muted">
-                          {doc.collection_id
-                            ? collections.find((c) => c.id === doc.collection_id)?.name || 'General'
-                            : 'Library Inquiry'}
+                          {doc.collection_name ||
+                            (doc.collection_id
+                              ? collections.find((c) => c.id === doc.collection_id)?.name
+                              : null) ||
+                            'Unassigned'}
                         </td>
 
                         <td className="py-3 px-4 text-xs text-ink-muted capitalize">
@@ -295,7 +287,7 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                         </td>
 
                         <td className="py-3 px-4 text-xs text-ink-muted whitespace-nowrap">
-                          Today
+                          {doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Recent'}
                         </td>
 
                         <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
