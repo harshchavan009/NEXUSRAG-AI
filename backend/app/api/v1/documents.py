@@ -1,5 +1,7 @@
+from pathlib import Path
 from typing import List, Optional
-from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, status, BackgroundTasks
+from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, status, BackgroundTasks, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
 from backend.app.models.workspace import Workspace
@@ -10,7 +12,9 @@ from backend.app.schemas.document import (
     DocumentResponse,
     DocumentListResponse,
     DocumentUploadResponse,
-    UploadJobItem
+    UploadJobItem,
+    DocumentUpdate,
+    BulkMoveRequest
 )
 from backend.app.schemas.common import ActionStatusResponse
 from backend.app.core.dependencies import get_or_create_workspace, verify_csrf
@@ -261,6 +265,162 @@ def get_document(
         sha256_hash=doc.sha256_hash,
         created_at=doc.created_at,
         updated_at=doc.updated_at
+    )
+
+@router.get("/{document_id}/file")
+@router.get("/{document_id}/export")
+def get_document_file(
+    document_id: str,
+    workspace: Workspace = Depends(get_or_create_workspace),
+    db: Session = Depends(get_db)
+):
+    """Streams the raw physical document file with tenant isolation and correct media type."""
+    doc = db.query(Document).filter(
+        Document.id == document_id,
+        Document.workspace_id == workspace.id
+    ).first()
+
+    if not doc:
+        raise NotFoundException("Document", document_id)
+
+    path = Path(doc.storage_path)
+    if not path.exists() or not path.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Physical file for document {document_id} was not found on disk."
+        )
+
+    media_type = "application/pdf"
+    if doc.file_type == "md":
+        media_type = "text/markdown"
+    elif doc.file_type == "txt":
+        media_type = "text/plain"
+
+    return FileResponse(
+        path=str(path),
+        media_type=media_type,
+        filename=doc.original_filename
+    )
+
+@router.get("/{document_id}/chunks")
+def get_document_chunks(
+    document_id: str,
+    workspace: Workspace = Depends(get_or_create_workspace),
+    db: Session = Depends(get_db)
+):
+    """Retrieves all parsed text chunks for a document, ordered by sequential chunk index."""
+    doc = db.query(Document).filter(
+        Document.id == document_id,
+        Document.workspace_id == workspace.id
+    ).first()
+
+    if not doc:
+        raise NotFoundException("Document", document_id)
+
+    chunks = db.query(Chunk).filter(
+        Chunk.document_id == document_id
+    ).order_by(Chunk.chunk_index.asc()).all()
+
+    return {
+        "document_id": doc.id,
+        "filename": doc.original_filename,
+        "total_chunks": len(chunks),
+        "chunks": [
+            {
+                "id": c.id,
+                "chunk_index": c.chunk_index,
+                "page_number": c.page_number,
+                "char_start": c.char_start,
+                "char_end": c.char_end,
+                "token_count": c.token_count,
+                "content": c.content,
+            }
+            for c in chunks
+        ]
+    }
+
+@router.patch("/{document_id}", response_model=DocumentResponse, dependencies=[Depends(verify_csrf)])
+def update_document(
+    document_id: str,
+    data: DocumentUpdate,
+    workspace: Workspace = Depends(get_or_create_workspace),
+    db: Session = Depends(get_db)
+):
+    """Updates document metadata, including collection assignment."""
+    doc = db.query(Document).filter(
+        Document.id == document_id,
+        Document.workspace_id == workspace.id
+    ).first()
+    if not doc:
+        raise NotFoundException("Document", document_id)
+
+    coll_name = None
+    if data.collection_id:
+        coll = db.query(Collection).filter(
+            Collection.id == data.collection_id,
+            Collection.workspace_id == workspace.id
+        ).first()
+        if not coll:
+            raise NotFoundException("Collection", data.collection_id)
+        doc.collection_id = coll.id
+        coll_name = coll.name
+    else:
+        doc.collection_id = None
+
+    db.commit()
+    db.refresh(doc)
+
+    return DocumentResponse(
+        id=doc.id,
+        workspace_id=doc.workspace_id,
+        collection_id=doc.collection_id,
+        collection_name=coll_name,
+        filename=doc.filename,
+        original_filename=doc.original_filename,
+        file_type=doc.file_type,
+        file_size_bytes=doc.file_size_bytes,
+        page_count=doc.page_count,
+        chunk_count=doc.chunk_count,
+        summary=doc.summary,
+        status=doc.status,
+        error_reason=doc.error_reason,
+        sha256_hash=doc.sha256_hash,
+        created_at=doc.created_at,
+        updated_at=doc.updated_at
+    )
+
+@router.post("/bulk-move", response_model=ActionStatusResponse, dependencies=[Depends(verify_csrf)])
+def bulk_move_documents(
+    data: BulkMoveRequest,
+    workspace: Workspace = Depends(get_or_create_workspace),
+    db: Session = Depends(get_db)
+):
+    """Assigns multiple documents to a target collection (or unassigns if collection_id is None)."""
+    coll_id = None
+    coll_name = "Unassigned"
+    if data.collection_id:
+        coll = db.query(Collection).filter(
+            Collection.id == data.collection_id,
+            Collection.workspace_id == workspace.id
+        ).first()
+        if not coll:
+            raise NotFoundException("Collection", data.collection_id)
+        coll_id = coll.id
+        coll_name = coll.name
+
+    docs = db.query(Document).filter(
+        Document.id.in_(data.document_ids),
+        Document.workspace_id == workspace.id
+    ).all()
+
+    for doc in docs:
+        doc.collection_id = coll_id
+
+    db.commit()
+
+    return ActionStatusResponse(
+        success=True,
+        message=f"Moved {len(docs)} documents to '{coll_name}'."
     )
 
 @router.delete("/{document_id}", response_model=ActionStatusResponse, dependencies=[Depends(verify_csrf)])

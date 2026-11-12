@@ -35,7 +35,7 @@ export function FAQPage({ onNavigate }) {
     },
     {
       q: 'What happens when I click "Purge All Workspace Data"?',
-      a: 'A confirmed purge sends an immediate delete call that unlinks all uploaded files from physical storage, deletes all rows for documents, chunks, and sessions from the relational database, and removes all vectors from the FAISS index with O(1) ID deletion.'
+      a: 'A confirmed purge sends an immediate delete call that unlinks all uploaded files from physical storage, deletes all rows for documents, chunks, and sessions from the relational database, and removes all vectors from the FAISS index via ID-mapped deletion without rebuilding the index.'
     },
     {
       q: 'Can I inspect the full retrieval workflow and durations?',

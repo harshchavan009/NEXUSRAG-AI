@@ -54,10 +54,10 @@ export function PublicFooter({ onNavigate }) {
 
       <div className="max-w-6xl mx-auto pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-ink-muted">
         <div>
-          © 2026 NexusRAG Project. Released under permissive research license.
+          © 2026 NexusRAG Project. Released under MIT License.
         </div>
         <div className="flex items-center gap-4">
-          <span>Zero third-party trackers</span>
+          <span>Zero behavioral trackers • Self-contained workspace</span>
           <span>•</span>
           <span>Session-isolated storage</span>
           <span>•</span>

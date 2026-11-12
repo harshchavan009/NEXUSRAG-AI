@@ -164,7 +164,7 @@ Lists documents for the calling workspace with optional collection filtering.
 Retrieves full details of a document, including processing status stages.
 
 ### `DELETE /api/v1/documents/{id}`
-Cascades deletion of document: removes file from disk, deletes chunk records from database, and removes vectors from FAISS index in $O(1)$ time via `IndexIDMap2`.
+Cascades deletion of document: removes file from disk, deletes chunk records from database, and removes vectors from FAISS index via ID-mapped removal with `IndexIDMap2`.
 - **Headers:** `X-CSRF-Token: <token>`
 
 ### `POST /api/v1/documents/{id}/reindex`

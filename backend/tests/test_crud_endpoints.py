@@ -110,3 +110,16 @@ def test_document_listing_filtering_and_export(client, workspace_a_auth):
     assert current_res.json()["stats"]["document_count"] == 1
     assert current_res.json()["stats"]["collection_count"] == 1
 
+    # 6. Test document raw file stream
+    file_res = client.get(f"/api/v1/documents/{doc_id}/file")
+    assert file_res.status_code == 200
+    assert file_res.headers["content-type"] == "application/pdf"
+    assert b"%PDF-1.4" in file_res.content
+
+    # 7. Test document chunks retrieval
+    chunks_res = client.get(f"/api/v1/documents/{doc_id}/chunks")
+    assert chunks_res.status_code == 200
+    chunks_data = chunks_res.json()
+    assert chunks_data["document_id"] == doc_id
+    assert "chunks" in chunks_data
+

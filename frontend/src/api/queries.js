@@ -10,6 +10,22 @@ export function useSystemStatus() {
   });
 }
 
+export function useHealthCheck() {
+  return useQuery({
+    queryKey: ['system-health'],
+    queryFn: () => apiRequest('/api/v1/health'),
+    refetchInterval: 15000,
+  });
+}
+
+export function useProviderProbe() {
+  return useQuery({
+    queryKey: ['provider-probe'],
+    queryFn: () => apiRequest('/api/v1/system/probe'),
+    refetchInterval: 60000,
+  });
+}
+
 export function useCurrentWorkspace() {
   return useQuery({
     queryKey: ['current-workspace'],
@@ -91,6 +107,14 @@ export function useDocumentDetail(documentId) {
   });
 }
 
+export function useDocumentChunks(documentId) {
+  return useQuery({
+    queryKey: ['document-chunks', documentId],
+    queryFn: () => apiRequest(`/api/v1/documents/${documentId}/chunks`),
+    enabled: !!documentId,
+  });
+}
+
 export function useDeleteDocument() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -100,6 +124,34 @@ export function useDeleteDocument() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
       queryClient.invalidateQueries({ queryKey: ['system-status'] });
+    },
+  });
+}
+
+export function useUpdateDocument() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, collection_id }) => apiRequest(`/api/v1/documents/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ collection_id }),
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+    },
+  });
+}
+
+export function useBulkMoveDocuments() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ document_ids, collection_id }) => apiRequest('/api/v1/documents/bulk-move', {
+      method: 'POST',
+      body: JSON.stringify({ document_ids, collection_id }),
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
     },
   });
 }

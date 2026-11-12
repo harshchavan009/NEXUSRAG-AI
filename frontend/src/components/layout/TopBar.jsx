@@ -1,9 +1,9 @@
 import React from 'react';
 import { StatusDot } from '../common/StatusDot';
 import { useSystemStatus, useCurrentWorkspace } from '../../api/queries';
-import { Search, MessageSquareShare } from 'lucide-react';
+import { Search, MessageSquareShare, Keyboard } from 'lucide-react';
 
-export function TopBar({ title, subtitle, onSearchClick, onFeedbackClick }) {
+export function TopBar({ title, subtitle, onSearchClick, onFeedbackClick, onShortcutsClick }) {
   const { data: statusData, isError } = useSystemStatus();
   const { data: workspaceData } = useCurrentWorkspace();
 
@@ -26,7 +26,7 @@ export function TopBar({ title, subtitle, onSearchClick, onFeedbackClick }) {
         <button
           onClick={onSearchClick}
           className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface-subtle text-xs text-ink-muted hover:border-border-strong hover:text-ink transition-colors shadow-2xs"
-          title="Search documents and execute actions (Cmd+K)"
+          title={`Search documents and execute actions (${shortcutHint})`}
         >
           <Search className="w-3.5 h-3.5 text-ink-faint" />
           <span>Quick command...</span>
@@ -47,6 +47,17 @@ export function TopBar({ title, subtitle, onSearchClick, onFeedbackClick }) {
           </button>
         )}
 
+        {/* Shortcuts Reference Trigger */}
+        {onShortcutsClick && (
+          <button
+            onClick={onShortcutsClick}
+            className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-border bg-surface text-xs text-ink-muted hover:text-ink hover:bg-surface-subtle transition-colors shadow-2xs"
+            title="View keyboard shortcuts (?)"
+          >
+            <Keyboard className="w-3.5 h-3.5" />
+          </button>
+        )}
+
         {/* Workspace Health Indicator */}
         <div className="flex items-center gap-2 pl-1">
           {isError ? (
@@ -60,13 +71,13 @@ export function TopBar({ title, subtitle, onSearchClick, onFeedbackClick }) {
               label="Service Degraded"
             />
           ) : (
-            <span
-              className="text-[11px] font-medium text-ink-muted px-2 py-0.5 rounded-lg bg-surface-subtle border border-border flex items-center gap-1.5"
+            <div
+              className="text-[11px] font-medium text-ink-muted flex items-center gap-1.5"
               title="Session data is strictly isolated"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
-              <span>Workspace Active</span>
-            </span>
+              <span className="hidden sm:inline">Workspace Active</span>
+            </div>
           )}
         </div>
       </div>

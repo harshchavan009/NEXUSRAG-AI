@@ -170,7 +170,7 @@ NexusRAG implements an original visual identity inspired by study of 5 core ente
 
 - **Similarity Metric:** Normalized Inner Product (`IndexFlatIP`). Embeddings are $L_2$-normalized to unit length ($\|\mathbf{v}\|_2 = 1.0$), making inner product mathematically equivalent to Cosine Similarity.
 - **64-Bit Chunk ID Mapping:** Wrapped in `faiss.IndexIDMap2` to bind SQLite/PostgreSQL 64-bit integer chunk IDs directly to FAISS vectors.
-- **$O(1)$ Removals:** Deleting a document removes vectors by ID array without rebuilding the index.
+- **ID-Mapped Vector Removals:** Deleting a document removes vectors by ID array without rebuilding the index.
 - **Atomic Persistence:** Serializes to `index.faiss.tmp` followed by atomic filesystem rename.
 - **Drift Reconciliation:** Compares database chunk count against FAISS vector count on startup and re-indexes missing vectors automatically.
 

@@ -1,6 +1,7 @@
 import time
 import logging
 from typing import List
+import numpy as np
 from google import genai
 from google.genai import types
 from backend.app.rag.embeddings.base_embeddings import EmbeddingProvider
@@ -9,14 +10,35 @@ from backend.app.core.exceptions import ValidationException
 
 logger = logging.getLogger("nexusrag.embeddings.gemini")
 
+# Known deprecated / shut down Gemini embedding models
+DEPRECATED_MODELS = {
+    "text-embedding-004": "Shut down on January 14, 2026. Upgrade to gemini-embedding-2.",
+    "embedding-001": "Shut down. Upgrade to gemini-embedding-2."
+}
+
+def _l2_normalize(vec: List[float]) -> List[float]:
+    """Ensure vector is unit L2-normalized so dot-product equals cosine similarity."""
+    arr = np.array(vec, dtype=np.float32)
+    norm = np.linalg.norm(arr)
+    if norm > 0:
+        arr = arr / norm
+    return arr.tolist()
+
 class GeminiEmbeddingProvider(EmbeddingProvider):
     """
-    Official Google GenAI Python SDK embedding provider (text-embedding-004).
-    Implements batching and exponential backoff retry for rate limits.
+    Official Google GenAI Python SDK embedding provider supporting gemini-embedding-2.
+    Implements Matryoshka Representation Learning (MRL) dimension scaling, unit L2
+    normalization, batching, and exponential backoff retry.
     """
     def __init__(self, api_key: str = None, model: str = None):
         self._model = model or settings.DEFAULT_EMBEDDING_MODEL
         self._dimension = settings.EMBEDDING_DIMENSION
+        
+        if self._model in DEPRECATED_MODELS:
+            logger.warning(
+                f"Configured embedding model '{self._model}' is deprecated: {DEPRECATED_MODELS[self._model]}"
+            )
+
         key = api_key or settings.GEMINI_API_KEY
         if not key:
             raise ValidationException(
@@ -38,14 +60,17 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         
         for attempt in range(max_retries):
             try:
+                # Configure output_dimensionality for models supporting MRL (gemini-embedding-2)
+                config_kwargs = {"task_type": task_type}
+                if "gemini-embedding" in self._model:
+                    config_kwargs["output_dimensionality"] = self._dimension
+
                 response = self.client.models.embed_content(
                     model=self._model,
                     contents=texts,
-                    config=types.EmbedContentConfig(
-                        task_type=task_type
-                    )
+                    config=types.EmbedContentConfig(**config_kwargs)
                 )
-                embeddings = [e.values for e in response.embeddings]
+                embeddings = [_l2_normalize(e.values) for e in response.embeddings]
                 return embeddings
             except Exception as e:
                 err_msg = str(e)

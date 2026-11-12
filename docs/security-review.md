@@ -1,9 +1,9 @@
 # NexusRAG Security & Verification Review
 
-**Document Version:** 1.1.0  
-**Phase:** Phase T6 (Comprehensive Security Audit, Threat Model, and OWASP Top 10 for LLMs)  
+**Document Version:** 1.2.0  
+**Phase:** Phase L6 (Comprehensive Security Audit, Threat Model, and OWASP Top 10 for LLMs)  
 **Author:** Principal Security Engineer & RAG Architect  
-**Evaluation Date:** November 11, 2026  
+**Evaluation Date:** November 12, 2026  
 **Status:** Complete • All Audits Passing • Zero High/Critical Vulnerabilities  
 
 ---
@@ -185,13 +185,15 @@ Exit Code: 0
 |---|---|---|---|
 | **Backend Security Audit Suite** | 8 automated tests (`test_security_audit.py`) | 8 / 8 passing | **PASSED (100%)** |
 | **Backend Isolation Suite** | 5 automated tests (`test_isolation_security.py`) | 5 / 5 passing | **PASSED (100%)** |
-| **Full Backend Test Suite** | 48 tests (`backend/tests/`) | 48 / 48 passing | **PASSED (100%)** |
+| **Full Backend Test Suite** | 50 tests (`backend/tests/`) | 50 / 50 passing | **PASSED (100%)** |
 | **Full Frontend Vitest Suite** | 19 tests (`frontend/src/test/`) | 19 / 19 passing | **PASSED (100%)** |
 | **Playwright E2E User Journeys** | 8 user journeys (`scripts/run_e2e_user_journeys.py`) | 8 / 8 passing | **PASSED (100%)** |
 | **Python Dependency Audit** | `pip-audit` check | 0 vulnerabilities | **CLEAN** |
 | **Node Dependency Audit** | `npm audit` check | 0 vulnerabilities | **CLEAN** |
 | **Git Working Tree Secret Scan**| `detect-secrets scan` | 0 secrets found | **CLEAN** |
 | **Full Git History Secret Scan**| Deep regex scan across all git commits | 0 secrets found | **CLEAN** |
+| **RFC 9116 security.txt** | `/.well-known/security.txt` endpoint | 200 OK text/plain | **VERIFIED** |
+| **Root Security Policy** | `SECURITY.md` | Policy & SLA defined | **VERIFIED** |
 | **Cross-Tenant Data Isolation** | Adversarial isolation suite | 100% blocked | **VERIFIED** |
 | **Rate Limiting & Abuse Defense**| Sliding window enforcement | HTTP 429 + Retry-After | **VERIFIED** |
 | **Prompt Injection Resistance** | Adversarial override test | Override ignored | **VERIFIED** |

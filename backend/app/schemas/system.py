@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
 
 class HealthResponse(BaseModel):
@@ -16,6 +16,7 @@ class SystemLimits(BaseModel):
     allowed_extensions: List[str]
 
 class SystemStatusResponse(BaseModel):
+    status: str = "healthy"
     app: str
     version: str
     environment: str
@@ -28,3 +29,12 @@ class SystemStatusResponse(BaseModel):
     rag_defaults: Dict[str, Any]
     retention_days: int
 
+class ProviderProbeResponse(BaseModel):
+    status: str  # "online", "missing_key", "error"
+    provider: str
+    embedding_model: str
+    generation_model: str
+    latency_ms: Optional[float] = None
+    message: str
+    error: Optional[str] = None
+    tested_at: datetime

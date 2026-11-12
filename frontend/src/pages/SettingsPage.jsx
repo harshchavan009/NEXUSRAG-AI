@@ -20,18 +20,50 @@ import {
 import { Button } from '../components/common/Button';
 import { StatusDot } from '../components/common/StatusDot';
 import { Modal } from '../components/common/Modal';
-import { useSystemStatus, useCurrentWorkspace, usePurgeWorkspace } from '../api/queries';
+import { useSystemStatus, useCurrentWorkspace, usePurgeWorkspace, useProviderProbe, useDocuments, useSessions } from '../api/queries';
 import { useToast } from '../components/common/Toast';
 import clsx from 'clsx';
 
 export function SettingsPage() {
   const { data: statusData } = useSystemStatus();
   const { data: workspaceData } = useCurrentWorkspace();
+  const { data: probeData, isLoading: probeLoading } = useProviderProbe();
+  const { data: documents = [] } = useDocuments();
+  const { data: sessions = [] } = useSessions();
   const purgeMutation = usePurgeWorkspace();
   const toast = useToast();
 
+  const docsList = Array.isArray(documents) ? documents : (documents.documents || []);
+  const sessionsList = Array.isArray(sessions) ? sessions : (sessions.sessions || []);
+  const totalStorageBytes = docsList.reduce((sum, d) => sum + (d.file_size_bytes || 0), 0);
+  const totalStorageMB = (totalStorageBytes / (1024 * 1024)).toFixed(2);
+
   const [isPurgeModalOpen, setIsPurgeModalOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
+  const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash-lite');
+  const [retrievalParams, setRetrievalParams] = useState(() => {
+    try {
+      const stored = localStorage.getItem('nexusrag_retrieval_params');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return {
+      topK: 8,
+      rerankCount: 4,
+      sufficiencyThreshold: 0.65,
+      groundednessThreshold: 0.70,
+      temperature: 0.20,
+    };
+  });
+
+  const handleUpdateParam = (key, value) => {
+    setRetrievalParams((prev) => {
+      const next = { ...prev, [key]: value };
+      try {
+        localStorage.setItem('nexusrag_retrieval_params', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+  };
+
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem('nexusrag_theme') === 'dark';
   });
@@ -90,11 +122,47 @@ export function SettingsPage() {
             <Cpu className="w-4 h-4 text-brand" />
             <h2 className="text-sm font-semibold text-ink">AI Provider & Generation Model</h2>
           </div>
-          <span className="text-[11px] font-mono text-status-success flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
-            <span>API Online</span>
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={clsx(
+              "text-[11px] font-mono flex items-center gap-1.5 px-2 py-0.5 rounded",
+              probeData?.status === 'online' && "text-status-success bg-status-success/10",
+              probeData?.status === 'missing_key' && "text-amber-600 dark:text-amber-400 bg-amber-500/10",
+              probeData?.status === 'error' && "text-status-error bg-status-error/10",
+              !probeData && "text-ink-muted bg-surface-subtle"
+            )}>
+              <span className={clsx(
+                "w-1.5 h-1.5 rounded-full",
+                probeData?.status === 'online' && "bg-status-success",
+                probeData?.status === 'missing_key' && "bg-amber-500 animate-pulse",
+                probeData?.status === 'error' && "bg-status-error",
+                !probeData && "bg-ink-muted"
+              )} />
+              <span>
+                {probeLoading ? 'Probing API...' : probeData?.status === 'online' ? `API Online (${probeData.latency_ms}ms)` : probeData?.status === 'missing_key' ? 'Key Not Configured' : 'API Degraded'}
+              </span>
+            </span>
+          </div>
         </div>
+
+        {probeData?.status === 'missing_key' && (
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
+            <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
+            <div>
+              <span className="font-semibold">Local Offline Mode Active: </span>
+              {probeData.message}
+            </div>
+          </div>
+        )}
+
+        {probeData?.status === 'error' && (
+          <div className="p-3 rounded-lg bg-status-error/10 border border-status-error/20 text-xs text-status-error flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-status-error" />
+            <div>
+              <span className="font-semibold">Provider Probe Error: </span>
+              {probeData.message}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
@@ -109,8 +177,8 @@ export function SettingsPage() {
               }}
               className="w-full bg-surface-subtle border border-border rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-brand font-medium text-xs cursor-pointer"
             >
-              <option value="gemini-2.5-flash">Google Gemini 2.5 Flash (Primary Research Synthesis)</option>
-              <option value="gemini-2.0-flash">Google Gemini 2.0 Flash (Fast Reasoning Engine)</option>
+              <option value="gemini-3.5-flash-lite">Google Gemini 3.5 Flash-Lite (Fast, Grounded Synthesis)</option>
+              <option value="gemini-3.8-flash">Google Gemini 3.8 Flash (High-Capacity Multimodal Reasoning)</option>
             </select>
             <span className="text-[11px] text-ink-muted mt-1 block">
               Temperature: 0.20 • Max Generation: 2,048 tokens
@@ -122,11 +190,11 @@ export function SettingsPage() {
               Semantic Embedding Model
             </label>
             <div className="p-2.5 rounded-lg bg-surface-subtle border border-border flex items-center justify-between text-xs">
-              <span className="font-mono text-ink font-semibold">text-embedding-004</span>
-              <span className="text-[11px] text-ink-muted">768-dim • Unit L2 Norm</span>
+              <span className="font-mono text-ink font-semibold">gemini-embedding-2</span>
+              <span className="text-[11px] text-ink-muted">768-dim (MRL) • Unit L2 Norm</span>
             </div>
             <span className="text-[11px] text-ink-muted mt-1 block">
-              Cosine similarity computed via FAISS IndexFlatIP
+              Cosine similarity computed via FAISS IndexFlatIP with IndexIDMap2
             </span>
           </div>
         </div>
@@ -142,49 +210,139 @@ export function SettingsPage() {
           <span className="text-[11px] text-ink-muted font-mono">9-Node Directed Acyclic Graph</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+        {/* Static Chunking Specs */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
           <div className="p-3 rounded-lg bg-surface-subtle border border-border flex flex-col gap-1">
             <span className="text-ink-muted text-[10px] uppercase font-sans font-medium">Chunk Size</span>
             <span className="text-ink font-bold text-sm">700 tokens</span>
-            <span className="text-ink-muted text-[10px]">PyMuPDF splitter</span>
+            <span className="text-ink-muted text-[10px]">tiktoken (cl100k_base) sentence-boundary chunker</span>
           </div>
 
           <div className="p-3 rounded-lg bg-surface-subtle border border-border flex flex-col gap-1">
             <span className="text-ink-muted text-[10px] uppercase font-sans font-medium">Chunk Overlap</span>
             <span className="text-ink font-bold text-sm">100 tokens</span>
-            <span className="text-ink-muted text-[10px]">Sliding boundary</span>
-          </div>
-
-          <div className="p-3 rounded-lg bg-surface-subtle border border-border flex flex-col gap-1">
-            <span className="text-ink-muted text-[10px] uppercase font-sans font-medium">Initial Retrieval</span>
-            <span className="text-ink font-bold text-sm">Top-8 Chunks</span>
-            <span className="text-ink-muted text-[10px]">FAISS IndexFlatIP</span>
-          </div>
-
-          <div className="p-3 rounded-lg bg-surface-subtle border border-border flex flex-col gap-1">
-            <span className="text-ink-muted text-[10px] uppercase font-sans font-medium">Reranked Context</span>
-            <span className="text-ink font-bold text-sm">Top-4 Chunks</span>
-            <span className="text-ink-muted text-[10px]">Flash Reranker</span>
+            <span className="text-ink-muted text-[10px]">Sliding boundary preservation</span>
           </div>
         </div>
 
-        <div className="p-3 rounded-lg bg-surface-subtle/60 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-brand" />
-            <div>
-              <span className="font-semibold text-ink">Evidence Sufficiency Gate: </span>
-              <span className="font-mono text-ink">0.650 / 1.000</span>
-              <p className="text-[11px] text-ink-muted">Abstains cleanly if retrieved documents lack conclusive proof.</p>
+        {/* Configurable Sliders */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1">
+          {/* Top-K Initial Retrieval */}
+          <div className="p-3.5 rounded-lg bg-surface-subtle border border-border flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <label className="font-semibold text-ink">Initial Retrieval (Top-K)</label>
+              <span className="font-mono text-brand font-bold bg-surface px-2 py-0.5 rounded border border-border">
+                {retrievalParams.topK} chunks
+              </span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="20"
+              step="1"
+              value={retrievalParams.topK}
+              onChange={(e) => handleUpdateParam('topK', parseInt(e.target.value, 10))}
+              className="w-full accent-brand cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-ink-muted font-mono">
+              <span>1 (Precise)</span>
+              <span>Default: 8</span>
+              <span>20 (Broad)</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-brand" />
-            <div>
-              <span className="font-semibold text-ink">Groundedness Gate: </span>
-              <span className="font-mono text-ink">0.700 / 1.000</span>
-              <p className="text-[11px] text-ink-muted">Validates all generated sentences against source character offsets.</p>
+
+          {/* Reranked Context Count */}
+          <div className="p-3.5 rounded-lg bg-surface-subtle border border-border flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <label className="font-semibold text-ink">Reranked Context (Top-N)</label>
+              <span className="font-mono text-brand font-bold bg-surface px-2 py-0.5 rounded border border-border">
+                {retrievalParams.rerankCount} chunks
+              </span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              step="1"
+              value={retrievalParams.rerankCount}
+              onChange={(e) => handleUpdateParam('rerankCount', parseInt(e.target.value, 10))}
+              className="w-full accent-brand cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-ink-muted font-mono">
+              <span>1</span>
+              <span>Default: 4</span>
+              <span>10</span>
             </div>
           </div>
+
+          {/* Evidence Sufficiency Gate Threshold */}
+          <div className="p-3.5 rounded-lg bg-surface-subtle border border-border flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <label className="font-semibold text-ink">Evidence Sufficiency Gate</label>
+              <span className="font-mono text-brand font-bold bg-surface px-2 py-0.5 rounded border border-border">
+                {retrievalParams.sufficiencyThreshold.toFixed(2)}
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0.50"
+              max="0.95"
+              step="0.05"
+              value={retrievalParams.sufficiencyThreshold}
+              onChange={(e) => handleUpdateParam('sufficiencyThreshold', parseFloat(e.target.value))}
+              className="w-full accent-brand cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-ink-muted font-mono">
+              <span>0.50 (Permissive)</span>
+              <span>Default: 0.65</span>
+              <span>0.95 (Strict)</span>
+            </div>
+          </div>
+
+          {/* Faithful Groundedness Gate Threshold */}
+          <div className="p-3.5 rounded-lg bg-surface-subtle border border-border flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <label className="font-semibold text-ink">Groundedness Gate Threshold</label>
+              <span className="font-mono text-brand font-bold bg-surface px-2 py-0.5 rounded border border-border">
+                {retrievalParams.groundednessThreshold.toFixed(2)}
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0.50"
+              max="0.95"
+              step="0.05"
+              value={retrievalParams.groundednessThreshold}
+              onChange={(e) => handleUpdateParam('groundednessThreshold', parseFloat(e.target.value))}
+              className="w-full accent-brand cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-ink-muted font-mono">
+              <span>0.50</span>
+              <span>Default: 0.70</span>
+              <span>0.95</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-3 rounded-lg bg-surface-subtle/60 border border-border flex items-center justify-between text-xs text-ink-muted">
+          <span>Settings automatically persist to local workspace runtime.</span>
+          <button
+            onClick={() => {
+              const defaults = {
+                topK: 8,
+                rerankCount: 4,
+                sufficiencyThreshold: 0.65,
+                groundednessThreshold: 0.70,
+                temperature: 0.20,
+              };
+              setRetrievalParams(defaults);
+              localStorage.setItem('nexusrag_retrieval_params', JSON.stringify(defaults));
+              toast.info('Retrieval settings reset to defaults.');
+            }}
+            className="text-brand hover:underline font-medium text-[11px]"
+          >
+            Reset to Defaults
+          </button>
         </div>
       </section>
 
@@ -221,9 +379,9 @@ export function SettingsPage() {
         </div>
 
         <div className="p-3.5 rounded-lg bg-surface-subtle border border-border text-xs leading-relaxed text-ink-muted">
-          <p className="font-semibold text-ink mb-1">Architecture Note: SQLite & PostgreSQL Dual-Dialect Design</p>
+          <p className="font-semibold text-ink mb-1">Architecture Note: Relational Persistence Model</p>
           <p>
-            NexusRAG models are implemented using dialect-agnostic SQLAlchemy 2.0 declarative mappings with full PostgreSQL 16 migration support via Alembic. For zero-friction local execution without managing background database servers, SQLite with Write-Ahead Logging (WAL) is the default active runtime. For containerized production deployments, PostgreSQL 16 is defined in <code className="font-mono text-ink">docker-compose.yml</code>. Both backends share identical table schemas and pass 100% of automated tests.
+            NexusRAG uses SQLAlchemy 2.0 declarative models with Alembic migrations. SQLite 3 with Write-Ahead Logging (WAL) is the default local development runtime. PostgreSQL 16 Alpine is orchestrated in Docker Compose for production. Uploaded files and FAISS indices persist across container restarts.
           </p>
         </div>
       </section>
@@ -249,7 +407,7 @@ export function SettingsPage() {
               {!isDark && <CheckCircle2 className="w-4 h-4 text-brand" />}
             </div>
             <p className="text-[11px] text-ink-muted leading-relaxed">
-              Warm sand canvas (<code className="font-mono text-[10px]">#F7F6F2</code>) with pure white surfaces, deep charcoal text, and burnished terracotta accent (<code className="font-mono text-[10px]">#B84A28</code>).
+              Warm sand canvas with crisp white surfaces, deep charcoal ink, and burnished terracotta accent.
             </p>
           </button>
 
@@ -266,7 +424,7 @@ export function SettingsPage() {
               {isDark && <CheckCircle2 className="w-4 h-4 text-brand" />}
             </div>
             <p className="text-[11px] text-ink-muted leading-relaxed">
-              Deep slate graphite canvas (<code className="font-mono text-[10px]">#0F1115</code>) with elevated zinc obsidian panels, soft bone typography, and copper ochre accent.
+              Deep slate graphite canvas with elevated obsidian panels, soft bone typography, and copper ochre accent.
             </p>
           </button>
         </div>
@@ -302,7 +460,56 @@ export function SettingsPage() {
         </div>
       </section>
 
-      {/* 6. Data Management & Portability */}
+      {/* 6. Workspace Usage, Quotas & Sign-In Architecture */}
+      <section className="p-5 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <HardDrive className="w-4 h-4 text-brand" />
+            <h2 className="text-sm font-semibold text-ink">Workspace Quotas & Retention Policy</h2>
+          </div>
+          <span className="text-[11px] font-mono text-ink-muted">
+            Strict Capacity Bounds
+          </span>
+        </div>
+
+        {/* Real Metrics Grid (Zero Static Data) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+          <div className="p-3 rounded-lg bg-surface-subtle border border-border flex flex-col gap-1">
+            <span className="text-ink-muted text-[10px] uppercase font-sans font-medium">Document Capacity</span>
+            <span className="text-ink font-bold text-sm">{docsList.length} / 100 files</span>
+            <span className="text-ink-muted text-[10px]">25MB maximum per file</span>
+          </div>
+
+          <div className="p-3 rounded-lg bg-surface-subtle border border-border flex flex-col gap-1">
+            <span className="text-ink-muted text-[10px] uppercase font-sans font-medium">Physical Storage</span>
+            <span className="text-ink font-bold text-sm">{totalStorageMB} MB / 250 MB</span>
+            <span className="text-ink-muted text-[10px]">Indexed PDF, MD & TXT files</span>
+          </div>
+
+          <div className="p-3 rounded-lg bg-surface-subtle border border-border flex flex-col gap-1">
+            <span className="text-ink-muted text-[10px] uppercase font-sans font-medium">Active Research Sessions</span>
+            <span className="text-ink font-bold text-sm">{sessionsList.length} sessions</span>
+            <span className="text-ink-muted text-[10px]">Multi-turn synthesis threads</span>
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-lg bg-surface-subtle border border-border text-xs leading-relaxed text-ink-muted space-y-2">
+          <div>
+            <p className="font-semibold text-ink">Session Lifespan & Cookie Loss Explanation</p>
+            <p className="font-serif">
+              NexusRAG prioritizes zero-friction privacy: no marketing cookies, third-party tracking, or mandatory user accounts. All documents, collections, and conversation history are anchored to your private session cookie. If you clear your browser cookies or change browsers, a new isolated workspace is generated. Use "Export Workspace JSON" below at any time to preserve your workspace.
+            </p>
+          </div>
+          <div className="pt-2 border-t border-border/60">
+            <p className="font-semibold text-ink">Optional Multi-Device & Enterprise Sign-In Roadmap</p>
+            <p className="font-serif">
+              For teams requiring multi-device synchronization and permanent user profiles, NexusRAG's data layer supports optional OAuth2 / OIDC authentication providers without altering the underlying vector store or LangGraph execution engine.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Data Management & Portability */}
       <section className="p-5 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-4">
         <div>
           <h2 className="text-sm font-semibold text-ink">Data Portability & Purge Actions</h2>

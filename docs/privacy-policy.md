@@ -47,7 +47,7 @@ NexusRAG integrates with external LLM APIs (specifically Google Gemini API or Op
 
 ## 4. Data Retention & Deletion
 
-- **Voluntary Deletion:** Deleting an individual document immediately deletes the raw file from disk, deletes chunk records from the relational database, and removes the vectors from FAISS using $O(1)$ ID deletion (`IndexIDMap2`).
+- **Voluntary Deletion:** Deleting an individual document immediately deletes the raw file from disk, deletes chunk records from the relational database, and removes the vectors from FAISS using ID-mapped deletion (`IndexIDMap2`).
 - **Complete Workspace Purge:** Clicking "Purge All Workspace Data" in Settings sends a confirmed `POST /api/v1/user/purge` request that:
   1. Deletes all uploaded files from physical storage.
   2. Drops all database rows for documents, collections, messages, and traces.

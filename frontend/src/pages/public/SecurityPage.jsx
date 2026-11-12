@@ -64,7 +64,7 @@ export function SecurityPage({ onNavigate }) {
               <h3>Verifiable Permanent Purge</h3>
             </div>
             <p className="text-ink-muted leading-relaxed">
-              Purging a workspace executes an immediate, irreversible wipe: physical files are unlinked from disk, rows are dropped from the database, and FAISS vectors are removed with $O(1)$ ID deletion.
+              Purging a workspace executes an immediate, irreversible wipe: physical files are unlinked from disk, rows are dropped from the database, and FAISS vectors are removed via ID-mapped deletion without full index rebuilds.
             </p>
           </div>
         </div>

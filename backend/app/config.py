@@ -54,9 +54,9 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
     
-    # Default Models
-    DEFAULT_EMBEDDING_MODEL: str = "text-embedding-004"
-    DEFAULT_GENERATION_MODEL: str = "gemini-2.5-flash"
+    # Default Models (Verified Active Google AI Studio Models)
+    DEFAULT_EMBEDDING_MODEL: str = "gemini-embedding-2"
+    DEFAULT_GENERATION_MODEL: str = "gemini-3.5-flash-lite"
     EMBEDDING_DIMENSION: int = 768
     
     # RAG Parameters

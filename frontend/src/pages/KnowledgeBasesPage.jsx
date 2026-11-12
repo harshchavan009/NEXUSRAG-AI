@@ -20,6 +20,7 @@ import { Button } from '../components/common/Button';
 import { StatusDot } from '../components/common/StatusDot';
 import { UploadTray } from '../components/upload/UploadTray';
 import { Modal } from '../components/common/Modal';
+import { SampleAttributionModal } from '../components/common/SampleAttributionModal';
 import {
   useDocuments,
   useCollections,
@@ -27,6 +28,8 @@ import {
   useUpdateCollection,
   useDeleteCollection,
   useDeleteDocument,
+  useUpdateDocument,
+  useBulkMoveDocuments,
   useReindexDocument,
   useLoadSampleDocuments
 } from '../api/queries';
@@ -40,6 +43,7 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
   const [selectedFileType, setSelectedFileType] = useState('all');
   const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
+  const [isAttributionModalOpen, setIsAttributionModalOpen] = useState(false);
 
   // Collection rename modal state
   const [editingCollection, setEditingCollection] = useState(null);
@@ -60,8 +64,38 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
   const updateCollMutation = useUpdateCollection();
   const deleteCollMutation = useDeleteCollection();
   const deleteDocMutation = useDeleteDocument();
+  const updateDocMutation = useUpdateDocument();
+  const bulkMoveMutation = useBulkMoveDocuments();
   const reindexDocMutation = useReindexDocument();
   const loadSamplesMutation = useLoadSampleDocuments();
+
+  const handleBulkMove = async (targetColId) => {
+    if (selectedDocIds.length === 0 || !targetColId) return;
+    const colId = targetColId === 'none' ? null : targetColId;
+    try {
+      await bulkMoveMutation.mutateAsync({
+        document_ids: selectedDocIds,
+        collection_id: colId,
+      });
+      toast.success(`Moved ${selectedDocIds.length} documents.`);
+      setSelectedDocIds([]);
+    } catch (err) {
+      toast.error('Failed to move documents.');
+    }
+  };
+
+  const handleMoveSingleDoc = async (docId, targetColId) => {
+    const colId = targetColId === 'none' ? null : targetColId;
+    try {
+      await updateDocMutation.mutateAsync({
+        id: docId,
+        collection_id: colId,
+      });
+      toast.success('Document collection updated.');
+    } catch (err) {
+      toast.error('Failed to update document collection.');
+    }
+  };
 
   const handleCreateCollection = async (e) => {
     e.preventDefault();
@@ -337,7 +371,7 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
               onChange={(e) => setSelectedFileType(e.target.value)}
               className="bg-surface-subtle hover:bg-surface border border-border rounded-lg px-3 py-1.5 text-ink text-xs font-medium focus:outline-none focus:border-brand cursor-pointer"
             >
-              <option value="all">Documents Type</option>
+              <option value="all">Document Type</option>
               <option value="pdf">PDF Files</option>
               <option value="txt">Text Files</option>
               <option value="md">Markdown</option>
@@ -348,11 +382,27 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
             {selectedDocIds.length > 0 && (
               <div className="flex items-center gap-2 bg-surface border border-border px-3 py-1 rounded-lg text-xs">
                 <span className="font-semibold text-brand">{selectedDocIds.length} selected</span>
+                <select
+                  defaultValue=""
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleBulkMove(e.target.value);
+                      e.target.value = '';
+                    }
+                  }}
+                  className="bg-surface-subtle border border-border rounded px-2 py-0.5 text-xs text-ink focus:outline-none focus:border-brand cursor-pointer"
+                >
+                  <option value="" disabled>Move to...</option>
+                  <option value="none">Unassigned</option>
+                  {collections.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
                 <button
                   onClick={handleBulkDelete}
-                  className="text-status-error hover:underline font-medium ml-2"
+                  className="text-status-error hover:underline font-medium ml-1"
                 >
-                  Delete Selected
+                  Delete
                 </button>
                 <button
                   onClick={() => setSelectedDocIds([])}
@@ -363,7 +413,7 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
               </div>
             )}
 
-            <span className="text-xs font-mono text-ink-muted">
+            <span className="text-xs text-ink-muted">
               {filteredDocs.length} files available
             </span>
           </div>
@@ -417,6 +467,15 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                         >
                           {isSampleLoading ? 'Ingesting Samples...' : 'Load Sample Documents'}
                         </Button>
+                        <p className="text-[11px] text-ink-muted leading-relaxed font-serif">
+                          Loads 4 verified open-access research papers (Transformers, Clean Energy, RAG vs Long-Context, and Climate Modeling).
+                        </p>
+                        <button
+                          onClick={() => setIsAttributionModalOpen(true)}
+                          className="text-[11px] text-brand hover:underline font-sans font-medium cursor-pointer"
+                        >
+                          View verified paper licences & attribution
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -459,12 +518,18 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                           {formatBytes(doc.file_size_bytes)}
                         </td>
 
-                        <td className="py-3 px-4 text-xs text-ink-muted">
-                          {doc.collection_name ||
-                            (doc.collection_id
-                              ? collections.find((c) => c.id === doc.collection_id)?.name
-                              : null) ||
-                            'Unassigned'}
+                        <td className="py-3 px-4 text-xs text-ink-muted" onClick={(e) => e.stopPropagation()}>
+                          <select
+                            value={doc.collection_id || 'none'}
+                            onChange={(e) => handleMoveSingleDoc(doc.id, e.target.value)}
+                            className="bg-transparent hover:bg-surface-subtle border border-transparent hover:border-border rounded px-1.5 py-0.5 text-xs text-ink cursor-pointer focus:outline-none focus:border-brand transition-colors"
+                            title="Assign to collection"
+                          >
+                            <option value="none">Unassigned</option>
+                            {collections.map((c) => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
                         </td>
 
                         <td className="py-3 px-4 text-xs text-ink-muted capitalize">
@@ -656,6 +721,12 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
           </div>
         </form>
       </Modal>
+
+      {/* Sample Document Licences and Attribution Modal */}
+      <SampleAttributionModal
+        isOpen={isAttributionModalOpen}
+        onClose={() => setIsAttributionModalOpen(false)}
+      />
     </div>
   );
 }

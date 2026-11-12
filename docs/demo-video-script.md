@@ -13,7 +13,7 @@
 | Scene | Timestamp | Screen / Route | Camera & UI Action | Narrative Core |
 |---|---|---|---|---|
 | **Scene 1** | **0:00 - 0:35** | Public Landing (`/`) | Start at top hero. Scroll past editorial proof card to "How It Works" and Architecture diagram. Click "Open Research Workspace". | Product philosophy; original positioning; architectural separation between public marketing and app shell. |
-| **Scene 2** | **0:35 - 1:15** | Knowledge Bases (`/app/knowledge`) | Show empty state with "Load Sample Research Papers" button. Click it. Watch the 4 research papers ingest live with byte progress. Open collection tree. | First-run onboarding; multi-format PyMuPDF ingestion; 400-token chunking; FAISS IndexIDMap2 atomic vector indexing with $O(1)$ removals. |
+| **Scene 2** | **0:35 - 1:15** | Knowledge Bases (`/app/knowledge`) | Show empty state with "Load Sample Research Papers" button. Click it. Watch the 4 research papers ingest live with byte progress. Open collection tree. | First-run onboarding; multi-format PyMuPDF ingestion; 400-token chunking; FAISS IndexIDMap2 atomic vector indexing with ID-mapped vector removal without index rebuilds. |
 | **Scene 3** | **1:15 - 2:10** | Research Desk (`/app/research`) | Enter research query: *"What are the primary performance advantages of renewable microgrids?"*. Watch real-time SSE streaming. Click `[1]` citation chip. Document Reader opens with amber highlight. | 9-node LangGraph execution; XML delimited context; interactive citations linked to physical page character offsets; zero hallucination. |
 | **Scene 4** | **2:10 - 2:55** | Retrieval Inspector (`/app/inspector`) | Click "Inspect Retrieval Run". Examine raw vs rewritten query, candidate retrieval pool, reranked scores, and the millisecond-precision waterfall timeline. | Full observability; LangSmith/Phoenix style tracing; evidence sufficiency scoring ($0.650$ threshold) and groundedness score ($0.700$). |
 | **Scene 5** | **2:55 - 3:35** | Settings & Health (`/app/settings`) | Open Settings. Show AI Provider status, Model configuration, Chunking parameters, Retrieval Top-K, and Dual-Dialect Database telemetry (PostgreSQL 16 / SQLite + FAISS). | Spec Page 7 compliance; Zero Static Data rule; live telemetry; 256-bit cryptographic visitor isolation; GDPR user data purge. |
@@ -48,7 +48,7 @@
 >
 > Behind the scenes, our backend uses PyMuPDF to extract text from each PDF, calculating physical character offsets and page numbers. Documents are chunked into 400-token blocks with a 50-token sliding overlap, preserving sentence boundaries.
 >
-> Vectors are embedded and indexed into an atomic FAISS vector store using `IndexIDMap2` wrapping `IndexFlatIP` with $L_2$-normalized embeddings. This guarantees that dot-product operations compute exact cosine similarities while binding 64-bit database chunk IDs directly to FAISS vectors for $O(1)$ deletions without full index re-builds."*
+> Vectors are embedded and indexed into an atomic FAISS vector store using `IndexIDMap2` wrapping `IndexFlatIP` with $L_2$-normalized embeddings. This guarantees that dot-product operations compute exact cosine similarities while binding 64-bit database chunk IDs directly to FAISS vectors for ID-mapped deletions without full index re-builds."*
 
 **Cue:** The table populates with 4 rows showing filename, page count, chunk count, file size, and dynamic LLM-generated summaries.
 

@@ -33,17 +33,6 @@ export function LandingPage({ onNavigate }) {
 
       {/* 2. Hero Section */}
       <section className="max-w-5xl mx-auto px-6 pt-16 pb-14 text-center flex flex-col items-center">
-        {/* Discrete Announcement Pill */}
-        <div
-          className="inline-flex items-center gap-2 px-3.5 py-1 rounded bg-surface border border-border text-xs text-ink mb-6 shadow-2xs hover:border-brand transition-colors cursor-pointer"
-          onClick={() => onNavigate(VIEWS.INSPECTOR)}
-        >
-          <span className="px-1.5 py-0.5 rounded bg-brand/10 text-brand text-[10px] font-bold">UPDATED</span>
-          <span className="font-medium text-xs text-ink-muted">
-            Transparent Document Synthesis with LangGraph Traces →
-          </span>
-        </div>
-
         {/* Hero Editorial Headline */}
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-ink tracking-tight max-w-4xl leading-[1.14] font-sans">
           Verifiable Research Synthesis for Complex Documents
@@ -67,22 +56,20 @@ export function LandingPage({ onNavigate }) {
           <Button
             variant="outline"
             size="lg"
+            icon={Sparkles}
+            onClick={() => onNavigate(VIEWS.RESEARCH)}
+          >
+            Try Sample Research
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="lg"
             icon={BookOpen}
             onClick={() => onNavigate(VIEWS.DOCS)}
           >
-            View Documentation
+            Documentation
           </Button>
-        </div>
-
-        {/* Live System Stat Proof (Zero Static Data Rule Compliant) */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-ink-muted">
-          <span>Live Vectors: {statusData?.faiss_vectors ?? 0}</span>
-          <span>•</span>
-          <span>Model: {statusData?.generation_model || 'gemini-2.5-flash'}</span>
-          <span>•</span>
-          <span>Evidence Gate: 0.650</span>
-          <span>•</span>
-          <span>Dialect: {statusData?.database_type || 'sqlite'}</span>
         </div>
 
         {/* Real Product Proof Preview: Captured Screenshot of Live Running App */}
@@ -94,7 +81,7 @@ export function LandingPage({ onNavigate }) {
                 Live Running Application • Dashboard Workspace
               </span>
             </div>
-            <span className="text-[11px] font-mono text-ink-muted">1440x900 Authenticated Canvas</span>
+            <span className="text-[11px] font-mono text-ink-muted">1440x900 Interactive Research Canvas</span>
           </div>
 
           <div className="relative bg-surface p-2">
@@ -118,7 +105,7 @@ export function LandingPage({ onNavigate }) {
             Four Steps to Grounded Document Research
           </h2>
           <p className="text-xs sm:text-sm text-ink-muted font-serif mt-1">
-            Engineered to remove hallucination risk through structural evidence checks.
+            Engineered to reduce hallucination risk through structural evidence gates and calibrated abstention.
           </p>
         </div>
 
@@ -139,7 +126,7 @@ export function LandingPage({ onNavigate }) {
             </div>
             <h3 className="text-sm font-semibold text-ink">FAISS Indexing</h3>
             <p className="text-xs text-ink-muted leading-relaxed font-serif">
-              768-dim embeddings are L2-normalized and indexed with IndexFlatIP and IndexIDMap2 for O(1) deletions.
+              768-dim embeddings from gemini-embedding-2 are indexed with IndexFlatIP and IndexIDMap2 for ID-mapped vector removal without full index rebuilds.
             </p>
           </div>
 
@@ -222,6 +209,34 @@ export function LandingPage({ onNavigate }) {
             </div>
           </div>
         </div>
+
+        {/* Row 3: Scoped Multi-Document Research Desk */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          <div className="flex flex-col gap-4">
+            <span className="text-xs font-mono font-bold text-brand uppercase tracking-wider">
+              Feature 03 • Targeted Synthesis
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight font-sans">
+              Scoped Multi-Document Research Desk
+            </h3>
+            <p className="text-sm text-ink-muted font-serif leading-relaxed">
+              Target inquiries across individual files, collections, or entire knowledge bases. NexusRAG generates suggested inquiries directly from your uploaded materials, displays inline sentence-level citations with similarity confidence, and provides one-click exports.
+            </p>
+            <div className="flex items-center gap-3 pt-2 text-xs font-medium text-ink">
+              <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-status-success" /> Scope filters</span>
+              <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-status-success" /> Sentence-level chips</span>
+              <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-status-success" /> Markdown export</span>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-surface p-2 shadow-lg overflow-hidden">
+            <img
+              src="/screenshots/research.png"
+              alt="Research Desk with scoped synthesis and interactive citations"
+              className="w-full h-auto rounded-lg border border-border"
+              loading="lazy"
+            />
+          </div>
+        </div>
       </section>
 
       {/* 5. Supported Formats and System Constraints */}
@@ -238,35 +253,47 @@ export function LandingPage({ onNavigate }) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs">
-          <div className="p-5 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-2.5">
-            <div className="flex items-center gap-2 font-semibold text-ink">
-              <FileText className="w-4 h-4 text-brand" />
-              <span>Supported Document Types</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+          {/* Card 1: Featured Supported Document Formats */}
+          <div className="md:col-span-2 p-6 rounded-xl bg-surface border-2 border-brand/20 shadow-xs flex flex-col justify-between gap-4">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-brand uppercase tracking-wider">Accepted File Formats</span>
+                <span className="text-[10px] font-mono text-ink-muted">Native PyMuPDF & UTF-8 Extractors</span>
+              </div>
+              <h3 className="text-base font-bold text-ink">Strict Structural Integrity Checks</h3>
+              <p className="text-ink-muted font-serif leading-relaxed mt-1">
+                Full text extraction and exact character offset mapping for PDF documents (<code className="font-mono text-ink">.pdf</code>), Markdown specifications (<code className="font-mono text-ink">.md</code>, <code className="font-mono text-ink">.markdown</code>), and plain text reports (<code className="font-mono text-ink">.txt</code>). Magic bytes verification prevents extension spoofing.
+              </p>
             </div>
-            <p className="text-ink-muted font-serif leading-relaxed">
-              Native text parsing for PDF documents (<code className="font-mono text-ink">.pdf</code>), Markdown files (<code className="font-mono text-ink">.md</code>), and plain text (<code className="font-mono text-ink">.txt</code>).
-            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold border border-red-200 bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400 font-mono">PDF • PyMuPDF</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold border border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 font-mono">MD • Markdown AST</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 font-mono">TXT • Clean UTF-8</span>
+            </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-2.5">
-            <div className="flex items-center gap-2 font-semibold text-ink">
-              <SlidersHorizontal className="w-4 h-4 text-brand" />
-              <span>Upload Limits</span>
+          {/* Column 2: Upload Boundaries & Session Lifespan stacked */}
+          <div className="flex flex-col gap-4">
+            <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-2">
+              <div className="flex items-center gap-2 font-semibold text-ink">
+                <SlidersHorizontal className="w-4 h-4 text-brand" />
+                <span>Upload Boundaries</span>
+              </div>
+              <p className="text-ink-muted font-serif text-[11px] leading-relaxed">
+                25MB cap per file. Up to 60 pages per PDF document. Multi-file batch queue with client-side cancellation.
+              </p>
             </div>
-            <p className="text-ink-muted font-serif leading-relaxed">
-              Up to 25MB per file, with up to 60 pages per PDF document. Multi-file batch processing with real byte progress.
-            </p>
-          </div>
 
-          <div className="p-5 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-2.5">
-            <div className="flex items-center gap-2 font-semibold text-ink">
-              <Lock className="w-4 h-4 text-brand" />
-              <span>Data Retention</span>
+            <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-2">
+              <div className="flex items-center gap-2 font-semibold text-ink">
+                <Lock className="w-4 h-4 text-brand" />
+                <span>Session Retention</span>
+              </div>
+              <p className="text-ink-muted font-serif text-[11px] leading-relaxed">
+                7-day rolling cookie session. Complete voluntary JSON workspace export and irreversible purge available.
+              </p>
             </div>
-            <p className="text-ink-muted font-serif leading-relaxed">
-              7-day rolling session retention. Complete voluntary JSON export and irreversible purge available at any time.
-            </p>
           </div>
         </div>
       </section>
@@ -279,7 +306,7 @@ export function LandingPage({ onNavigate }) {
               Start researching your documents
             </h2>
             <p className="text-xs sm:text-sm text-ink-muted font-serif mt-1 max-w-lg leading-relaxed">
-              Load our pre-indexed research sample reports or upload your own files to experience citation-grounded RAG.
+              Ingest verified open-access research papers or upload your own files to experience citation-grounded RAG.
             </p>
           </div>
           <Button

@@ -50,6 +50,24 @@ export function AboutPage({ onNavigate }) {
           </ul>
         </section>
 
+        {/* Contact & Governance Section */}
+        <section id="contact" className="p-6 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-3 text-xs leading-relaxed text-ink">
+          <h2 className="text-sm font-semibold text-ink">Contact & Maintainer Information</h2>
+          <p className="text-ink-muted font-serif text-sm">
+            NexusRAG is developed as part of the ShadowFox Advanced AI Engineer Track. For research inquiries, security disclosures, or collaboration:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 font-mono text-xs">
+            <div className="p-3 rounded-lg bg-surface-subtle border border-border">
+              <span className="text-[10px] uppercase font-sans text-ink-muted block font-medium">Security & Disclosures</span>
+              <span className="text-brand">security@nexusrag.local</span>
+            </div>
+            <div className="p-3 rounded-lg bg-surface-subtle border border-border">
+              <span className="text-[10px] uppercase font-sans text-ink-muted block font-medium">Project Repository & Issues</span>
+              <a href="https://github.com/harshchavan009/NEXUSRAG-AI" target="_blank" rel="noreferrer" className="text-brand hover:underline">github.com/harshchavan009/NEXUSRAG-AI</a>
+            </div>
+          </div>
+        </section>
+
         {/* Call to action */}
         <div className="p-6 rounded-xl bg-surface-subtle border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

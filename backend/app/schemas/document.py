@@ -26,6 +26,13 @@ class DocumentListResponse(BaseModel):
     documents: List[DocumentResponse]
     total: int
 
+class DocumentUpdate(BaseModel):
+    collection_id: Optional[str] = None
+
+class BulkMoveRequest(BaseModel):
+    document_ids: List[str]
+    collection_id: Optional[str] = None
+
 class UploadJobItem(BaseModel):
     document_id: str
     filename: str

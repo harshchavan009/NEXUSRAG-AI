@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
 import logging
 
-from backend.app.config import settings
+from backend.app.config import settings, BASE_DIR
 from backend.app.core.logging import setup_logging
 from backend.app.core.exceptions import APIException
 from backend.app.database import init_db
@@ -167,6 +167,13 @@ if os.path.isdir(frontend_dist):
     @app.get("/manifest.webmanifest", include_in_schema=False)
     def serve_manifest():
         return FileResponse(os.path.join(frontend_dist, "manifest.webmanifest"))
+
+    @app.get("/.well-known/security.txt", include_in_schema=False)
+    def serve_security_txt():
+        sec_file = os.path.join(frontend_dist, ".well-known", "security.txt")
+        if not os.path.isfile(sec_file):
+            sec_file = os.path.join(str(BASE_DIR), ".well-known", "security.txt")
+        return FileResponse(sec_file, media_type="text/plain")
 
     @app.get("/security", include_in_schema=False)
     @app.get("/faq", include_in_schema=False)

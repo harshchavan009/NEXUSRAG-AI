@@ -18,9 +18,12 @@ import {
   Send,
   ArrowUpDown,
   Download,
-  Share2
+  Share2,
+  LayoutGrid,
+  AlignLeft
 } from 'lucide-react';
 import { Button } from '../common/Button';
+import { useDocumentChunks } from '../../api/queries';
 import clsx from 'clsx';
 
 // Set up PDF.js worker
@@ -48,6 +51,12 @@ export function PDFViewer({
   const [popoverComment, setPopoverComment] = useState('');
   const [commentsList, setCommentsList] = useState([]);
   const [filterColor, setFilterColor] = useState('all');
+  const [showThumbnails, setShowThumbnails] = useState(false);
+  const [viewMode, setViewMode] = useState('canvas'); // 'canvas' | 'text'
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
+
+  const chunksQuery = useDocumentChunks(documentMetadata?.id);
+  const chunks = chunksQuery.data?.chunks || [];
 
   // Sync internal panel tab with parent
   useEffect(() => {
@@ -165,6 +174,15 @@ export function PDFViewer({
         {/* Top Annotator Toolbar (Reference 3 Layout) */}
         <div className="h-11 bg-surface border-b border-border px-4 flex items-center justify-between text-xs flex-shrink-0">
           <div className="flex items-center gap-3">
+            {/* Toggle Thumbnails */}
+            <button
+              onClick={() => setShowThumbnails((prev) => !prev)}
+              className={clsx('p-1.5 rounded hover:bg-surface-subtle text-ink-muted transition-colors cursor-pointer', showThumbnails && 'bg-brand/10 text-brand font-bold')}
+              title="Toggle Page Thumbnails"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+            </button>
+
             {/* Title / App identifier */}
             <div className="flex items-center gap-2 font-medium text-ink">
               <FileText className="w-4 h-4 text-brand" />
@@ -176,7 +194,7 @@ export function PDFViewer({
               <button
                 onClick={prevPage}
                 disabled={currentPage <= 1 || loading}
-                className="p-1 rounded hover:bg-surface-subtle disabled:opacity-40 text-ink"
+                className="p-1 rounded hover:bg-surface-subtle disabled:opacity-40 text-ink cursor-pointer"
                 title="Previous page"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
@@ -189,7 +207,7 @@ export function PDFViewer({
               <button
                 onClick={nextPage}
                 disabled={currentPage >= totalPages || loading}
-                className="p-1 rounded hover:bg-surface-subtle disabled:opacity-40 text-ink"
+                className="p-1 rounded hover:bg-surface-subtle disabled:opacity-40 text-ink cursor-pointer"
                 title="Next page"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -199,20 +217,38 @@ export function PDFViewer({
 
           {/* Center Zoom & Tool Icons */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-surface-subtle rounded-md p-0.5 border border-border">
-              <button onClick={zoomOut} className="p-1 rounded hover:bg-surface text-ink-muted hover:text-ink" title="Zoom out">
-                <ZoomOut className="w-3.5 h-3.5" />
+            {/* View Mode Switcher: PDF vs Extracted Text */}
+            <div className="hidden sm:flex items-center gap-0.5 bg-surface-subtle rounded-md p-0.5 border border-border">
+              <button
+                onClick={() => setViewMode('canvas')}
+                className={clsx('px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer', viewMode === 'canvas' ? 'bg-surface text-ink shadow-2xs font-bold' : 'text-ink-muted hover:text-ink')}
+              >
+                PDF View
               </button>
-              <span className="font-mono text-[11px] text-ink-muted w-10 text-center">
-                {Math.round(scale * 100)}%
-              </span>
-              <button onClick={zoomIn} className="p-1 rounded hover:bg-surface text-ink-muted hover:text-ink" title="Zoom in">
-                <ZoomIn className="w-3.5 h-3.5" />
-              </button>
-              <button onClick={zoomReset} className="p-1 rounded hover:bg-surface text-ink-muted hover:text-ink" title="Reset zoom">
-                <Maximize2 className="w-3.5 h-3.5" />
+              <button
+                onClick={() => setViewMode('text')}
+                className={clsx('px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer', viewMode === 'text' ? 'bg-surface text-ink shadow-2xs font-bold' : 'text-ink-muted hover:text-ink')}
+              >
+                Extracted Text
               </button>
             </div>
+
+            {viewMode === 'canvas' && (
+              <div className="flex items-center gap-1 bg-surface-subtle rounded-md p-0.5 border border-border">
+                <button onClick={zoomOut} className="p-1 rounded hover:bg-surface text-ink-muted hover:text-ink cursor-pointer" title="Zoom out">
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+                <span className="font-mono text-[11px] text-ink-muted w-10 text-center">
+                  {Math.round(scale * 100)}%
+                </span>
+                <button onClick={zoomIn} className="p-1 rounded hover:bg-surface text-ink-muted hover:text-ink cursor-pointer" title="Zoom in">
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={zoomReset} className="p-1 rounded hover:bg-surface text-ink-muted hover:text-ink cursor-pointer" title="Reset zoom">
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
             {/* Annotator Tools (Highlight, Pin, Note) */}
             <div className="hidden md:flex items-center gap-1 border-l border-border pl-2">
@@ -242,8 +278,16 @@ export function PDFViewer({
             </div>
 
             <button
+              onClick={() => setIsMobilePanelOpen((prev) => !prev)}
+              className="md:hidden p-1.5 rounded hover:bg-surface-subtle text-ink-muted cursor-pointer"
+              title="Toggle evidence & notes panel"
+            >
+              <Bookmark className="w-3.5 h-3.5 text-brand" />
+            </button>
+
+            <button
               onClick={() => window.open(fileUrl, '_blank')}
-              className="p-1.5 rounded hover:bg-surface-subtle text-ink-muted hover:text-ink"
+              className="p-1.5 rounded hover:bg-surface-subtle text-ink-muted hover:text-ink cursor-pointer"
               title="Download / View raw file"
             >
               <Download className="w-3.5 h-3.5" />
@@ -251,88 +295,168 @@ export function PDFViewer({
           </div>
         </div>
 
-        {/* Scrollable PDF Canvas Area with Anchored Floating Popover */}
-        <div className="flex-1 overflow-auto p-6 flex justify-center items-start relative">
-          {loading && (
-            <div className="flex flex-col items-center justify-center p-12 text-ink-muted text-xs gap-3">
-              <div className="animate-spin w-6 h-6 border-2 border-brand border-t-transparent rounded-full" />
-              <span>Rendering page {currentPage}...</span>
-            </div>
-          )}
-
-          {error && (
-            <div className="bg-surface border border-status-error/30 text-status-error p-4 rounded text-xs max-w-md">
-              {error}
-            </div>
-          )}
-
-          <div className="relative inline-block">
-            <canvas
-              ref={canvasRef}
-              className={clsx('pdf-page-canvas bg-white rounded-md shadow-md transition-opacity', loading ? 'opacity-30' : 'opacity-100')}
-            />
-
-            {/* Floating Popover Card Anchored to the Highlighted Passage (Reference 3 Signature) */}
-            {highlightExcerpt && isPopoverOpen && !loading && (
-              <div
-                className="absolute top-16 left-8 z-30 max-w-sm w-80 bg-surface border border-border rounded-xl shadow-xl p-3.5 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 duration-150"
-                style={{ top: '15%', left: '8%' }}
-              >
-                {/* Popover Header */}
-                <div className="flex items-center justify-between pb-2 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded bg-brand/10 text-brand flex items-center justify-center font-bold text-[10px]">
-                      AI
-                    </div>
-                    <span className="font-semibold text-xs text-ink">NexusRAG AI</span>
-                    <span className="text-[10px] text-ink-faint">just now</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setIsPopoverOpen(false)}
-                      className="p-1 rounded hover:bg-surface-subtle text-ink-faint hover:text-ink"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Popover Content */}
-                <div className="text-xs text-ink-muted leading-relaxed font-sans">
-                  <p className="font-medium text-ink mb-1">
-                    Verified Citation (Page {currentPage}):
-                  </p>
-                  <p className="font-serif italic text-ink/90 bg-amber-50 dark:bg-amber-950/40 p-2 rounded border border-amber-200/60 dark:border-amber-800/40 text-[11px] leading-relaxed">
-                    "{highlightExcerpt}"
-                  </p>
-                </div>
-
-                {/* Comment / Ask AI input inside the popover */}
-                <form onSubmit={handleAddComment} className="flex items-center gap-1.5 pt-1 border-t border-border">
-                  <input
-                    type="text"
-                    value={popoverComment}
-                    onChange={(e) => setPopoverComment(e.target.value)}
-                    placeholder="Type your comment..."
-                    className="flex-1 bg-surface-subtle border border-border rounded-lg px-2.5 py-1 text-xs text-ink placeholder:text-ink-faint focus:outline-none focus:border-brand"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!popoverComment.trim()}
-                    className="px-2.5 py-1 rounded-lg bg-brand text-white hover:bg-brand-hover disabled:opacity-40 text-xs font-medium flex items-center gap-1 shadow-2xs"
-                  >
-                    <span>Ask AI</span>
-                    <Send className="w-3 h-3" />
-                  </button>
-                </form>
+        {/* Document Viewer Body (Canvas vs Extracted Text + Thumbnails) */}
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* Left Thumbnails Sidebar (if toggled) */}
+          {showThumbnails && (
+            <div className="w-24 bg-surface border-r border-border flex flex-col h-full flex-shrink-0 overflow-y-auto p-2 gap-2 text-xs select-none">
+              <div className="text-[10px] font-bold text-ink-muted uppercase tracking-wider text-center pb-1 border-b border-border">
+                Pages
               </div>
-            )}
-          </div>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  className={clsx(
+                    'w-full py-2 rounded-lg border text-center transition-all cursor-pointer font-mono text-xs flex flex-col items-center gap-0.5',
+                    p === currentPage
+                      ? 'border-brand bg-brand/10 text-brand font-bold ring-1 ring-brand'
+                      : 'border-border bg-surface-subtle text-ink-muted hover:border-brand/40 hover:text-ink'
+                  )}
+                >
+                  <span className="text-[9px] uppercase font-sans">Page</span>
+                  <span className="text-xs font-semibold">{p}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Extracted Text View */}
+          {viewMode === 'text' ? (
+            <div className="flex-1 overflow-auto p-6 flex flex-col items-center bg-canvas">
+              <div className="max-w-3xl w-full bg-surface border border-border rounded-xl shadow-xs p-6 flex flex-col gap-6 text-ink font-serif leading-relaxed text-sm">
+                <div className="flex items-center justify-between pb-3 border-b border-border font-sans text-xs">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-brand" />
+                    <span className="font-semibold text-ink">{filename}</span>
+                  </div>
+                  <span className="font-mono text-ink-muted text-[11px]">
+                    {chunks.length} Extracted Chunks
+                  </span>
+                </div>
+
+                {chunksQuery.isLoading ? (
+                  <div className="p-8 text-center text-xs text-ink-muted flex flex-col items-center gap-2">
+                    <div className="animate-spin w-5 h-5 border-2 border-brand border-t-transparent rounded-full" />
+                    <span>Loading extracted text chunks...</span>
+                  </div>
+                ) : chunks.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-ink-muted italic">
+                    No extracted chunks found for this document.
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {chunks.map((chunk) => {
+                      const isHighlighted = highlightExcerpt && chunk.content?.toLowerCase().includes(highlightExcerpt.toLowerCase().slice(0, 30));
+                      return (
+                        <div
+                          key={chunk.id}
+                          className={clsx(
+                            'p-4 rounded-xl border flex flex-col gap-2 transition-all',
+                            isHighlighted
+                              ? 'bg-amber-50/80 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700/60 ring-2 ring-brand/30'
+                              : 'bg-surface-subtle border-border'
+                          )}
+                        >
+                          <div className="flex items-center justify-between text-[10px] font-mono text-ink-muted border-b border-border/50 pb-1">
+                            <span className="font-semibold text-ink">Chunk #{chunk.chunk_index + 1} • Page {chunk.page_number}</span>
+                            <span>Chars {chunk.char_start}-{chunk.char_end} ({chunk.token_count} tokens)</span>
+                          </div>
+                          <p className="whitespace-pre-wrap font-serif text-xs text-ink leading-relaxed">
+                            {chunk.content}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Scrollable PDF Canvas Area with Anchored Floating Popover */
+            <div className="flex-1 overflow-auto p-6 flex justify-center items-start relative">
+              {loading && (
+                <div className="flex flex-col items-center justify-center p-12 text-ink-muted text-xs gap-3">
+                  <div className="animate-spin w-6 h-6 border-2 border-brand border-t-transparent rounded-full" />
+                  <span>Rendering page {currentPage}...</span>
+                </div>
+              )}
+
+              {error && (
+                <div className="bg-surface border border-status-error/30 text-status-error p-4 rounded text-xs max-w-md">
+                  {error}
+                </div>
+              )}
+
+              <div className="relative inline-block">
+                <canvas
+                  ref={canvasRef}
+                  className={clsx('pdf-page-canvas bg-white rounded-md shadow-md transition-opacity', loading ? 'opacity-30' : 'opacity-100')}
+                />
+
+                {/* Floating Popover Card Anchored to the Highlighted Passage (Reference 3 Signature) */}
+                {highlightExcerpt && isPopoverOpen && !loading && (
+                  <div
+                    className="absolute top-16 left-8 z-30 max-w-sm w-80 bg-surface border border-border rounded-xl shadow-xl p-3.5 flex flex-col gap-2.5 animate-in fade-in zoom-in-95 duration-150"
+                    style={{ top: '15%', left: '8%' }}
+                  >
+                    {/* Popover Header */}
+                    <div className="flex items-center justify-between pb-2 border-b border-border">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded bg-brand/10 text-brand flex items-center justify-center font-bold text-[10px]">
+                          AI
+                        </div>
+                        <span className="font-semibold text-xs text-ink">NexusRAG AI</span>
+                        <span className="text-[10px] text-ink-faint">just now</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setIsPopoverOpen(false)}
+                          className="p-1 rounded hover:bg-surface-subtle text-ink-faint hover:text-ink cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Popover Content */}
+                    <div className="text-xs text-ink-muted leading-relaxed font-sans">
+                      <p className="font-medium text-ink mb-1">
+                        Verified Citation (Page {currentPage}):
+                      </p>
+                      <p className="font-serif italic text-ink/90 bg-amber-50 dark:bg-amber-950/40 p-2 rounded border border-amber-200/60 dark:border-amber-800/40 text-[11px] leading-relaxed">
+                        "{highlightExcerpt}"
+                      </p>
+                    </div>
+
+                    {/* Comment / Ask AI input inside the popover */}
+                    <form onSubmit={handleAddComment} className="flex items-center gap-1.5 pt-1 border-t border-border">
+                      <input
+                        type="text"
+                        value={popoverComment}
+                        onChange={(e) => setPopoverComment(e.target.value)}
+                        placeholder="Type your comment..."
+                        className="flex-1 bg-surface-subtle border border-border rounded-lg px-2.5 py-1 text-xs text-ink placeholder:text-ink-faint focus:outline-none focus:border-brand"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!popoverComment.trim()}
+                        className="px-2.5 py-1 rounded-lg bg-brand text-white hover:bg-brand-hover disabled:opacity-40 text-xs font-medium flex items-center gap-1 shadow-2xs cursor-pointer"
+                      >
+                        <span>Ask AI</span>
+                        <Send className="w-3 h-3" />
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Right Source Evidence & Annotation Panel (Reference 3 Layout) */}
-      <div className="w-80 flex-shrink-0 bg-surface flex flex-col h-full border-l border-border select-none">
+      <div className="hidden md:flex w-80 flex-shrink-0 bg-surface flex-col h-full border-l border-border select-none">
         {/* Panel Tabs: Info / Citation / Notes */}
         <div className="flex border-b border-border bg-surface-subtle text-xs">
           {[
@@ -452,7 +576,7 @@ export function PDFViewer({
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-border">
                   <span className="text-ink-muted">Chunks</span>
-                  <span className="text-ink font-medium">{documentMetadata.chunk_count ?? '—'}</span>
+                  <span className="text-ink font-medium">{documentMetadata.chunk_count ?? '-'}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-border">
                   <span className="text-ink-muted">Type</span>
@@ -467,6 +591,100 @@ export function PDFViewer({
           )}
         </div>
       </div>
+
+      {/* Mobile Evidence & Notes Bottom Sheet Drawer (< 768px) */}
+      {isMobilePanelOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end bg-black/50 backdrop-blur-2xs animate-in fade-in duration-150">
+          <div className="bg-surface border-t border-border rounded-t-2xl max-h-[75vh] flex flex-col shadow-2xl p-4 gap-3 animate-in slide-in-from-bottom duration-200">
+            <div className="w-10 h-1 bg-border rounded-full mx-auto" />
+            <div className="flex items-center justify-between pb-2 border-b border-border">
+              <span className="font-semibold text-xs text-ink">Evidence & Notes</span>
+              <button
+                onClick={() => setIsMobilePanelOpen(false)}
+                className="p-1 rounded hover:bg-surface-subtle text-ink-muted cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Mobile Tabs */}
+            <div className="flex border-b border-border bg-surface-subtle text-xs rounded-lg overflow-hidden">
+              {[
+                { id: 'info', label: 'Info' },
+                { id: 'citation', label: 'Citation' },
+                { id: 'notes', label: 'Notes' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setPanelTab(tab.id);
+                    if (onTabChange) onTabChange(tab.id);
+                  }}
+                  className={clsx(
+                    'flex-1 py-2 text-center font-medium transition-colors cursor-pointer',
+                    panelTab === tab.id ? 'bg-surface text-brand font-bold' : 'text-ink-muted hover:text-ink'
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile Tab Content */}
+            <div className="flex-1 overflow-y-auto text-xs py-2">
+              {panelTab === 'citation' && (
+                <div className="flex flex-col gap-2">
+                  {highlightExcerpt ? (
+                    <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between font-mono text-[10px]">
+                        <span className="text-amber-700 dark:text-amber-400 font-semibold">Page {highlightPage || currentPage}</span>
+                        <span className="text-status-success font-medium">Verified Grounded</span>
+                      </div>
+                      <p className="font-serif italic text-ink leading-relaxed">
+                        "{highlightExcerpt}"
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-ink-muted italic">No citation active.</p>
+                  )}
+                </div>
+              )}
+
+              {panelTab === 'info' && (
+                <div className="flex flex-col gap-2 font-mono text-[11px]">
+                  <div className="flex justify-between py-1.5 border-b border-border">
+                    <span className="text-ink-muted">Pages</span>
+                    <span className="text-ink font-medium">{documentMetadata.page_count ?? totalPages}</span>
+                  </div>
+                  <div className="flex justify-between py-1.5 border-b border-border">
+                    <span className="text-ink-muted">Chunks</span>
+                    <span className="text-ink font-medium">{documentMetadata.chunk_count ?? '-'}</span>
+                  </div>
+                  <div className="flex justify-between py-1.5 border-b border-border">
+                    <span className="text-ink-muted">Type</span>
+                    <span className="text-ink uppercase font-medium">{documentMetadata.file_type ?? 'PDF'}</span>
+                  </div>
+                </div>
+              )}
+
+              {panelTab === 'notes' && (
+                <div className="flex flex-col gap-2">
+                  {commentsList.length === 0 ? (
+                    <p className="text-ink-muted italic">No notes recorded yet.</p>
+                  ) : (
+                    commentsList.map((c) => (
+                      <div key={c.id} className="p-2.5 rounded-lg border border-border bg-surface-subtle">
+                        <span className="text-[10px] text-ink-muted block">Page {c.page}</span>
+                        <p className="text-xs text-ink mt-0.5">{c.text}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

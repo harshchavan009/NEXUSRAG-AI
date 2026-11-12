@@ -18,12 +18,19 @@ import {
   Layers,
   Activity,
   CheckCircle2,
-  Database
+  Database,
+  AlertTriangle,
+  CheckCircle,
+  Circle,
+  RefreshCw,
+  Info,
+  X
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { StatusDot } from '../components/common/StatusDot';
 import { Modal } from '../components/common/Modal';
 import { UploadTray } from '../components/upload/UploadTray';
+import { SampleAttributionModal } from '../components/common/SampleAttributionModal';
 import {
   useDocuments,
   useCollections,
@@ -32,7 +39,9 @@ import {
   useCreateSession,
   useDeleteDocument,
   useLoadSampleDocuments,
-  useSystemStatus
+  useSystemStatus,
+  useHealthCheck,
+  useProviderProbe
 } from '../api/queries';
 import { VIEWS } from '../components/layout/RailNav';
 import clsx from 'clsx';
@@ -40,7 +49,7 @@ import clsx from 'clsx';
 export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
   const [askQuery, setAskQuery] = useState('');
   const [selectedScope, setSelectedScope] = useState('all');
-  const [selectedModel, setSelectedModel] = useState('Gemini 2.5 Flash');
+  const [selectedModel, setSelectedModel] = useState('Gemini 3.5 Flash-Lite');
   const [selectedLength, setSelectedLength] = useState('250 words');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
@@ -49,16 +58,23 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
   const [sortAsc, setSortAsc] = useState(true);
   const [showSummaryColumn, setShowSummaryColumn] = useState(true);
   const [isSampleLoading, setIsSampleLoading] = useState(false);
+  const [isAttributionModalOpen, setIsAttributionModalOpen] = useState(false);
+  const [isOnboardingDismissed, setIsOnboardingDismissed] = useState(() => {
+    return localStorage.getItem('nexusrag_onboarding_dismissed') === 'true';
+  });
 
   const docsQuery = useDocuments();
   const collsQuery = useCollections();
   const sessionsQuery = useSessions();
   const systemStatusQuery = useSystemStatus();
+  const healthQuery = useHealthCheck();
+  const probeQuery = useProviderProbe();
 
   const documents = Array.isArray(docsQuery.data) ? docsQuery.data : (docsQuery.data?.documents || []);
   const collections = Array.isArray(collsQuery.data) ? collsQuery.data : (collsQuery.data?.collections || []);
   const sessions = Array.isArray(sessionsQuery.data) ? sessionsQuery.data : (sessionsQuery.data?.sessions || []);
   const statusData = systemStatusQuery.data;
+  const isOperational = healthQuery.data?.status === 'ok';
   const docsLoading = docsQuery.isLoading;
 
   const createCollectionMutation = useCreateCollection();
@@ -117,64 +133,244 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
     return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
   });
 
+  const getAdaptivePlaceholder = () => {
+    if (documents.length === 0) {
+      return "Ask a research question about your uploaded documents, e.g. 'What are the main conclusions?'";
+    }
+    const cleanEnergyDoc = documents.find((d) => (d.original_filename || d.filename || '').toLowerCase().includes('energy'));
+    if (cleanEnergyDoc) {
+      return "Ask a question about your documents, e.g. 'What were the key findings in the clean energy report?'";
+    }
+    const firstDoc = documents[0].original_filename || documents[0].filename;
+    return `Ask a question about your documents, e.g. 'Summarize the primary thesis in ${firstDoc}'`;
+  };
+
   const totalChunks = statusData?.faiss_vectors ?? documents.reduce((sum, d) => sum + (d.chunk_count || 0), 0);
   const totalPages = documents.reduce((sum, d) => sum + (d.page_count || 1), 0);
+
+  const step1Done = documents.length > 0;
+  const step2Done = sessions.length > 0;
+  const step3Done = Boolean(typeof window !== 'undefined' && (localStorage.getItem('nexusrag_citation_verified') === 'true' || sessions.some((s) => s.message_count > 1)));
+  const step4Done = Boolean(typeof window !== 'undefined' && localStorage.getItem('nexusrag_inspector_visited') === 'true');
+  const completedSteps = [step1Done, step2Done, step3Done, step4Done].filter(Boolean).length;
 
   return (
     <main className="flex-1 flex flex-col h-full overflow-y-auto bg-canvas p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
       {/* 1. Header Bar with Overview and Quick CTAs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/50">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-bold tracking-tight text-ink font-sans">
-              Research Workspace. Query your indexed collections.
+              Research Workspace
             </h1>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-brand/10 text-brand">
-              Live Workspace
-            </span>
+            <div className="flex items-center gap-1.5 text-xs text-brand font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
+              <span>Workspace Active</span>
+            </div>
           </div>
           <p className="text-xs sm:text-sm text-ink-muted mt-0.5">
             Query your indexed collections with grounded citations and transparent retrieval traces
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLoadSamples}
-            disabled={isSampleLoading}
-            icon={FileText}
+        <div className="flex flex-col sm:items-end gap-1.5">
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLoadSamples}
+              disabled={isSampleLoading}
+              icon={FileText}
+            >
+              {isSampleLoading ? 'Loading Samples...' : 'Load Sample Docs'}
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsUploadModalOpen(true)}
+              icon={Upload}
+            >
+              Upload Documents
+            </Button>
+          </div>
+          <button
+            onClick={() => setIsAttributionModalOpen(true)}
+            className="text-[11px] text-ink-muted hover:text-brand font-mono underline cursor-pointer self-start sm:self-end"
           >
-            {isSampleLoading ? 'Loading Samples...' : 'Load Sample Docs'}
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsUploadModalOpen(true)}
-            icon={Upload}
-          >
-            Upload Documents
-          </Button>
+            Sample Paper Licences & Attribution
+          </button>
         </div>
       </div>
 
-      {/* 2. Live 4-Card Aggregate Metrics Grid (Zero Static Data Compliant) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Documents */}
-        <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col justify-between">
+      {/* Designed Error State: Missing Google Gemini API Key */}
+      {probeQuery.data?.status === 'missing_key' && (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-ink flex items-start justify-between gap-3 text-xs">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-ink text-sm">Google Gemini API Key Not Configured</h3>
+              <p className="text-ink-muted mt-0.5 font-serif leading-relaxed">
+                Vector embeddings and LangGraph synthesis require a valid <code className="font-mono text-ink">GEMINI_API_KEY</code>. Add your key to <code className="font-mono text-ink">.env</code> in the project root to enable live retrieval and inference.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onNavigate(VIEWS.SETTINGS)}
+          >
+            Configure in Settings
+          </Button>
+        </div>
+      )}
+
+      {/* Designed Error State: Backend Offline */}
+      {(healthQuery.isError || systemStatusQuery.isError) && (
+        <div className="p-4 rounded-xl bg-status-error/10 border border-status-error/30 text-ink flex items-start justify-between gap-3 text-xs">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-status-error flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-status-error text-sm">Backend Service Offline</h3>
+              <p className="text-ink-muted mt-0.5 font-serif leading-relaxed">
+                Unable to establish HTTP connection to the FastAPI server at <code className="font-mono text-ink">http://localhost:8000</code>. Verify the backend daemon is running.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={RefreshCw}
+            onClick={() => {
+              healthQuery.refetch();
+              systemStatusQuery.refetch();
+            }}
+          >
+            Retry Connection
+          </Button>
+        </div>
+      )}
+
+      {/* First-Run Onboarding Checklist Widget */}
+      {!isOnboardingDismissed && (
+        <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-ink-muted">Total Documents</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-subtle flex items-center justify-center text-brand">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-xs text-ink uppercase tracking-wider font-mono">
+                First-Run Onboarding Checklist
+              </span>
+              <span className="font-mono text-[10px] bg-brand/10 text-brand px-2 py-0.5 rounded font-bold">
+                {completedSteps} of 4 Complete
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                setIsOnboardingDismissed(true);
+                localStorage.setItem('nexusrag_onboarding_dismissed', 'true');
+              }}
+              className="text-ink-muted hover:text-ink text-[11px] flex items-center gap-1 cursor-pointer"
+              title="Dismiss onboarding checklist"
+            >
+              <span>Dismiss</span>
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full bg-surface-subtle h-1.5 rounded-full overflow-hidden border border-border">
+            <div
+              className="bg-brand h-full transition-all duration-300 rounded-full"
+              style={{ width: `${(completedSteps / 4) * 100}%` }}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs pt-1">
+            {/* Step 1: Ingest */}
+            <div className={clsx('p-3 rounded-lg border flex flex-col justify-between gap-2', step1Done ? 'bg-surface-subtle border-border' : 'bg-surface border-brand/40')}>
+              <div className="flex items-start gap-2">
+                {step1Done ? <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" /> : <Circle className="w-4 h-4 text-ink-muted flex-shrink-0 mt-0.5" />}
+                <div>
+                  <span className="font-semibold text-ink block">1. Ingest Documents</span>
+                  <span className="text-[11px] text-ink-muted font-serif">Upload your files or load 4 sample papers.</span>
+                </div>
+              </div>
+              {!step1Done && (
+                <Button variant="outline" size="sm" onClick={handleLoadSamples} disabled={isSampleLoading} className="w-full justify-center">
+                  Load Samples
+                </Button>
+              )}
+            </div>
+
+            {/* Step 2: Query */}
+            <div className={clsx('p-3 rounded-lg border flex flex-col justify-between gap-2', step2Done ? 'bg-surface-subtle border-border' : 'bg-surface border-border')}>
+              <div className="flex items-start gap-2">
+                {step2Done ? <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" /> : <Circle className="w-4 h-4 text-ink-muted flex-shrink-0 mt-0.5" />}
+                <div>
+                  <span className="font-semibold text-ink block">2. Research Query</span>
+                  <span className="text-[11px] text-ink-muted font-serif">Synthesize facts across indexed materials.</span>
+                </div>
+              </div>
+              {!step2Done && (
+                <Button variant="outline" size="sm" onClick={() => onNavigate(VIEWS.RESEARCH)} className="w-full justify-center">
+                  Open Research Desk
+                </Button>
+              )}
+            </div>
+
+            {/* Step 3: Verify Citation */}
+            <div className={clsx('p-3 rounded-lg border flex flex-col justify-between gap-2', step3Done ? 'bg-surface-subtle border-border' : 'bg-surface border-border')}>
+              <div className="flex items-start gap-2">
+                {step3Done ? <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" /> : <Circle className="w-4 h-4 text-ink-muted flex-shrink-0 mt-0.5" />}
+                <div>
+                  <span className="font-semibold text-ink block">3. Verify Proving Citation</span>
+                  <span className="text-[11px] text-ink-muted font-serif">Jump to highlighted character offsets.</span>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => onNavigate(VIEWS.READER)} className="w-full justify-center">
+                Open Reader
+              </Button>
+            </div>
+
+            {/* Step 4: Audit DAG */}
+            <div className={clsx('p-3 rounded-lg border flex flex-col justify-between gap-2', step4Done ? 'bg-surface-subtle border-border' : 'bg-surface border-border')}>
+              <div className="flex items-start gap-2">
+                {step4Done ? <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" /> : <Circle className="w-4 h-4 text-ink-muted flex-shrink-0 mt-0.5" />}
+                <div>
+                  <span className="font-semibold text-ink block">4. Audit LangGraph DAG</span>
+                  <span className="text-[11px] text-ink-muted font-serif">Inspect 9-node execution waterfall.</span>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  localStorage.setItem('nexusrag_inspector_visited', 'true');
+                  onNavigate(VIEWS.INSPECTOR);
+                }}
+                className="w-full justify-center"
+              >
+                Open Inspector
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Varied-Layout Aggregate Metrics (Zero Static Data Compliant) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Documents - Featured Primary Metric */}
+        <div className="p-4 rounded-xl bg-surface border-2 border-brand/20 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-brand uppercase tracking-wider">Total Documents</span>
+            <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
               <FileText className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-ink tracking-tight">{documents.length}</div>
-            <p className="text-[11px] text-ink-muted mt-0.5 flex items-center gap-1">
-              <span>{documents.filter((d) => d.status === 'indexed').length} indexed</span>
+          <div className="mt-2">
+            <div className="text-2xl font-bold text-ink tracking-tight font-sans">{documents.length}</div>
+            <div className="text-[11px] text-ink-muted mt-1 flex items-center gap-1.5">
+              <span className="font-medium text-ink">{documents.filter((d) => d.status === 'indexed').length} ready</span>
               <span>•</span>
               <span>{totalPages} {totalPages === 1 ? 'page' : 'pages'}</span>
-            </p>
+            </div>
           </div>
         </div>
 
@@ -182,30 +378,26 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
         <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-ink-muted">Collections</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-subtle flex items-center justify-center text-brand">
-              <Folder className="w-4 h-4" />
-            </div>
+            <Folder className="w-4 h-4 text-ink-muted" />
           </div>
-          <div className="mt-3">
+          <div className="mt-2">
             <div className="text-2xl font-bold text-ink tracking-tight">{collections.length}</div>
-            <p className="text-[11px] text-ink-muted mt-0.5">
-              Domain-isolated namespaces
+            <p className="text-[11px] text-ink-muted mt-1">
+              {collections.length === 0 ? 'No custom collections' : `${collections.length} organized namespaces`}
             </p>
           </div>
         </div>
 
-        {/* Card 3: Vector Chunks */}
+        {/* Card 3: Vector Chunks & Embeddings */}
         <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-ink-muted">Vector Chunks</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-subtle flex items-center justify-center text-brand">
-              <Sparkles className="w-4 h-4" />
-            </div>
+            <Sparkles className="w-4 h-4 text-ink-muted" />
           </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-ink tracking-tight">{totalChunks}</div>
-            <p className="text-[11px] text-ink-muted mt-0.5">
-              768-dim embeddings in FAISS
+          <div className="mt-2">
+            <div className="text-2xl font-bold text-ink tracking-tight font-mono">{totalChunks}</div>
+            <p className="text-[11px] text-ink-muted mt-1">
+              {totalChunks === 0 ? 'No indexed chunks' : `${totalChunks} searchable passages`}
             </p>
           </div>
         </div>
@@ -214,15 +406,16 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
         <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-ink-muted">Active Sessions</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-subtle flex items-center justify-center text-brand">
-              <MessageSquare className="w-4 h-4" />
-            </div>
+            <MessageSquare className="w-4 h-4 text-ink-muted" />
           </div>
-          <div className="mt-3">
+          <div className="mt-2">
             <div className="text-2xl font-bold text-ink tracking-tight">{sessions.length}</div>
-            <p className="text-[11px] text-ink-muted mt-0.5">
-              Multi-turn synthesis threads
-            </p>
+            <button
+              onClick={handleCreateNewSession}
+              className="text-[11px] text-brand hover:underline font-medium mt-1 text-left"
+            >
+              + New research session
+            </button>
           </div>
         </div>
       </div>
@@ -244,7 +437,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
             <textarea
               value={askQuery}
               onChange={(e) => setAskQuery(e.target.value)}
-              placeholder="Ask a question about your documents, e.g. 'What were the key findings in the clean energy report?'"
+              placeholder={getAdaptivePlaceholder()}
               rows={3}
               className="w-full bg-canvas/60 border border-border rounded-lg p-3 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 resize-none font-sans leading-relaxed"
               onKeyDown={(e) => {
@@ -264,8 +457,8 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
                 onChange={(e) => setSelectedModel(e.target.value)}
                 className="bg-surface-subtle hover:bg-surface border border-border rounded-md px-2.5 py-1 text-ink focus:outline-none focus:border-brand font-medium text-xs cursor-pointer"
               >
-                <option value="Gemini 2.5 Flash">Gemini 2.5 Flash</option>
-                <option value="Gemini 2.0 Flash">Gemini 2.0 Flash</option>
+                <option value="Gemini 3.5 Flash-Lite">Gemini 3.5 Flash-Lite (Fast, Grounded)</option>
+                <option value="Gemini 3.8 Flash">Gemini 3.8 Flash (Deep Reasoning)</option>
               </select>
 
               {/* Length Selector */}
@@ -331,7 +524,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
             <Upload className="w-4 h-4 text-brand flex-shrink-0" />
             <div className="min-w-0">
               <div className="text-xs font-medium text-ink truncate">Upload Files</div>
-              <div className="text-[10px] text-ink-muted truncate">PDF, MD, TXT, DOCX</div>
+              <div className="text-[10px] text-ink-muted truncate">PDF, MD, TXT (up to 25MB)</div>
             </div>
           </button>
 
@@ -542,32 +735,92 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
             </div>
           </div>
 
+          {/* Processing Activity Feed */}
+          <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                <Activity className="w-4 h-4 text-brand" />
+                <span>Processing Activity</span>
+              </div>
+              <span className="text-[10px] text-ink-muted">
+                {documents.length > 0 ? 'Live pipeline' : 'Idle'}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-2 text-xs">
+              {documents.length === 0 ? (
+                <p className="py-3 text-center text-ink-muted text-xs italic">
+                  No ingestion activity recorded yet.
+                </p>
+              ) : (
+                documents.slice(0, 3).map((doc) => (
+                  <div key={doc.id} className="flex items-start gap-2.5 p-2 rounded-lg bg-surface-subtle/60 border border-border/60">
+                    <StatusDot status={doc.status} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-medium text-ink truncate text-[11px]" title={doc.original_filename || doc.filename}>
+                          {doc.original_filename || doc.filename}
+                        </span>
+                        <span className="text-[10px] text-ink-muted whitespace-nowrap">
+                          {doc.created_at ? new Date(doc.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-ink-muted font-mono mt-0.5 truncate">
+                        {doc.status === 'indexed'
+                          ? `Indexed • ${doc.chunk_count || 0} chunks in FAISS`
+                          : doc.status === 'processing'
+                          ? 'Extracting text & generating embeddings...'
+                          : 'Uploaded to workspace'}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           {/* Engine & Pipeline Health Card */}
           <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-2.5 text-xs">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-ink">Pipeline Status</span>
               <StatusDot
-                status={statusData?.status === 'healthy' ? 'ready' : 'degraded'}
-                text={statusData?.status === 'healthy' ? 'Healthy' : 'Degraded'}
+                status={isOperational ? 'ready' : 'degraded'}
+                text={isOperational ? 'Operational' : 'Degraded'}
               />
             </div>
 
+            {!isOperational && healthQuery.data && (
+              <div className="p-2 rounded bg-status-error/10 border border-status-error/20 text-[11px] text-status-error">
+                {healthQuery.data?.database !== 'connected'
+                  ? `Database issue: ${healthQuery.data.database}. Verify database service.`
+                  : 'Backend service reporting degraded state.'}
+              </div>
+            )}
+
             <div className="space-y-1.5 pt-1 text-[11px] text-ink-muted border-t border-border">
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span>Vector Store:</span>
-                <span className="font-mono text-ink">FAISS IndexFlatIP</span>
+                <span className="font-mono text-ink">FAISS IndexIDMap2</span>
               </div>
-              <div className="flex justify-between">
-                <span>Dimensions:</span>
-                <span className="font-mono text-ink">768-dim</span>
+              <div className="flex justify-between items-center">
+                <span>Embedding Model:</span>
+                <span className="font-mono text-ink text-[10px]">gemini-embedding-2</span>
               </div>
-              <div className="flex justify-between">
-                <span>Metadata DB:</span>
-                <span className="font-mono text-ink capitalize">{statusData?.database_type || 'SQLite'}</span>
+              <div className="flex justify-between items-center">
+                <span>AI Provider Probe:</span>
+                <span className={clsx(
+                  "font-mono text-[10px] px-1.5 py-0.5 rounded",
+                  probeQuery.data?.status === 'online' && "bg-status-success/15 text-status-success",
+                  probeQuery.data?.status === 'missing_key' && "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+                  probeQuery.data?.status === 'error' && "bg-status-error/15 text-status-error",
+                  !probeQuery.data && "text-ink-muted"
+                )}>
+                  {probeQuery.data?.status === 'online' ? 'Online' : probeQuery.data?.status === 'missing_key' ? 'Key Needed' : probeQuery.data?.status === 'error' ? 'Error' : 'Probing...'}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span>Tenant Scope:</span>
-                <span className="font-mono text-ink">Session-Scoped</span>
+              <div className="flex justify-between items-center">
+                <span>Relational State:</span>
+                <span className="font-mono text-ink capitalize">{healthQuery.data?.database || 'Connected'}</span>
               </div>
             </div>
 
@@ -633,6 +886,12 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
           </div>
         </form>
       </Modal>
+
+      {/* Sample Document Licences and Attribution Modal */}
+      <SampleAttributionModal
+        isOpen={isAttributionModalOpen}
+        onClose={() => setIsAttributionModalOpen(false)}
+      />
     </main>
   );
 }

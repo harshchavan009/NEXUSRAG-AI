@@ -4,6 +4,7 @@ import { TopBar } from './components/layout/TopBar';
 import { ToastProvider } from './components/common/Toast';
 import { CommandPalette } from './components/common/CommandPalette';
 import { FeedbackModal } from './components/common/FeedbackModal';
+import { ShortcutsModal } from './components/common/ShortcutsModal';
 
 import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -51,6 +52,7 @@ export function App() {
   // Global modals
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
 
   // Cross-page state transfers
   const [pendingQuery, setPendingQuery] = useState('');
@@ -59,12 +61,16 @@ export function App() {
   const [targetCitation, setTargetCitation] = useState(null);
   const [targetRunId, setTargetRunId] = useState(null);
 
-  // Global Command Palette shortcut (Cmd+K / Ctrl+K)
+  // Global Command Palette & Shortcuts listener (Cmd+K / Ctrl+K / ?)
   useEffect(() => {
     const handleKeyDown = (e) => {
+      const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
+      } else if (e.key === '?' && !isInput && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        setIsShortcutsModalOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -223,6 +229,7 @@ export function App() {
             subtitle={currentMeta.subtitle}
             onSearchClick={() => setIsCommandPaletteOpen(true)}
             onFeedbackClick={() => setIsFeedbackModalOpen(true)}
+            onShortcutsClick={() => setIsShortcutsModalOpen(true)}
           />
 
           {/* View Surface */}
@@ -277,6 +284,12 @@ export function App() {
         <FeedbackModal
           isOpen={isFeedbackModalOpen}
           onClose={() => setIsFeedbackModalOpen(false)}
+        />
+
+        {/* Global Keyboard Shortcuts Modal */}
+        <ShortcutsModal
+          isOpen={isShortcutsModalOpen}
+          onClose={() => setIsShortcutsModalOpen(false)}
         />
       </div>
     </ToastProvider>

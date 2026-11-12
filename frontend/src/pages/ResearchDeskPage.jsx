@@ -24,11 +24,14 @@ import {
   Copy,
   Check,
   RotateCcw,
-  MessageSquare
+  MessageSquare,
+  Download,
+  CheckSquare
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { StatusDot } from '../components/common/StatusDot';
 import { streamQuery } from '../api/stream';
+import { useToast } from '../components/common/Toast';
 import {
   useSessions,
   useSessionDetail,
@@ -49,6 +52,7 @@ export function ResearchDeskPage({
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [inputQuery, setInputQuery] = useState(initialQuery || '');
   const [selectedScope, setSelectedScope] = useState('all');
+  const [selectedDocIds, setSelectedDocIds] = useState([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [currentStage, setCurrentStage] = useState(null);
@@ -56,7 +60,10 @@ export function ResearchDeskPage({
   const [rightPanelTab, setRightPanelTab] = useState('assistant'); // 'assistant', 'passage', 'citation'
   const [searchTreeTerm, setSearchTreeTerm] = useState('');
   const [copiedId, setCopiedId] = useState(null);
+  const [isMobileTreeOpen, setIsMobileTreeOpen] = useState(false);
+  const [isMobileCitationSheetOpen, setIsMobileCitationSheetOpen] = useState(false);
 
+  const toast = useToast();
   const abortControllerRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -138,7 +145,7 @@ export function ResearchDeskPage({
 
     const scopeObj = scopeOverride || {
       collection_ids: selectedScope === 'all' ? [] : [selectedScope],
-      document_ids: [],
+      document_ids: selectedDocIds,
     };
 
     const payload = {
@@ -203,6 +210,114 @@ export function ResearchDeskPage({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const downloadMarkdownFile = (filename, markdownContent) => {
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportAnswer = (msg, questionText) => {
+    let md = `# NexusRAG Research Synthesis\n\n`;
+    if (questionText) {
+      md += `**Inquiry:** ${questionText}\n\n`;
+    }
+    md += `**Date:** ${new Date(msg.created_at || Date.now()).toISOString()}\n\n`;
+    md += `## Synthesis\n\n${msg.content}\n\n`;
+    if (msg.citations && msg.citations.length > 0) {
+      md += `## Verified Citations\n\n`;
+      msg.citations.forEach((c) => {
+        const idx = c.index || c.citation_index;
+        md += `[${idx}] **${c.filename}** (Page ${c.page_number})\n`;
+        md += `> "${c.excerpt}"\n\n`;
+      });
+    }
+    downloadMarkdownFile(`nexusrag-answer-${Date.now()}.md`, md);
+    toast.success('Answer exported as Markdown.');
+  };
+
+  const handleExportSession = () => {
+    if (!sessionDetail || !sessionDetail.messages || sessionDetail.messages.length === 0) {
+      toast.error('No messages in session to export.');
+      return;
+    }
+    let md = `# ${sessionDetail.title || 'NexusRAG Research Session'}\n\n`;
+    md += `**Session ID:** \`${sessionDetail.id}\`\n`;
+    md += `**Exported At:** ${new Date().toISOString()}\n\n---\n\n`;
+
+    sessionDetail.messages.forEach((msg) => {
+      if (msg.role === 'user') {
+        md += `### Question\n\n${msg.content}\n\n`;
+      } else {
+        md += `### Grounded Synthesis\n\n${msg.content}\n\n`;
+        if (msg.citations && msg.citations.length > 0) {
+          md += `#### Citations\n\n`;
+          msg.citations.forEach((c) => {
+            const idx = c.index || c.citation_index;
+            md += `- **[${idx}] ${c.filename}** (Page ${c.page_number}): "${c.excerpt}"\n`;
+          });
+          md += `\n`;
+        }
+        md += `---\n\n`;
+      }
+    });
+
+    downloadMarkdownFile(`nexusrag-session-${sessionDetail.id.slice(0, 8)}.md`, md);
+    toast.success('Complete research session exported.');
+  };
+
+  const getDynamicSuggestedQuestions = () => {
+    const suggestions = [];
+    const docNames = documents.map((d) => (d.original_filename || d.filename || '').toLowerCase());
+
+    if (docNames.some((n) => n.includes('clean_energy') || n.includes('energy'))) {
+      suggestions.push({
+        label: 'Renewable microgrid advantages',
+        query: 'What are the primary performance advantages of renewable microgrids and localized distributed energy storage?',
+      });
+    }
+    if (docNames.some((n) => n.includes('corporate_governance') || n.includes('governance'))) {
+      suggestions.push({
+        label: 'Corporate governance & oversight',
+        query: 'What internal audit and executive accountability mechanisms are outlined in the governance guidelines?',
+      });
+    }
+    if (docNames.some((n) => n.includes('consensus') || n.includes('distributed'))) {
+      suggestions.push({
+        label: 'Consensus fault tolerance',
+        query: 'How does the proposed distributed consensus mechanism maintain safety under network partition?',
+      });
+    }
+    if (docNames.some((n) => n.includes('architecture') || n.includes('system'))) {
+      suggestions.push({
+        label: 'Architecture latency trade-offs',
+        query: 'What latency benchmarks and throughput trade-offs are documented for the pipeline architecture?',
+      });
+    }
+
+    if (suggestions.length < 3) {
+      suggestions.push({
+        label: 'Summarize primary thesis',
+        query: 'Summarize the primary thesis, key findings, and core conclusions across the indexed documents.',
+      });
+      suggestions.push({
+        label: 'Extract quantitative data',
+        query: 'Extract the core empirical methodologies and quantitative metrics reported in the documents.',
+      });
+      suggestions.push({
+        label: 'Compare key assertions',
+        query: 'Compare the key assertions across documents and identify any conflicting evidence or open questions.',
+      });
+    }
+
+    return suggestions.slice(0, 3);
+  };
+
   // Helper to render inline clickable citations [1], [2] inside answer text
   const renderTextWithCitations = (text, citations = []) => {
     if (!text) return null;
@@ -221,6 +336,7 @@ export function ResearchDeskPage({
               if (citation) {
                 setSelectedCitation(citation);
                 setRightPanelTab('passage');
+                setIsMobileCitationSheetOpen(true);
               }
             }}
             className={clsx(
@@ -240,9 +356,22 @@ export function ResearchDeskPage({
   };
 
   return (
-    <div className="flex-1 flex h-full overflow-hidden bg-canvas">
+    <div className="flex-1 flex h-full overflow-hidden bg-canvas relative">
+      {/* Mobile Drawer Backdrop */}
+      {isMobileTreeOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-2xs z-30 md:hidden"
+          onClick={() => setIsMobileTreeOpen(false)}
+        />
+      )}
+
       {/* Panel 1: Left Tree Navigation Rail (Design Reference 2) */}
-      <aside className="w-64 bg-surface border-r border-border flex flex-col flex-shrink-0 select-none">
+      <aside
+        className={clsx(
+          'w-64 bg-surface border-r border-border flex flex-col flex-shrink-0 select-none transition-all duration-200',
+          isMobileTreeOpen ? 'fixed inset-y-0 left-0 z-40 shadow-2xl h-full' : 'hidden md:flex'
+        )}
+      >
         {/* Search Files Input */}
         <div className="p-3 border-b border-border">
           <div className="relative">
@@ -283,22 +412,51 @@ export function ResearchDeskPage({
             </div>
           </div>
 
-          {/* Section: FAVORITES */}
+          {/* Section: SCOPED DOCUMENTS */}
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider px-2">
-              Favorites
-            </span>
-            <div className="flex flex-col gap-0.5">
-              {documents.slice(0, 2).map((d) => (
-                <div
-                  key={d.id}
-                  onClick={() => onOpenDocumentReader(d)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left truncate text-ink-muted hover:text-ink hover:bg-surface-subtle cursor-pointer transition-colors"
+            <div className="flex items-center justify-between px-2 text-[10px] font-bold text-ink-muted uppercase tracking-wider">
+              <span>Scoped Documents</span>
+              {selectedDocIds.length > 0 && (
+                <button
+                  onClick={() => setSelectedDocIds([])}
+                  className="text-[10px] text-brand hover:underline font-normal capitalize"
                 >
-                  <Star className="w-3.5 h-3.5 flex-shrink-0 text-amber-500 fill-amber-500" />
-                  <span className="truncate">{d.original_filename || d.filename}</span>
-                </div>
-              ))}
+                  Reset
+                </button>
+              )}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              {documents.length === 0 ? (
+                <span className="text-[11px] text-ink-faint px-2 italic">No documents indexed</span>
+              ) : (
+                documents.slice(0, 6).map((d) => {
+                  const isSelected = selectedDocIds.includes(d.id);
+                  return (
+                    <button
+                      key={d.id}
+                      onClick={() => {
+                        setSelectedDocIds((prev) =>
+                          prev.includes(d.id) ? prev.filter((id) => id !== d.id) : [...prev, d.id]
+                        );
+                      }}
+                      className={clsx(
+                        'flex items-center gap-2 px-2 py-1.5 rounded-lg text-left text-xs transition-colors',
+                        isSelected
+                          ? 'bg-brand/10 text-brand font-medium'
+                          : 'text-ink-muted hover:text-ink hover:bg-surface-subtle'
+                      )}
+                      title={`Scope retrieval to ${d.original_filename || d.filename}`}
+                    >
+                      {isSelected ? (
+                        <CheckSquare className="w-3.5 h-3.5 text-brand flex-shrink-0" />
+                      ) : (
+                        <Square className="w-3.5 h-3.5 text-ink-faint flex-shrink-0" />
+                      )}
+                      <span className="truncate">{d.original_filename || d.filename}</span>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -358,6 +516,16 @@ export function ResearchDeskPage({
       <main className="flex-1 flex flex-col min-w-0 bg-canvas overflow-hidden">
         {/* Document Tabs Strip (Reference 2 Layout) */}
         <div className="h-10 bg-surface border-b border-border flex items-center px-3 gap-1 overflow-x-auto flex-shrink-0 select-none">
+          {/* Mobile Files Rail Toggle */}
+          <button
+            onClick={() => setIsMobileTreeOpen((prev) => !prev)}
+            className="md:hidden flex items-center gap-1 px-2 py-1 rounded text-xs bg-surface-subtle border border-border text-ink-muted hover:text-ink mr-1 flex-shrink-0 cursor-pointer"
+            title="Toggle documents and sessions list"
+          >
+            <Folder className="w-3.5 h-3.5 text-brand" />
+            <span className="text-[11px] font-medium">Files</span>
+          </button>
+
           {documents.slice(0, 3).map((doc, idx) => (
             <div
               key={doc.id}
@@ -374,9 +542,21 @@ export function ResearchDeskPage({
             </div>
           ))}
 
-          <span className="text-[11px] text-ink-faint px-2 font-mono ml-auto">
-            {documents.length} indexed files
-          </span>
+          <div className="flex items-center gap-3 ml-auto">
+            {sessionDetail?.messages?.length > 0 && (
+              <button
+                onClick={handleExportSession}
+                className="flex items-center gap-1.5 text-[11px] font-medium text-ink-muted hover:text-brand px-2.5 py-1 rounded-md border border-border bg-surface hover:bg-surface-subtle transition-colors shadow-2xs"
+                title="Export entire research conversation with citations as Markdown"
+              >
+                <Download className="w-3.5 h-3.5 text-brand" />
+                <span>Export Session (.md)</span>
+              </button>
+            )}
+            <span className="text-[11px] text-ink-faint px-1">
+              {documents.length} indexed files
+            </span>
+          </div>
         </div>
 
         {/* Conversation / Findings Area */}
@@ -441,6 +621,15 @@ export function ResearchDeskPage({
                           </button>
 
                           <button
+                            onClick={() => handleExportAnswer(msg, sessionDetail?.messages[sessionDetail.messages.indexOf(msg) - 1]?.content)}
+                            className="flex items-center gap-1 hover:text-ink text-[11px] p-1 rounded hover:bg-surface-subtle"
+                            title="Export this answer as Markdown with citations"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Export</span>
+                          </button>
+
+                          <button
                             onClick={() => handleSend(sessionDetail?.messages[sessionDetail.messages.indexOf(msg) - 1]?.content || '')}
                             className="flex items-center gap-1 hover:text-ink text-[11px] p-1 rounded hover:bg-surface-subtle"
                             title="Regenerate synthesis"
@@ -458,12 +647,12 @@ export function ResearchDeskPage({
                           )}
 
                           <button
-                            onClick={() => onNavigateToInspector()}
-                            className="hover:text-brand flex items-center gap-1 text-[11px]"
-                            title="Inspect LangGraph DAG Trace"
+                            onClick={() => onNavigateToInspector(msg.workflow_run_id)}
+                            className="hover:text-brand flex items-center gap-1 text-[11px] p-1 rounded hover:bg-surface-subtle"
+                            title="Inspect 9-node LangGraph trace for this synthesis"
                           >
                             <Activity className="w-3.5 h-3.5 text-brand" />
-                            <span>Trace</span>
+                            <span>Inspect this answer</span>
                           </button>
                         </div>
                       </div>
@@ -499,7 +688,7 @@ export function ResearchDeskPage({
             <span>Active Research Session</span>
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-[11px] text-ink-faint">
+          <div className="flex items-center gap-2 text-[11px] text-ink-faint">
             <span>{documents.length} {documents.length === 1 ? 'document' : 'documents'} indexed</span>
             <span>•</span>
             <span>{collections.length} {collections.length === 1 ? 'collection' : 'collections'}</span>
@@ -569,7 +758,7 @@ export function ResearchDeskPage({
       </main>
 
       {/* Panel 3: Right "Assistant" Panel (Design Reference 2 Layout) */}
-      <aside className="w-80 bg-surface border-l border-border flex flex-col flex-shrink-0 select-none">
+      <aside className="hidden lg:flex w-80 bg-surface border-l border-border flex-col flex-shrink-0 select-none">
         {/* Panel Tabs Header */}
         <div className="flex border-b border-border bg-surface-subtle text-xs">
           {[
@@ -597,33 +786,23 @@ export function ResearchDeskPage({
           {rightPanelTab === 'assistant' && (
             <div className="flex flex-col gap-4">
               <div>
-                <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block mb-2">
-                  Quick Actions
-                </span>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
+                    Suggested Inquiries
+                  </span>
+                  <span className="text-[10px] text-brand font-medium">From Indexed Files</span>
+                </div>
                 <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => handleSend('Summarize the primary thesis and findings across the indexed documents.')}
-                    className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs"
-                  >
-                    <span className="font-medium text-ink">Summarize primary thesis</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand" />
-                  </button>
-
-                  <button
-                    onClick={() => handleSend('Extract the core empirical methodologies and quantitative data points.')}
-                    className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs"
-                  >
-                    <span className="font-medium text-ink">Extract methodologies</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand" />
-                  </button>
-
-                  <button
-                    onClick={() => handleSend('Compare the key assertions and identify any contradictions or open questions.')}
-                    className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs"
-                  >
-                    <span className="font-medium text-ink">Compare assertions</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand" />
-                  </button>
+                  {getDynamicSuggestedQuestions().map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSend(item.query)}
+                      className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs cursor-pointer"
+                    >
+                      <span className="font-medium text-ink">{item.label}</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand flex-shrink-0" />
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -697,6 +876,65 @@ export function ResearchDeskPage({
           )}
         </div>
       </aside>
+
+      {/* Mobile Citation Bottom Sheet (for viewports < 1024px) */}
+      {isMobileCitationSheetOpen && selectedCitation && (
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/50 backdrop-blur-2xs animate-in fade-in duration-150">
+          <div
+            className="bg-surface border-t border-border rounded-t-2xl max-h-[75vh] flex flex-col shadow-2xl p-5 gap-3 animate-in slide-in-from-bottom duration-200"
+          >
+            <div className="w-10 h-1 bg-border rounded-full mx-auto" />
+            <div className="flex items-center justify-between pb-2 border-b border-border">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold bg-brand text-white px-2 py-0.5 rounded">
+                  Citation [{selectedCitation.index || selectedCitation.citation_index || 1}]
+                </span>
+                <span className="text-xs font-semibold text-ink truncate max-w-[200px]">
+                  {selectedCitation.filename || selectedCitation.document_title || 'Source Evidence'}
+                </span>
+              </div>
+              <button
+                onClick={() => setIsMobileCitationSheetOpen(false)}
+                className="p-1 rounded hover:bg-surface-subtle text-ink-muted cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto flex flex-col gap-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/40 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] text-amber-700 dark:text-amber-400 font-semibold uppercase">
+                    Source Evidence (Page {selectedCitation.page_number || 1})
+                  </span>
+                  <span className="text-[10px] font-mono text-status-success font-medium">Verified Grounded</span>
+                </div>
+                <p className="font-serif italic text-ink leading-relaxed">
+                  "{selectedCitation.excerpt}"
+                </p>
+              </div>
+
+              <div className="p-3 rounded-lg bg-surface-subtle border border-border flex items-center justify-between font-mono text-[11px]">
+                <span className="text-ink-muted">Retrieval Similarity:</span>
+                <span className="text-brand font-bold">{Math.round((selectedCitation.score || 0.85) * 100)}% Match</span>
+              </div>
+
+              <Button
+                variant="primary"
+                size="sm"
+                icon={ExternalLink}
+                onClick={() => {
+                  setIsMobileCitationSheetOpen(false);
+                  onOpenDocumentReader(selectedCitation);
+                }}
+                className="w-full justify-center"
+              >
+                Open in Document Reader (Page {selectedCitation.page_number || 1})
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

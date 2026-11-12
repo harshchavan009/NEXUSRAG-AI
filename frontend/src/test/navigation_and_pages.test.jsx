@@ -55,6 +55,8 @@ vi.mock('../api/queries', () => ({
   }),
   useDocumentDetail: () => ({ data: null, isLoading: false }),
   useDeleteDocument: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateDocument: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
+  useBulkMoveDocuments: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
   useLoadSampleDocuments: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
   useReindexDocument: () => ({ mutate: vi.fn(), isPending: false }),
   useSessions: () => ({ data: [], isLoading: false }),
@@ -64,6 +66,27 @@ vi.mock('../api/queries', () => ({
   useInspectorRuns: () => ({ data: [], isLoading: false }),
   useInspectorRunDetail: () => ({ data: null, isLoading: false }),
   usePurgeWorkspace: () => ({ mutate: vi.fn(), isPending: false }),
+  useHealthCheck: () => ({
+    data: {
+      status: 'ok',
+      app: 'NexusRAG',
+      version: '1.0.0',
+      database: 'connected',
+      vector_store: 'FAISS (IndexIDMap2 + FlatIP)',
+    },
+    isLoading: false,
+  }),
+  useProviderProbe: () => ({
+    data: {
+      status: 'online',
+      provider: 'gemini',
+      embedding_model: 'gemini-embedding-2',
+      generation_model: 'gemini-3.5-flash-lite',
+      latency_ms: 124.5,
+      message: 'API online and responsive.',
+    },
+    isLoading: false,
+  }),
 }));
 
 describe('App Navigation & 7 Core View Rendering', () => {
@@ -88,7 +111,7 @@ describe('App Navigation & 7 Core View Rendering', () => {
 
   it('renders Dashboard workspace view with 4 live metric cards, ask-first composer, and ingested documents', () => {
     renderWithProviders(<App />);
-    expect(screen.getByText('Research Workspace. Query your indexed collections.')).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 1, name: /Research Workspace/i }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByPlaceholderText(/Ask a question about your documents/i)).toBeInTheDocument();
     
     // Check 4 live aggregate metric cards (spec Page 7 & Transform Brief)
@@ -103,7 +126,7 @@ describe('App Navigation & 7 Core View Rendering', () => {
     expect(screen.getByText('DAG Inspector')).toBeInTheDocument();
 
     // Check real backend summary column in recent documents table
-    expect(screen.getByText('clean_energy_report_2024.txt')).toBeInTheDocument();
+    expect(screen.getAllByText('clean_energy_report_2024.txt').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/Global energy transition analysis covering solar and wind growth/i)).toBeInTheDocument();
   });
 

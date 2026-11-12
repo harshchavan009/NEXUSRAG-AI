@@ -82,7 +82,7 @@ Euclidean distance ($L_2$) varies with vector magnitude, confounding cosine dist
 ### 3.2 64-Bit Chunk ID Mapping
 Standard FAISS indices store vectors with sequential 0-indexed integer IDs. When documents are deleted or re-indexed, index compaction invalidates chunk mappings. NexusRAG wraps the index with `faiss.IndexIDMap2`:
 - Maps SQLite / PostgreSQL 64-bit integer primary keys (`chunks.id`) directly to vectors in the index.
-- Supports $O(1)$ individual vector removal via `index.remove_ids(np.array([chunk_id], dtype=np.int64))`.
+- Supports individual vector removal without full index rebuilds via `index.remove_ids(np.array([chunk_id], dtype=np.int64))`.
 - Deleting a document removes its vectors from FAISS without rebuilding the index from scratch.
 
 ### 3.3 Atomic Disk Persistence & Recovery

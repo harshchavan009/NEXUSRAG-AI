@@ -14,7 +14,19 @@ export function PublicHeader({ currentView, onNavigate }) {
     { label: 'FAQ', view: VIEWS.FAQ },
     { label: 'System Status', view: VIEWS.STATUS },
     { label: 'About', view: VIEWS.ABOUT },
+    { label: 'Contact', view: VIEWS.ABOUT, hash: '#contact' },
   ];
+
+  const handleNavClick = (link) => {
+    onNavigate(link.view);
+    setMobileMenuOpen(false);
+    if (link.hash && typeof window !== 'undefined') {
+      setTimeout(() => {
+        const el = document.querySelector(link.hash);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  };
 
   return (
     <header className="border-b border-border/40 bg-surface/90 backdrop-blur-xs sticky top-0 z-40 select-none">
@@ -41,7 +53,7 @@ export function PublicHeader({ currentView, onNavigate }) {
             {navLinks.map((link) => (
               <button
                 key={link.label}
-                onClick={() => onNavigate(link.view)}
+                onClick={() => handleNavClick(link)}
                 className={clsx(
                   'transition-colors hover:text-ink',
                   currentView === link.view && 'text-brand font-semibold'
@@ -83,10 +95,7 @@ export function PublicHeader({ currentView, onNavigate }) {
           {navLinks.map((link) => (
             <button
               key={link.label}
-              onClick={() => {
-                onNavigate(link.view);
-                setMobileMenuOpen(false);
-              }}
+              onClick={() => handleNavClick(link)}
               className={clsx(
                 'text-left py-2 font-medium',
                 currentView === link.view ? 'text-brand' : 'text-ink-muted hover:text-ink'

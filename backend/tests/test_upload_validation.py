@@ -149,3 +149,35 @@ def test_load_sample_documents_endpoint(client, workspace_a_auth):
     assert response_repeat.status_code == 201
     assert len(response_repeat.json()["uploaded"]) >= 3
 
+def test_document_collection_move_and_bulk_move(client, workspace_a_auth):
+    client.cookies.set(settings.SESSION_COOKIE_NAME, workspace_a_auth["token"])
+    headers = {"X-CSRF-Token": workspace_a_auth["csrf"]}
+
+    # 1. Create a collection
+    col_res = client.post("/api/v1/collections", json={"name": "Energy Policy"}, headers=headers)
+    assert col_res.status_code == 201
+    col_id = col_res.json()["id"]
+
+    # 2. Upload a test document
+    files = {"files": ("test_doc_move.txt", io.BytesIO(b"Document move test content"), "text/plain")}
+    upload_res = client.post("/api/v1/documents/upload", files=files, headers=headers)
+    assert upload_res.status_code == 201
+    doc_id = upload_res.json()["uploaded"][0]["document_id"]
+
+    # 3. Move single doc to collection via PATCH
+    patch_res = client.patch(f"/api/v1/documents/{doc_id}", json={"collection_id": col_id}, headers=headers)
+    assert patch_res.status_code == 200
+    assert patch_res.json()["collection_id"] == col_id
+    assert patch_res.json()["collection_name"] == "Energy Policy"
+
+    # 4. Bulk move doc back to unassigned
+    bulk_res = client.post("/api/v1/documents/bulk-move", json={"document_ids": [doc_id], "collection_id": None}, headers=headers)
+    assert bulk_res.status_code == 200
+    assert bulk_res.json()["success"] is True
+
+    # 5. Verify doc is now unassigned
+    get_res = client.get(f"/api/v1/documents/{doc_id}")
+    assert get_res.status_code == 200
+    assert get_res.json()["collection_id"] is None
+
+
