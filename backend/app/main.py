@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -168,13 +168,6 @@ if os.path.isdir(frontend_dist):
     def serve_manifest():
         return FileResponse(os.path.join(frontend_dist, "manifest.webmanifest"))
 
-    @app.get("/.well-known/security.txt", include_in_schema=False)
-    def serve_security_txt():
-        sec_file = os.path.join(frontend_dist, ".well-known", "security.txt")
-        if not os.path.isfile(sec_file):
-            sec_file = os.path.join(str(BASE_DIR), ".well-known", "security.txt")
-        return FileResponse(sec_file, media_type="text/plain")
-
     @app.get("/security", include_in_schema=False)
     @app.get("/faq", include_in_schema=False)
     @app.get("/status", include_in_schema=False)
@@ -184,6 +177,24 @@ if os.path.isdir(frontend_dist):
     @app.get("/app/{full_path:path}", include_in_schema=False)
     def serve_spa_pages(full_path: str = ""):
         return FileResponse(os.path.join(frontend_dist, "index.html"))
+
+@app.get("/.well-known/security.txt", include_in_schema=False)
+def serve_security_txt():
+    sec_file = os.path.join(frontend_dist, ".well-known", "security.txt") if os.path.isdir(frontend_dist) else None
+    if sec_file and os.path.isfile(sec_file):
+        return FileResponse(sec_file, media_type="text/plain")
+    root_sec = os.path.join(str(BASE_DIR), ".well-known", "security.txt")
+    if os.path.isfile(root_sec):
+        return FileResponse(root_sec, media_type="text/plain")
+    return PlainTextResponse(
+        "Contact: mailto:security@nexusrag.internal\n"
+        "Contact: https://github.com/harshchavan009/NEXUSRAG-AI/security/advisories/new\n"
+        "Expires: 2027-12-31T23:59:59.000Z\n"
+        "Preferred-Languages: en\n"
+        "Canonical: https://github.com/harshchavan009/NEXUSRAG-AI/blob/main/.well-known/security.txt\n"
+        "Policy: https://github.com/harshchavan009/NEXUSRAG-AI/blob/main/SECURITY.md\n",
+        media_type="text/plain"
+    )
 
 @app.get("/")
 def root(request: Request):
