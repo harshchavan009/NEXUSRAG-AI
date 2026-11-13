@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2026-11-13
+
+### Added
+- **Multi-Format Document Reader:** Built native typographic line-numbered text viewport in `PDFViewer.jsx` with anchored citation cards for `.txt` and `.md` documents alongside the PDF.js canvas viewer.
+- **Dynamic Contextual Suggestions Endpoint:** Deployed `GET /api/v1/query/suggestions` deriving high-signal questions from indexed document headings and content, dynamically scoped to selected document filters.
+- **Authentic Multi-Page Benchmark Corpus:** Upgraded sample documents to 4 CC BY 4.0 benchmark files totaling 26 chunks across workspace (10-page architecture whitepaper PDF, 26-section clean energy TXT, 27-section governance TXT, and 22-section distributed systems MD).
+- **Automated Compliance Verification Suite:** Created `scripts/run_advanced_compliance_evidence.py` proving requirements R1-R14, W1-W2, Q1, O1 with unmocked output in `docs/advanced-audit-evidence.json` and `docs/advanced-audit-evidence.md`.
+- **System Architecture Whitepaper & Speaking Guide:** Authored `docs/EXPLAIN.md` covering technical architecture justifications, retrieval quality mechanics, hallucination reduction limits, and interview-ready speaking guide (Requirement E1).
+- **Calibrated Retrieval Benchmark Report:** Authored `docs/retrieval-evaluation.md` documenting 100% Precision@1, 100% Recall@4, 1.000 MRR, 100% Gate Accuracy, and 4-way ablation studies across rewrite and rerank.
+- **Self-Recorded Demonstration Script:** Authored `docs/demo-video-script.md` with a 4:15 timestamped multi-window shot list across 7 progressive scenes (Requirement S1).
+- **Mentor Submission Inquiry Draft:** Authored `docs/mentor-validation-inquiry.md` formalizing options for repository layout (Option A vs Option B) for mentor coordination.
+- **Traceability Matrix v1.1.0:** Upgraded `docs/advanced-compliance.md` reflecting 100% Verified Pass across all 20 requirements (0 Partial, 0 Fail).
+
+### Changed
+- **Landing Page Polish:** Purged redundant third hero CTA button, removed technical jargon ("inspectable retrieval graphs", "groundedness validation"), replaced decorative captions with clean browser chrome, and calibrated feature headlines.
+- **Footer Claims Calibration:** Updated footer copy across all public and internal views to accurately state: "Zero behavioral trackers or advertising cookies • Hosted typography via Google CDN".
+- **Token Estimation Labeling:** Explicitly labeled OpenAI tiktoken `cl100k_base` BPE tokenizer in UI and docs as an approximation of Gemini token counts.
+
+### Fixed
+- **Document Reader Non-PDF Crash:** Resolved `InvalidPDFException` crash when opening `.txt` or `.md` files by routing non-PDF documents to the typographic text viewer.
+- **Offline Sentence-Gluing Mock Fallback:** Completely purged synthetic sentence-gluing fallback from `nodes.py:generate_node`, enforcing honest abstention and strict configuration errors on missing keys.
+- **Static Research Inquiries:** Replaced hardcoded inquiry suggestions with dynamic file-derived questions and an honest empty state when 0 documents are indexed.
+- **"Local Offline Mode" UI Badge:** Removed misleading "Local Offline Mode Active" badge from Settings and replaced dummy button with copyable CLI setup command on Dashboard.
+- **Zero Em Dash Rule:** Verified 0 em dashes across all application source code, scripts, and documentation.
+
+---
+
 ## [1.2.0] - 2026-11-12
 
 ### Added
