@@ -52,3 +52,4 @@ NexusRAG stands at **100% compliance** across all 14 core requirements (R1 - R14
 - **Target Repository:** `https://github.com/harshchavan009/NEXUSRAG-AI.git`
 - **Active Branch:** `main`
 - **Release Ready Tag:** `v1.2.0`
+
