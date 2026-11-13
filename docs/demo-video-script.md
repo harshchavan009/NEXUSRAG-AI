@@ -2,9 +2,10 @@
 
 **Internship:** ShadowFox AI Engineer Track (Advanced Level)  
 **Project:** NexusRAG - Reference-Driven, Production-Grade RAG Assistant  
-**Target Duration:** 4 minutes 30 seconds (270 seconds)  
-**Live URL:** Production deployment on Railway / Localhost (`http://localhost:5173` and `http://localhost:8000`)  
+**Target Duration:** 4 minutes 15 seconds (255 seconds)  
+**Live URL:** Localhost (`http://localhost:5173` and `http://localhost:8000`) / Cloud Production  
 **Presenter:** Harsh Chavan  
+**Specification Reference:** ShadowFox AI Engineer Task List (Requirement S1)  
 
 ---
 
@@ -12,13 +13,13 @@
 
 | Scene | Timestamp | Screen / Route | Camera & UI Action | Narrative Core |
 |---|---|---|---|---|
-| **Scene 1** | **0:00 - 0:35** | Public Landing (`/`) | Start at top hero. Scroll past editorial proof card to "How It Works" and Architecture diagram. Click "Open Research Workspace". | Product philosophy; original positioning; architectural separation between public marketing and app shell. |
-| **Scene 2** | **0:35 - 1:15** | Knowledge Bases (`/app/knowledge`) | Show empty state with "Load Sample Research Papers" button. Click it. Watch the 4 research papers ingest live with byte progress. Open collection tree. | First-run onboarding; multi-format PyMuPDF ingestion; 400-token chunking; FAISS IndexIDMap2 atomic vector indexing with ID-mapped vector removal without index rebuilds. |
-| **Scene 3** | **1:15 - 2:10** | Research Desk (`/app/research`) | Enter research query: *"What are the primary performance advantages of renewable microgrids?"*. Watch real-time SSE streaming. Click `[1]` citation chip. Document Reader opens with amber highlight. | 9-node LangGraph execution; XML delimited context; interactive citations linked to physical page character offsets; zero hallucination. |
-| **Scene 4** | **2:10 - 2:55** | Retrieval Inspector (`/app/inspector`) | Click "Inspect Retrieval Run". Examine raw vs rewritten query, candidate retrieval pool, reranked scores, and the millisecond-precision waterfall timeline. | Full observability; LangSmith/Phoenix style tracing; evidence sufficiency scoring ($0.650$ threshold) and groundedness score ($0.700$). |
-| **Scene 5** | **2:55 - 3:35** | Settings & Health (`/app/settings`) | Open Settings. Show AI Provider status, Model configuration, Chunking parameters, Retrieval Top-K, and Dual-Dialect Database telemetry (PostgreSQL 16 / SQLite + FAISS). | Spec Page 7 compliance; Zero Static Data rule; live telemetry; 256-bit cryptographic visitor isolation; GDPR user data purge. |
-| **Scene 6** | **3:35 - 4:05** | Honest Failure & Calibrated Abstention | Switch back to Research Desk. Ask out-of-domain question: *"What is the recipe for baking chocolate chip cookies?"*. Watch the sufficiency gate trigger honest abstention. | Calibrated transparency; anti-hallucination guarantee; system refuses cleanly when evidence is insufficient. |
-| **Scene 7** | **4:05 - 4:30** | Benchmark & Submission Slide | Present benchmark evaluation results table and security audit summary. Show GitHub repository and Docker deployment. | 100% P@1, 100% Recall@4, MRR 1.0; 0 CVEs in pip-audit/npm audit; 0 secrets; production Docker readiness. |
+| **Scene 1** | **0:00 - 0:35** | Public Landing (`/`) | Start at top hero. Scroll past architecture preview to 4-stage pipeline. Click "Open Research Workspace". | Product philosophy; original positioning; architectural separation between public landing and app shell; zero-fake policy. |
+| **Scene 2** | **0:35 - 1:15** | Knowledge Bases (`/app/knowledge`) | Show Knowledge Base table. Ingest multi-format documents (PDF, TXT, MD) totaling 26 chunks. Show edge rejection of invalid files. | Multi-format PyMuPDF ingestion; 400-token BPE chunking; FAISS `IndexIDMap2` vector indexing; edge failure rejection (empty, spoofed, duplicate, scanned). |
+| **Scene 3** | **1:15 - 2:05** | Research Desk (`/app/research`) | Ask in-domain query on solar module efficiency. Demonstrate conversational follow-up with pronoun resolution. Watch real-time SSE streaming. Click `[1]` citation chip. | 9-node LangGraph state machine; query rewriting; real-time SSE streaming; Document Reader dual-mode viewport (PDF canvas + typographic text viewer); zero hallucinations. |
+| **Scene 4** | **2:05 - 2:50** | Retrieval Inspector (`/app/inspector`) | Click "Inspect Retrieval Run". Examine raw vs rewritten query, candidate pool, reranked scores, and the millisecond waterfall timeline. | Full observability; candidate vs reranked score comparison; evidence sufficiency score (0.900 vs 0.650 threshold); node timings (3.04ms p50); raw JSON trace export. |
+| **Scene 5** | **2:50 - 3:30** | Settings & Health (`/app/settings`) | Open Settings. Show AI Provider probe status, model configuration, chunking sliders, retrieval Top-K, and dual-dialect database telemetry (PostgreSQL 16 / SQLite WAL). | Spec Page 7 compliance; Zero Static Data rule; live telemetry; 256-bit cryptographic visitor isolation; in-place vector deletion without index rebuilds. |
+| **Scene 6** | **3:30 - 3:55** | Honest Failure & Calibrated Abstention | Switch back to Research Desk. Ask out-of-domain query: *"What antimatter fuel ratio is required for warp propulsion?"*. Watch sufficiency gate trigger honest refusal. | Calibrated transparency; anti-hallucination guarantee; sufficiency score 0.255 < 0.650 threshold triggers clean abstention without guessing. |
+| **Scene 7** | **3:55 - 4:15** | Benchmark & Submission Slide | Present benchmark evaluation results table and security audit summary. Show GitHub repository and Docker deployment. | 100% Precision@1, 100% Recall@4, 1.000 MRR, 100% Gate Accuracy; 72/72 tests passing (52 pytest + 20 vitest); 0 CVEs; 0 secrets; clean containerized deployment. |
 
 ---
 
@@ -26,109 +27,119 @@
 
 ### Scene 1: Introduction & Architectural Separation (0:00 - 0:35)
 
-**Visual:** Camera captures browser at `http://localhost:5173/` (or live domain). The Warm Sand public landing page is visible. The app shell (rail nav, status tags) is absent, demonstrating complete architectural separation.
+**Visual:** Camera captures browser at `http://localhost:5173/`. The Warm Sand public landing page is visible. The application rail navigation is absent, demonstrating architectural separation between the public marketing site and the authenticated app shell.
 
 **Spoken Script:**
 > *"Hello! I am Harsh Chavan, and today I am presenting **NexusRAG**, an advanced, reference-driven Retrieval-Augmented Generation workspace built for the ShadowFox Advanced-Level AI Engineer track.
 >
-> Most RAG demonstrations suffer from structural dishonesty: they hallucinate claims when context is missing, they display hardcoded mock metrics in the interface, and they mix the public marketing website with the application shell.
+> Most RAG demonstrations suffer from structural dishonesty: they hallucinate answers when evidence is missing, display hardcoded mock metrics in the interface, and mix marketing copy with the research canvas.
 >
-> NexusRAG is built on four core engineering principles: verification-first execution, physical citation grounding, zero static data, and complete multi-tenant visitor isolation. Our public site and application are cleanly separated: here on the public site, every metric and screenshot comes directly from real running pipelines. Let us enter the workspace."*
+> NexusRAG is built on four core engineering rules: verification-first execution, physical sentence-level citation grounding, zero static data, and complete multi-tenant visitor isolation. Our public landing page and application are cleanly separated: here on the public site, every preview and metric comes directly from live pipelines. Let us enter the workspace."*
 
-**Cue:** Click the primary button **"Open Research Workspace"**. The interface transitions cleanly to `/app`.
+**Cue:** Click the primary button **"Open Research Workspace"**. The interface transitions to `/app`.
 
 ---
 
-### Scene 2: First-Run Onboarding & Multi-Format Ingestion (0:35 - 1:15)
+### Scene 2: Multi-Format Ingestion & Edge Handling (0:35 - 1:15)
 
-**Visual:** The user lands on `/app/knowledge`. The library is clean. In the center, a warm first-run onboarding banner offers **"Load Sample Research Papers"**. Click the button. Real-time progress bars appear as 4 verified research papers are indexed.
+**Visual:** The user lands on `/app/knowledge`. The Knowledge Base table displays authentic multi-page CC BY 4.0 benchmark files: the 10-page architecture whitepaper PDF, 26-section clean energy TXT, 27-section governance TXT, and 22-section distributed systems MD, totaling 26 indexed chunks. Demonstrate edge rejection by dropping an empty or unsupported file into the upload zone.
 
 **Spoken Script:**
-> *"When a brand-new visitor arrives, they are greeted by an intuitive first-run onboarding flow. With a single click, we can ingest four verified open-access research papers spanning renewable energy, deep learning, distributed systems, and quantum computing.
+> *"When ingesting research materials, NexusRAG supports multi-format parsing across PDF, plain text, and Markdown files.
 >
-> Behind the scenes, our backend uses PyMuPDF to extract text from each PDF, calculating physical character offsets and page numbers. Documents are chunked into 400-token blocks with a 50-token sliding overlap, preserving sentence boundaries.
+> Here we have indexed 26 chunks across four multi-page research works: a 10-page architecture whitepaper, a clean energy report, a distributed consensus brief, and a corporate governance document.
 >
-> Vectors are embedded and indexed into an atomic FAISS vector store using `IndexIDMap2` wrapping `IndexFlatIP` with $L_2$-normalized embeddings. This guarantees that dot-product operations compute exact cosine similarities while binding 64-bit database chunk IDs directly to FAISS vectors for ID-mapped deletions without full index re-builds."*
+> Behind the scenes, our ingestion pipeline uses PyMuPDF for PDFs and specialized UTF-8 parsers for text and Markdown, extracting exact character offsets and page boundaries. Documents are chunked into 400-token blocks with a 50-token sliding overlap using the OpenAI tiktoken cl100k_base BPE tokenizer.
+>
+> Vectors are embedded via Gemini Embedding 2 with 768 Matryoshka dimensions and indexed into an atomic FAISS vector store using IndexIDMap2 wrapping IndexFlatIP.
+>
+> Furthermore, our ingestion layer strictly rejects corrupted files: zero-byte files, spoofed signatures, duplicate SHA-256 hashes, and scanned image-only PDFs are immediately caught with clear error feedback."*
 
-**Cue:** The table populates with 4 rows showing filename, page count, chunk count, file size, and dynamic LLM-generated summaries.
+**Cue:** Show upload table with 26 chunks and point out the non-blocking upload status.
 
 ---
 
-### Scene 3: Agentic Retrieval & Grounded Synthesis (1:15 - 2:10)
+### Scene 3: Agentic Retrieval, Query Rewriting & Grounded Synthesis (1:15 - 2:05)
 
-**Visual:** Navigate to `/app/research` via the left icon rail. In the ask-first input composer, type: *"What are the primary performance advantages of renewable microgrids?"* and press Enter.
+**Visual:** Navigate to `/app/research` via the left icon rail. In the ask-first input composer, submit the query: *"What was the average field efficiency of commercial monocrystalline silicon solar modules in 2024?"*. Watch real-time Server-Sent Events stream into the Source Serif 4 typography pane. Then ask conversational follow-up: *"What about its thermal runaway safety?"*.
 
 **Spoken Script:**
-> *"Now let us navigate to the Research Desk. When we submit an inquiry, NexusRAG does not send raw queries directly to a language model. Instead, it triggers a 9-node LangGraph execution state machine.
+> *"Now let us navigate to the Research Desk. When we submit an inquiry, NexusRAG does not send raw queries directly to an LLM. Instead, it triggers a 9-node LangGraph state machine.
 >
-> Notice the real-time Server-Sent Events stream: answer tokens stream into our custom Source Serif 4 typography pane. The model synthesizes answers using strictly delimited XML context tags, citing sources with bracketed notation like `[1]` and `[2]`.
+> When asking conversational follow-ups like 'What about its thermal runaway safety?', our query rewriter node automatically resolves pronouns, reformulating the query to include full entity context before dense retrieval.
 >
-> Server-side regex validation checks every emitted citation against candidate chunk IDs, immediately stripping any fabricated citations before they reach the browser.
+> Notice the real-time Server-Sent Events stream: pipeline stage events and answer tokens stream into our typography pane. The model synthesizes answers exclusively from XML-delimited context passages, citing sources with bracketed notation like [1].
 >
-> When I click on citation `[1]`, NexusRAG opens the integrated Document Reader, jumps to the exact PDF page, and highlights the source passage in warm amber. The researcher never has to guess which sentence supports the claim."*
+> Server-side validation checks every citation against valid retrieved chunk IDs, stripping phantom tags before delivery.
+>
+> When I click on citation [1], NexusRAG opens the integrated Document Reader, jumping to the exact page and highlighting the source passage in warm amber. For non-PDF documents, our native typographic reader renders line numbers with anchored citation cards."*
 
-**Cue:** Click on citation chip `[1]`. The Document Reader opens on the right, jumps to page 2, and focuses the highlighted passage.
+**Cue:** Click citation chip `[1]`. The Document Reader opens on the right, displaying the exact passage.
 
 ---
 
-### Scene 4: Retrieval Inspector & Observability (2:10 - 2:55)
+### Scene 4: Retrieval Inspector & Observability (2:05 - 2:50)
 
 **Visual:** Click the **"Inspect Run"** button (or navigate to `/app/inspector`). The LangSmith-style trace dashboard renders.
 
 **Spoken Script:**
-> *"Observability is first-class in NexusRAG. Inspired by Arize Phoenix and LangSmith, our Retrieval Inspector displays the full persisted execution trace for every query.
+> *"Observability is first-class in NexusRAG. Inspired by Arize Phoenix and LangSmith, our Retrieval Inspector displays the complete persisted execution trace for every query run.
 >
-> Here we see the raw question alongside the rewritten standalone query, followed by the complete candidate pool retrieved from FAISS with raw cosine similarity scores.
+> Here we see the raw question alongside the rewritten standalone query, followed by the complete candidate pool retrieved from FAISS with raw inner-product similarity scores.
 >
-> Next, the reranker evaluates semantic relevance and computes the composite Evidence Sufficiency Score. Our threshold is calibrated at 0.650: here the query achieved 0.812, comfortably passing the gate.
+> Next, the hybrid reranker evaluates composite relevance: scoring 60% on vector similarity and 40% on lexical term overlap. This ensures that exact numeric matches surface to the top.
 >
-> At the bottom, a millisecond-precision waterfall timeline reveals the exact duration of each node: retrieval took 1.7 milliseconds, reranking took 3.2 milliseconds, and total pipeline execution completed in under 450 milliseconds."*
+> Here the Evidence Sufficiency Score achieved 0.900, comfortably passing our calibrated 0.650 gate.
+>
+> At the bottom, a millisecond-precision waterfall timeline reveals the exact duration of each node: retrieval took 2.6 milliseconds, reranking took 0.2 milliseconds, and total engine latency completed in under 4 milliseconds."*
 
-**Cue:** Scroll through the candidate pool, highlight the 0.650 sufficiency gate indicator, and hover over the node duration timeline.
+**Cue:** Scroll through the candidate pool, highlight the 0.650 sufficiency gate indicator, and show the "Export Trace JSON" button.
 
 ---
 
-### Scene 5: Settings, Zero Static Data & Tenant Isolation (2:55 - 3:35)
+### Scene 5: Settings, Zero Static Data & Tenant Isolation (2:50 - 3:30)
 
 **Visual:** Click **Settings** in the rail nav (`/app/settings`).
 
 **Spoken Script:**
-> *"In Settings, we adhere strictly to Page 7 of the master specification. We can inspect AI provider health, switch models between Gemini 2.5 Flash and OpenAI, tune chunk sizes from 100 to 1,000 tokens, adjust retrieval Top-K, and monitor database telemetry.
+> *"In Settings, we adhere strictly to the master specification. We can inspect live AI provider health, configure chunk sizes from 100 to 1,000 tokens, tune retrieval Top-K and reranking weights, and monitor database telemetry.
 >
-> NexusRAG features a dual-dialect relational persistence layer: running SQLite 3 locally for zero-config development, and PostgreSQL 16 Alpine in Docker Compose and cloud production.
+> NexusRAG features a dual-dialect persistence architecture: running SQLite 3 with Write-Ahead Logging locally for zero-dependency instant startup, and PostgreSQL 16 Alpine in Docker Compose for production.
 >
-> Under the Zero Static Data rule, every metric on this screen is queried live from the database and FAISS index. Furthermore, multi-tenant isolation is enforced through a cryptographically secure 256-bit session cookie and double-submit CSRF headers. Visitors have strictly isolated workspaces with zero risk of cross-tenant data leaks."*
+> Under our Zero Static Data rule, every metric on this screen is queried live from the database and FAISS index.
+>
+> Crucially, when documents are deleted, our FAISS IndexIDMap2 removes vectors directly in-place using chunk IDs without requiring an expensive full-index rebuild. Multi-tenant isolation is enforced through a cryptographically secure 256-bit session cookie and double-submit CSRF tokens, preventing cross-tenant data leakage."*
 
-**Cue:** Toggle the chunk size slider, highlight the database engine indicator, and show the "Export JSON" and "Purge Workspace" buttons.
+**Cue:** Toggle a retrieval slider, point to the live database engine badge, and show the live provider health status.
 
 ---
 
-### Scene 6: Calibrated Abstention / Honest Failure (3:35 - 4:05)
+### Scene 6: Calibrated Abstention / Honest Failure (3:30 - 3:55)
 
-**Visual:** Navigate back to `/app/research`. Submit the query: *"What is the recipe for baking chocolate chip cookies?"*.
+**Visual:** Navigate back to `/app/research`. Submit the query: *"What antimatter fuel ratio is required to initiate faster-than-light warp propulsion?"*.
 
 **Spoken Script:**
-> *"A hallmark of a production-grade RAG assistant is knowing when to say 'I do not know'. Let us ask a completely out-of-domain question about baking chocolate chip cookies.
+> *"A critical requirement of a production-grade RAG assistant is knowing when to say 'I do not know'. Let us ask a science-fiction question with zero supporting context in our corpus.
 >
-> Watch what happens: instead of fabricating a recipe or hallucinating advice, the evidence sufficiency gate computes a score of 0.210, well below our 0.650 threshold.
+> Watch what happens: instead of fabricating an answer or hallucinating formulas, the evidence sufficiency gate computes a score of 0.255, well below our 0.650 threshold.
 >
-> The system cleanly routes to the abstain node, presenting a designed refusal banner explaining that the knowledge base does not contain sufficient verified evidence to answer. This is calibrated transparency in action."*
+> The state machine cleanly routes to the abstain node, presenting an honest refusal explaining that the indexed documents do not contain sufficient verified evidence to answer. This is calibrated transparency in action."*
 
-**Cue:** The abstention card renders with a clear explanation and guidance to upload relevant documents.
+**Cue:** The refusal card renders with an explanation that the query lacks sufficient evidence in the indexed corpus.
 
 ---
 
-### Scene 7: Verification, Benchmarks & Submission (4:05 - 4:30)
+### Scene 7: Verification, Benchmarks & Submission (3:55 - 4:15)
 
 **Visual:** Switch to summary slide / terminal view displaying passing test suites and benchmark evaluation.
 
 **Spoken Script:**
-> *"To verify system quality, we evaluated NexusRAG across a 10-query benchmark dataset: the system achieved 100% Precision@1, 100% Recall@4, an MRR of 1.0, and 100% Gate Calibration Accuracy.
+> *"To prove system quality, we evaluated NexusRAG across a 10-query benchmark dataset: achieving 100% Precision@1, 100% Recall@4, an MRR of 1.000, and 100% Gate Calibration Accuracy with zero false-positive hallucinations.
 >
-> All 48 backend tests and 19 frontend tests pass with 89% code coverage. In our security audit, both pip-audit and npm audit reported zero vulnerabilities, and git history scans confirmed zero leaked credentials.
+> All 52 backend pytest tests and 20 frontend vitest tests pass, giving 72/72 passing automated tests. Security audits with pip-audit and npm audit report zero vulnerabilities, and git history scans confirm zero leaked secrets.
 >
-> NexusRAG is fully containerized with Docker Compose, persistent volumes, and CI/CD pipelines, ready for immediate cloud deployment on Railway or Render.
+> NexusRAG is fully containerized with Docker Compose, healthchecks, and PostgreSQL 16, ready for cloud deployment.
 >
 > Thank you for reviewing NexusRAG for the ShadowFox Advanced-Level AI Engineer track!"*
 
-**Cue:** Show green test output (`48 passed in 0.82s`, `19 passed in 1.36s`, `8/8 Playwright user journeys passed`), display GitHub repository URL, and end recording cleanly.
+**Cue:** Show terminal with `52 passed in 1.93s`, `20 passed in 1.39s`, display GitHub repository URL, and end recording cleanly.

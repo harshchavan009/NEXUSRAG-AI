@@ -213,13 +213,11 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onNavigate(VIEWS.SETTINGS)}
-          >
-            Configure in Settings
-          </Button>
+          <div className="flex-shrink-0 flex items-center">
+            <code className="text-[11px] font-mono bg-amber-500/15 text-amber-700 dark:text-amber-300 px-2.5 py-1.5 rounded border border-amber-500/30">
+              export GEMINI_API_KEY="..."
+            </code>
+          </div>
         </div>
       )}
 
@@ -289,7 +287,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
                 {step1Done ? <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" /> : <Circle className="w-4 h-4 text-ink-muted flex-shrink-0 mt-0.5" />}
                 <div>
                   <span className="font-semibold text-ink block">1. Ingest Documents</span>
-                  <span className="text-[11px] text-ink-muted font-serif">Upload your files or load 4 sample papers.</span>
+                  <span className="text-[11px] text-ink-muted font-serif">Upload your files or load 4 benchmark documents.</span>
                 </div>
               </div>
               {!step1Done && (

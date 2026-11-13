@@ -38,7 +38,8 @@ import {
   useCreateSession,
   useDeleteSession,
   useCollections,
-  useDocuments
+  useDocuments,
+  useSuggestedInquiries
 } from '../api/queries';
 import { VIEWS } from '../components/layout/RailNav';
 import clsx from 'clsx';
@@ -75,6 +76,8 @@ export function ResearchDeskPage({
   const collections = Array.isArray(rawColls.data) ? rawColls.data : (rawColls.data?.collections || []);
   const rawDocs = useDocuments();
   const documents = Array.isArray(rawDocs.data) ? rawDocs.data : (rawDocs.data?.documents || []);
+  const suggestionsQuery = useSuggestedInquiries(selectedDocs);
+  const suggestedInquiries = suggestionsQuery.data?.suggestions || [];
 
   const createSessionMutation = useCreateSession();
   const deleteSessionMutation = useDeleteSession();
@@ -269,53 +272,6 @@ export function ResearchDeskPage({
 
     downloadMarkdownFile(`nexusrag-session-${sessionDetail.id.slice(0, 8)}.md`, md);
     toast.success('Complete research session exported.');
-  };
-
-  const getDynamicSuggestedQuestions = () => {
-    const suggestions = [];
-    const docNames = documents.map((d) => (d.original_filename || d.filename || '').toLowerCase());
-
-    if (docNames.some((n) => n.includes('clean_energy') || n.includes('energy'))) {
-      suggestions.push({
-        label: 'Renewable microgrid advantages',
-        query: 'What are the primary performance advantages of renewable microgrids and localized distributed energy storage?',
-      });
-    }
-    if (docNames.some((n) => n.includes('corporate_governance') || n.includes('governance'))) {
-      suggestions.push({
-        label: 'Corporate governance & oversight',
-        query: 'What internal audit and executive accountability mechanisms are outlined in the governance guidelines?',
-      });
-    }
-    if (docNames.some((n) => n.includes('consensus') || n.includes('distributed'))) {
-      suggestions.push({
-        label: 'Consensus fault tolerance',
-        query: 'How does the proposed distributed consensus mechanism maintain safety under network partition?',
-      });
-    }
-    if (docNames.some((n) => n.includes('architecture') || n.includes('system'))) {
-      suggestions.push({
-        label: 'Architecture latency trade-offs',
-        query: 'What latency benchmarks and throughput trade-offs are documented for the pipeline architecture?',
-      });
-    }
-
-    if (suggestions.length < 3) {
-      suggestions.push({
-        label: 'Summarize primary thesis',
-        query: 'Summarize the primary thesis, key findings, and core conclusions across the indexed documents.',
-      });
-      suggestions.push({
-        label: 'Extract quantitative data',
-        query: 'Extract the core empirical methodologies and quantitative metrics reported in the documents.',
-      });
-      suggestions.push({
-        label: 'Compare key assertions',
-        query: 'Compare the key assertions across documents and identify any conflicting evidence or open questions.',
-      });
-    }
-
-    return suggestions.slice(0, 3);
   };
 
   // Helper to render inline clickable citations [1], [2] inside answer text
@@ -790,20 +746,38 @@ export function ResearchDeskPage({
                   <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
                     Suggested Inquiries
                   </span>
-                  <span className="text-[10px] text-brand font-medium">From Indexed Files</span>
+                  {documents.length > 0 && suggestedInquiries.length > 0 && (
+                    <span className="text-[10px] text-brand font-medium">
+                      Derived from {selectedDocs.length > 0 ? 'Selected' : 'Indexed'} Files
+                    </span>
+                  )}
                 </div>
-                <div className="flex flex-col gap-2">
-                  {getDynamicSuggestedQuestions().map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSend(item.query)}
-                      className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs cursor-pointer"
-                    >
-                      <span className="font-medium text-ink">{item.label}</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand flex-shrink-0" />
-                    </button>
-                  ))}
-                </div>
+
+                {documents.length === 0 ? (
+                  <div className="p-3.5 rounded-xl bg-surface-subtle border border-border text-center flex flex-col gap-1">
+                    <span className="font-semibold text-ink text-xs block">No Documents Indexed</span>
+                    <p className="text-ink-muted text-[11px] font-serif leading-relaxed">
+                      Upload files or load benchmark documents to view document-derived research suggestions.
+                    </p>
+                  </div>
+                ) : suggestedInquiries.length === 0 ? (
+                  <div className="p-3 rounded-lg bg-surface-subtle border border-border text-center text-ink-muted text-[11px]">
+                    No inquiries derived for current scope. Select documents to refresh suggestions.
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {suggestedInquiries.map((item, idx) => (
+                      <button
+                        key={item.id || idx}
+                        onClick={() => handleSend(item.query)}
+                        className="p-2.5 rounded-xl border border-border hover:border-brand bg-surface hover:bg-surface-subtle/80 text-left transition-colors flex items-center justify-between group shadow-2xs cursor-pointer"
+                      >
+                        <span className="font-medium text-ink">{item.label}</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-ink-faint group-hover:text-brand flex-shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Research Tips Card */}

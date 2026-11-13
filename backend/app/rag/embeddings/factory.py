@@ -14,12 +14,15 @@ def get_embedding_provider(
     prov = (provider_type or settings.AI_PROVIDER).lower()
     if prov == "gemini":
         if not settings.GEMINI_API_KEY:
-            # Fall back to mock if in development/test and key is absent
-            return MockEmbeddingProvider(dimension=settings.EMBEDDING_DIMENSION)
+            # Allow mock provider only in automated pytest test environment when no external key is available
+            if settings.ENVIRONMENT == "testing":
+                return MockEmbeddingProvider(dimension=settings.EMBEDDING_DIMENSION)
+            raise ValueError(
+                "Gemini API key is not configured. Set GEMINI_API_KEY in your environment to enable vector embeddings."
+            )
         return GeminiEmbeddingProvider()
     elif prov == "mock":
         return MockEmbeddingProvider(dimension=settings.EMBEDDING_DIMENSION)
     else:
-        # Default fallback
-        return MockEmbeddingProvider(dimension=settings.EMBEDDING_DIMENSION)
+        raise ValueError(f"Unsupported embedding provider: '{prov}'. Supported providers: 'gemini', 'mock'.")
 

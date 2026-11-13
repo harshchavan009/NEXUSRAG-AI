@@ -71,6 +71,6 @@ The Application is provided on an "AS IS" and "AS AVAILABLE" basis without warra
 We reserve the right to modify these Terms or suspend workspace access at any time to preserve system integrity or comply with regulatory guidelines.
 
 For questions regarding these Terms:  
-**Contact:** Harsh Chavan — [harshchavan1030@gmail.com](mailto:harshchavan1030@gmail.com)  
+**Contact:** Harsh Chavan - [harshchavan1030@gmail.com](mailto:harshchavan1030@gmail.com)  
 **Repository:** [https://github.com/harshchavan009/NEXUSRAG-AI.git](https://github.com/harshchavan009/NEXUSRAG-AI.git)
 

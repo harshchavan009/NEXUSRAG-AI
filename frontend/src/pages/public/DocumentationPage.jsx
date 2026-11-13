@@ -212,7 +212,7 @@ export function DocumentationPage({ onNavigate }) {
                 <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">POST</span>
                 <span className="ml-3 font-semibold text-ink">/api/v1/documents/sample</span>
               </div>
-              <span className="text-ink-muted text-[11px] font-sans">One-click background ingestion of 4 sample papers</span>
+              <span className="text-ink-muted text-[11px] font-sans">One-click background ingestion of 4 benchmark documents</span>
             </div>
 
             <div className="p-4 rounded-xl bg-surface border border-border flex items-center justify-between">

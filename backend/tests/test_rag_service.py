@@ -214,3 +214,39 @@ def test_chat_and_session_api_endpoints(client, workspace_a_auth, db_session):
 
     # Detail now 404
     assert client.get(f"/api/v1/sessions/{session_id}", headers=headers).status_code == 404
+
+def test_suggested_inquiries_endpoint(client, workspace_a_auth, db_session):
+    client.cookies.set(settings.SESSION_COOKIE_NAME, workspace_a_auth["token"])
+
+    # 1. Unindexed workspace: returns empty list
+    empty_res = client.get("/api/v1/query/suggestions")
+    assert empty_res.status_code == 200
+    data_empty = empty_res.json()
+    assert data_empty["total_indexed_documents"] == 0
+    assert data_empty["suggestions"] == []
+
+    # 2. Workspace with indexed documents: returns derived questions
+    ws = db_session.query(Workspace).filter(Workspace.session_token == workspace_a_auth["token"]).first()
+    doc = Document(
+        workspace_id=ws.id,
+        filename="solar_energy.txt",
+        original_filename="solar_energy.txt",
+        storage_path="/tmp/solar_energy.txt",
+        file_type="txt",
+        file_size_bytes=800,
+        page_count=1,
+        chunk_count=1,
+        sha256_hash="hash_suggestions_test",
+        status="indexed"
+    )
+    db_session.add(doc)
+    db_session.commit()
+    db_session.refresh(doc)
+
+    res = client.get("/api/v1/query/suggestions")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total_indexed_documents"] == 1
+    assert len(data["suggestions"]) >= 1
+    assert any("solar" in s["query"].lower() or "efficiency" in s["query"].lower() for s in data["suggestions"])
+    assert data["suggestions"][0]["target_document_id"] == doc.id

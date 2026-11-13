@@ -148,7 +148,7 @@ export function SettingsPage() {
           <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
             <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
             <div>
-              <span className="font-semibold">Local Offline Mode Active: </span>
+              <span className="font-semibold">API Key Not Configured: </span>
               {probeData.message}
             </div>
           </div>

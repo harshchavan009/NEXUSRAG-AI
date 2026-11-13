@@ -259,3 +259,15 @@ export function usePurgeWorkspace() {
   });
 }
 
+// --- Suggested Inquiries ---
+export function useSuggestedInquiries(documentIds = []) {
+  const queryParam = documentIds && documentIds.length > 0 
+    ? `?${documentIds.map((id) => `document_ids=${encodeURIComponent(id)}`).join('&')}` 
+    : '';
+  return useQuery({
+    queryKey: ['suggested-inquiries', documentIds],
+    queryFn: () => apiRequest(`/api/v1/query/suggestions${queryParam}`),
+    staleTime: 30000,
+  });
+}
+

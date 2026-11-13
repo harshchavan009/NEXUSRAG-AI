@@ -7,9 +7,10 @@
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-blue.svg)](https://langchain-ai.github.io/langgraph/)
 [![FAISS](https://img.shields.io/badge/FAISS-CPU_1.8+-00599C.svg)](https://github.com/facebookresearch/faiss)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-38B2AC.svg?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Pytest Tests](https://img.shields.io/badge/Backend_Tests-48_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
-[![Vitest Tests](https://img.shields.io/badge/Frontend_Tests-19_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
-[![Playwright E2E](https://img.shields.io/badge/E2E_Journeys-8%2F8_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![Pytest Tests](https://img.shields.io/badge/Backend_Tests-52_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![Vitest Tests](https://img.shields.io/badge/Frontend_Tests-20_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![Total Tests](https://img.shields.io/badge/Total_Automated_Tests-72_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![ShadowFox Compliance](https://img.shields.io/badge/ShadowFox_Compliance-100%25_Verified-brightgreen.svg)](docs/advanced-compliance.md)
 [![Security Audit](https://img.shields.io/badge/Vulnerabilities-0_Reported-brightgreen.svg)](#20-defense-in-depth-security-review--threat-model)
 
 > **"Trace every answer to the sentence that proves it."**  
@@ -292,11 +293,15 @@ Evaluated across a gold-standard dataset of 10 standardized queries (6 in-domain
 | **Mean Reciprocal Rank (MRR)** | $\ge 0.800$ | **1.0000 (100.0%)** | **PASSED** |
 | **Gate Calibration Accuracy** | $\ge 0.900$ | **1.0000 (100.0%)** | **PASSED (10/10 Correct)** |
 | **Citation Integrity Rate** | $\ge 0.900$ | **1.0000 (100.0%)** | **PASSED (100.0%)** |
-| **Median Retrieval Latency (p50)** | $< 100 \text{ ms}$ | **1.69 ms** | **PASSED** |
-| **Tail Retrieval Latency (p95)** | $< 250 \text{ ms}$ | **4.32 ms** | **PASSED** |
-| **Backend Test Suite** | 100% Passing | **48 / 48 Passed (89% Coverage)** | **PASSED** |
-| **Frontend Test Suite** | 100% Passing | **19 / 19 Passed** | **PASSED** |
+| **Median Retrieval Latency (p50)** | $< 100 \text{ ms}$ | **2.62 ms** | **PASSED** |
+| **Tail Retrieval Latency (p95)** | $< 250 \text{ ms}$ | **4.76 ms** | **PASSED** |
+| **Total Engine Latency (p50)** | $< 100 \text{ ms}$ | **3.04 ms** | **PASSED** |
+| **Backend Test Suite (Pytest)** | 100% Passing | **52 / 52 Passed (89% Coverage)** | **PASSED** |
+| **Frontend Test Suite (Vitest)** | 100% Passing | **20 / 20 Passed** | **PASSED** |
+| **Total Automated Test Battery** | 100% Passing | **72 / 72 Tests Passed** | **PASSED** |
 | **Playwright User Journeys** | 8/8 Completed | **8 / 8 User Journeys Verified** | **PASSED** |
+
+> Complete benchmark methodology, 4-way ablation studies, and query-by-query breakdown are documented in [`docs/retrieval-evaluation.md`](docs/retrieval-evaluation.md).
 
 ---
 
@@ -430,32 +435,37 @@ NexusRAG includes turnkey production manifests:
 
 | Assignment Requirement | Implementation in NexusRAG | Verification Evidence | Status |
 |---|---|---|---|
-| **Multi-Format Ingestion** | PyMuPDF (PDF), CommonMark (MD), UTF-8/Latin-1 (TXT) | `test_parsers.py` (5 tests passing) | **PASSED** |
-| **Token Chunking** | 400-token chunks with 50-token overlap & sentence bounds | `test_chunking.py` (2 tests passing) | **PASSED** |
-| **FAISS Vector Store** | `faiss.IndexIDMap2` wrapping `IndexFlatIP` with unit norm | `test_faiss_store.py` (1 test passing) | **PASSED** |
-| **Scoped Retrieval** | Filter candidate chunks by collection ID and document ID | `test_rag_graph.py` (9 tests passing) | **PASSED** |
-| **Reranking Logic** | Lexical & semantic scoring with normalized $[0, 1]$ ranking | `test_rag_graph.py` | **PASSED** |
-| **Evidence Sufficiency** | $0.650$ threshold gate; clean abstention on irrelevant queries | `test_evaluation_benchmark.py` (10/10 correct) | **PASSED** |
-| **Grounded Generation** | XML `<context>` delimiters; server-side regex citation check | `test_rag_graph.py`, `test_security_audit.py` | **PASSED** |
-| **Observability Trace** | Persisted `WorkflowRun` trace with node durations in ms | `test_rag_service.py` | **PASSED** |
-| **Real-Time Streaming** | SSE streaming (`POST /api/v1/query/stream`) | `test_rag_service.py` | **PASSED** |
-| **Tenant Isolation** | 256-bit entropy session cookie + Double-Submit CSRF | `test_isolation_security.py` (5 tests passing) | **PASSED** |
-| **Security Audits** | 0 vulnerabilities (`pip-audit`, `npm audit`), 0 secrets | `docs/security-review.md` | **PASSED** |
-| **Zero Static Data** | All UI counts and metrics backed by PostgreSQL/FAISS | `SettingsPage.jsx`, `test_crud_endpoints.py` | **PASSED** |
-| **Public Site & App Split** | Public marketing at `/`, isolated app workspace at `/app/*` | `App.jsx`, `PublicLayout.jsx`, `AppShell.jsx` | **PASSED** |
-| **First-Run Onboarding** | 1-click sample document ingestion with real byte progress | `KnowledgeBasesPage.jsx`, `test_upload_validation.py` | **PASSED** |
-| **Settings Page 7** | Spec Page 7 AI provider, models, chunking, storage config | `SettingsPage.jsx`, `Playwright Journey 5` | **PASSED** |
+| **R1: Multi-Format Ingestion** | PyMuPDF (PDF), CommonMark (MD), UTF-8/Latin-1 (TXT); 26 chunks across 4 benchmark files | `backend/tests/test_upload_validation.py` (9 tests), `scripts/run_advanced_compliance_evidence.py` | **PASSED** |
+| **R2: Parsing & Preprocessing** | PyMuPDF page boundaries, char offsets, and text normalization | `test_parsers.py` (5 tests passing), `scripts/run_advanced_compliance_evidence.py` | **PASSED** |
+| **R3: Token Chunking** | 400-token chunks with 50-token overlap & tiktoken `cl100k_base` BPE tokenizer | `test_chunking.py` (2 tests passing), `scripts/run_advanced_compliance_evidence.py` | **PASSED** |
+| **R4: Embedding Generation** | `gemini-embedding-2` 768 MRL dimensions with L2 unit normalization | `test_health.py` (5 tests passing), `scripts/run_advanced_compliance_evidence.py` | **PASSED** |
+| **R5: FAISS Vector Store** | `faiss.IndexIDMap2` wrapping `IndexFlatIP` with atomic persistence & in-place deletion | `test_faiss_store.py` (1 test passing), `scripts/run_advanced_compliance_evidence.py` | **PASSED** |
+| **R6: Scoped Retrieval** | Filter candidate chunks by collection ID and document ID; cross-tenant isolation | `test_isolation_security.py` (5 tests), `test_security_audit.py` (8 tests) | **PASSED** |
+| **R7: Grounded Generation** | XML `<context>` delimiters; sufficiency gate (0.650) with honest abstention | `test_rag_graph.py` (9 tests), `scripts/run_advanced_compliance_evidence.py` | **PASSED** |
+| **R8: Citation Support** | Bracketed chips mapped to exact offsets; regex strips phantom tags; dual-mode reader | `test_rag_graph.py`, `frontend/src/test/components.test.jsx` (12 tests) | **PASSED** |
+| **R9: Query Rewriting** | Resolves conversational anaphora and co-references across multi-turn sessions | `test_rag_graph.py`, `backend/app/rag/engine/prompts.py` | **PASSED** |
+| **R10: Reranking Logic** | Cross-encoder lexical hybrid composite scoring ($0.60 \times \text{Vector} + 0.40 \times \text{Lexical}$) | `test_rag_graph.py`, `backend/app/rag/reranking/reranker.py` | **PASSED** |
+| **R11: Typed Schemas** | Strict Pydantic v2 schemas; HTTP 422 rejected malformed requests | `backend/app/schemas/`, `test_upload_validation.py` | **PASSED** |
+| **R12: Real-Time Streaming** | Server-Sent Events (SSE) streaming (`POST /api/v1/query/stream`) with stage events | `test_rag_service.py` (4 tests passing) | **PASSED** |
+| **R13: Clean API Structure** | Modular FastAPI architecture across 29 versioned endpoints; OpenAPI 3.1.0 | `backend/app/api/v1/`, `scripts/run_advanced_compliance_evidence.py` | **PASSED** |
+| **R14: Containerized Setup** | Multi-stage Dockerfile, PostgreSQL 16 Alpine, healthchecks, non-root user `nexus` | `docker-compose.yml`, `Dockerfile`, `.env.example` | **PASSED** |
+| **W1: LangGraph Workflow** | 9-node DAG state machine with conditional sufficiency and groundedness routing | `backend/app/rag/engine/graph.py`, `test_rag_graph.py` | **PASSED** |
+| **W2: Production Thinking** | 256-bit session cookies, double-submit CSRF, sliding rate limit, SQLite WAL / PostgreSQL 16 | `test_security_audit.py`, `test_isolation_security.py` | **PASSED** |
+| **Q1: AI Quality Benchmark** | 100% P@1, 100% Recall@4, 1.000 MRR, 100% Gate Accuracy, 4-way ablation studies | `test_evaluation_benchmark.py`, `docs/retrieval-evaluation.md` | **PASSED** |
+| **O1: Observability Trace** | Persisted `WorkflowRun` trace with node durations in ms and raw JSON export | `frontend/src/pages/RetrievalInspectorPage.jsx`, `test_rag_service.py` | **PASSED** |
+| **E1: Architecture Explanation** | Interview-ready technical speaking guide and architectural justifications | `docs/EXPLAIN.md` | **PASSED** |
+| **S1: Submission Package** | 4:15 demonstration video script and mentor repository structure inquiry draft | `docs/demo-video-script.md`, `docs/mentor-validation-inquiry.md` | **PASSED** |
 
-### Submission Pack Documentation
+### Submission Pack Documentation (Advanced Track)
+- **Traceability Matrix & Compliance Audit:** [`docs/advanced-compliance.md`](docs/advanced-compliance.md) (100% Pass across all 20 requirements)
+- **Empirical Audit Evidence Log:** [`docs/advanced-audit-evidence.md`](docs/advanced-audit-evidence.md) and [`docs/advanced-audit-evidence.json`](docs/advanced-audit-evidence.json)
+- **Architecture Deep-Dive & Speaking Guide:** [`docs/EXPLAIN.md`](docs/EXPLAIN.md)
+- **Calibrated Retrieval Evaluation Whitepaper:** [`docs/retrieval-evaluation.md`](docs/retrieval-evaluation.md)
+- **Demonstration Video Script & Shot List (4:15):** [`docs/demo-video-script.md`](docs/demo-video-script.md)
+- **Mentor Submission Clarification Inquiry:** [`docs/mentor-validation-inquiry.md`](docs/mentor-validation-inquiry.md)
 - **Executive Technical Summary:** [`docs/technical-summary.md`](docs/technical-summary.md)
-- **Demonstration Video Script & Shot List:** [`docs/demo-video-script.md`](docs/demo-video-script.md)
-- **AI Key Cost-Safety & Security Checklist:** [`docs/cost-safety-checklist.md`](docs/cost-safety-checklist.md)
-- **Quantitative Evaluation Whitepaper:** [`docs/evaluation.md`](docs/evaluation.md)
 - **Defense-in-Depth Security Review:** [`docs/security-review.md`](docs/security-review.md)
-- **System Architecture Whitepaper:** [`docs/architecture.md`](docs/architecture.md)
-- **RAG Pipeline State Machine Specification:** [`docs/rag-pipeline.md`](docs/rag-pipeline.md)
 - **OpenAPI Specification & Contract:** [`docs/api-reference.md`](docs/api-reference.md)
-- **Transformation Roadmap & Audit:** [`docs/transform-plan.md`](docs/transform-plan.md) and [`docs/transform-audit.md`](docs/transform-audit.md)
 
 ---
 

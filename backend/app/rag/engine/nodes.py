@@ -99,10 +99,10 @@ def rewrite_query_node(state: RAGGraphState) -> Dict[str, Any]:
     is_conversational = len(chat_history) > 0 and (has_pronouns or len(query.split()) < 4)
 
     rewritten_query = query
-    if is_conversational and settings.GEMINI_API_KEY and settings.AI_PROVIDER == "gemini":
+    if is_conversational and (settings.GEMINI_API_KEY or settings.ENVIRONMENT == "testing") and settings.AI_PROVIDER == "gemini":
         try:
             from google import genai
-            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+            client = genai.Client(api_key=settings.GEMINI_API_KEY or "testing-mock-key")
             
             history_text = "\n".join([f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in chat_history[-4:]])
             prompt = QUERY_REWRITER_PROMPT.format(chat_history=history_text, query=query)
@@ -322,10 +322,10 @@ def generate_node(state: RAGGraphState) -> Dict[str, Any]:
     )
 
     generated_text = ""
-    if settings.GEMINI_API_KEY and settings.AI_PROVIDER == "gemini":
+    if (settings.GEMINI_API_KEY or settings.ENVIRONMENT == "testing") and settings.AI_PROVIDER == "gemini":
         try:
             from google import genai
-            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+            client = genai.Client(api_key=settings.GEMINI_API_KEY or "testing-mock-key")
             
             if token_cb and callable(token_cb):
                 stream_response = client.models.generate_content_stream(
@@ -346,22 +346,24 @@ def generate_node(state: RAGGraphState) -> Dict[str, Any]:
             logger.error(f"Error during Gemini LLM generation: {e}", exc_info=True)
             generated_text = ""
 
-    # Offline / deterministic grounded generation fallback
+    # Zero-Mock Policy: Never fabricate answers or citations when provider generation fails
     if not generated_text:
-        # Construct factual synthesis using retrieved context passages
-        synthesis_lines = []
-        for idx, chunk in enumerate(reranked, start=1):
-            sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", chunk["content"]) if len(s.strip()) > 20]
-            lead_sentence = sentences[0] if sentences else chunk["content"][:180]
-            synthesis_lines.append(f"{lead_sentence} [{idx}]")
-        
-        grounded_answer = " ".join(synthesis_lines)
+        refusal_msg = (
+            "Generation could not be completed. The AI provider is not configured or failed to respond. "
+            "Please configure GEMINI_API_KEY in your environment to enable live grounded synthesis."
+        )
         if token_cb and callable(token_cb):
-            # Stream words with small spacing
-            words = grounded_answer.split(" ")
-            for w in words:
-                token_cb(w + " ")
-        generated_text = grounded_answer
+            token_cb(refusal_msg)
+
+        timings["generate"] = round((time.perf_counter() - t0) * 1000, 2)
+        return {
+            "generated_text": refusal_msg,
+            "is_abstention": True,
+            "groundedness_score": 0.0,
+            "validated_citations": [],
+            "stripped_citations": [],
+            "node_timings": timings
+        }
 
     timings["generate"] = round((time.perf_counter() - t0) * 1000, 2)
     return {
@@ -437,10 +439,10 @@ def validate_groundedness_node(state: RAGGraphState) -> Dict[str, Any]:
     reranked = state.get("reranked_chunks", [])
     
     score = 0.85
-    if settings.GEMINI_API_KEY and settings.AI_PROVIDER == "gemini":
+    if (settings.GEMINI_API_KEY or settings.ENVIRONMENT == "testing") and settings.AI_PROVIDER == "gemini":
         try:
             from google import genai
-            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+            client = genai.Client(api_key=settings.GEMINI_API_KEY or "testing-mock-key")
             
             passages_text = "\n\n".join([f"[{i+1}] {c['content']}" for i, c in enumerate(reranked)])
             prompt = GROUNDEDNESS_JUDGE_PROMPT.format(passages=passages_text, answer=answer)

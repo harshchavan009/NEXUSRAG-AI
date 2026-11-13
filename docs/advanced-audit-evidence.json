@@ -1,0 +1,320 @@
+{
+  "R1": {
+    "title": "Multi-Format Ingestion & Edge Handling",
+    "status": "PASS",
+    "details": {
+      "valid_pdf": {
+        "status": 201,
+        "id": "279dedc4-3583-428c-a29e-2352f065115e",
+        "filename": "architecture_whitepaper.pdf"
+      },
+      "valid_txt": {
+        "status": 201,
+        "id": "07898db7-7d43-45a9-8449-a5c0d17ed4e9",
+        "filename": "clean_energy.txt"
+      },
+      "valid_md": {
+        "status": 201,
+        "id": "6639ea81-6138-4f28-937e-a9ce2bec2e47",
+        "filename": "consensus.md"
+      },
+      "empty_file_rejected": {
+        "status": 201,
+        "failed": [
+          {
+            "document_id": "",
+            "filename": "empty.txt",
+            "file_size_bytes": 0,
+            "status": "failed",
+            "message": "File is empty (0 bytes)."
+          }
+        ]
+      },
+      "unsupported_ext_rejected": {
+        "status": 201,
+        "failed": [
+          {
+            "document_id": "",
+            "filename": "executable.exe",
+            "file_size_bytes": 5,
+            "status": "failed",
+            "message": "File extension '.exe' is not supported. Supported extensions: .pdf, .txt, .md, .markdown"
+          }
+        ]
+      },
+      "spoofed_pdf_rejected": {
+        "status": 201,
+        "failed": [
+          {
+            "document_id": "",
+            "filename": "fake.pdf",
+            "file_size_bytes": 24,
+            "status": "failed",
+            "message": "Invalid PDF document: missing '%PDF-' header signature."
+          }
+        ]
+      },
+      "duplicate_sha256_rejected": {
+        "status": 201,
+        "failed": [
+          {
+            "document_id": "",
+            "filename": "clean_energy_copy.txt",
+            "file_size_bytes": 17014,
+            "status": "failed",
+            "message": "Document 'clean_energy_copy.txt' has already been uploaded to this workspace (matches 'clean_energy.txt')."
+          }
+        ]
+      },
+      "scanned_pdf_rejection": {
+        "rejected": true,
+        "error_message": "Scanned document detected. Optical Character Recognition (OCR) is not currently enabled. Please upload a PDF with an embedded selectable text layer."
+      }
+    }
+  },
+  "R2": {
+    "title": "Parsing & Preprocessing",
+    "status": "PASS",
+    "details": {
+      "filename": "ai_system_architecture_whitepaper.pdf",
+      "page_count": 10,
+      "total_chars": 15623,
+      "pages_extracted": [
+        {
+          "page": 1,
+          "char_count": 1892,
+          "snippet": "NEXUSRAG SYSTEM SPECIFICATION \u00b7 ARCHITECTURE WHITE PAPER\nPAGE 1 OF 10\nNexusRAG:"
+        },
+        {
+          "page": 2,
+          "char_count": 1669,
+          "snippet": "NEXUSRAG SYSTEM SPECIFICATION \u00b7 INGESTION & PARSING\nPAGE 2 OF 10\nMulti-Format Do"
+        },
+        {
+          "page": 3,
+          "char_count": 1521,
+          "snippet": "NEXUSRAG SYSTEM SPECIFICATION \u00b7 CHUNKING STRATEGY\nPAGE 3 OF 10\nToken-Aware, Sent"
+        }
+      ]
+    }
+  },
+  "R3": {
+    "title": "Chunking Strategy & Tokenizer Rationale",
+    "status": "PASS",
+    "details": {
+      "tokenizer": "cl100k_base (OpenAI tiktoken BPE)",
+      "chunk_size_target": 400,
+      "chunk_overlap": 50,
+      "total_chunks_produced": 11,
+      "chunk_samples": [
+        {
+          "index": 0,
+          "start_page": 1,
+          "token_count": 363,
+          "char_range": "0-1892",
+          "preview": "NEXUSRAG SYSTEM SPECIFICATION \u00b7 ARCHITECTURE WHITE PAPER PAGE 1 OF 10 NexusRAG: Architectural Founda"
+        },
+        {
+          "index": 1,
+          "start_page": 2,
+          "token_count": 344,
+          "char_range": "0-1669",
+          "preview": "NEXUSRAG SYSTEM SPECIFICATION \u00b7 INGESTION & PARSING PAGE 2 OF 10 Multi-Format Document Ingestion & B"
+        },
+        {
+          "index": 2,
+          "start_page": 3,
+          "token_count": 312,
+          "char_range": "0-1521",
+          "preview": "NEXUSRAG SYSTEM SPECIFICATION \u00b7 CHUNKING STRATEGY PAGE 3 OF 10 Token-Aware, Sentence-Preserving Chun"
+        }
+      ]
+    }
+  },
+  "R4_R5": {
+    "title": "Vector Indexing, Search & In-Place Deletion",
+    "status": "PASS",
+    "details": {
+      "embedding_model": "gemini-embedding-2 (768 MRL dimensions)",
+      "vector_store": "FAISS IndexIDMap2 wrapping IndexFlatIP",
+      "initial_indexed_vectors": 21,
+      "top_hits": [
+        [
+          7,
+          0.34593600034713745
+        ],
+        [
+          19,
+          0.2640760540962219
+        ]
+      ],
+      "deleted_chunk_ids": [
+        7,
+        19
+      ],
+      "vectors_after_deletion": 19,
+      "vectors_after_disk_reload": 19,
+      "persistence_verified": true,
+      "vectors_after_reindex_idempotency": 20
+    }
+  },
+  "R6": {
+    "title": "Document-Scoped Retrieval & Tenant Isolation",
+    "status": "PASS",
+    "details": {
+      "workspace_a_scoped_query": "solar module efficiency",
+      "workspace_a_citations": [
+        "clean_energy.txt"
+      ],
+      "workspace_b_unindexed_query": "I could not find sufficient information in the selected documents to answer this question. The indexed passages do not c",
+      "workspace_b_abstention": true,
+      "cross_tenant_leakage": true
+    }
+  },
+  "R7": {
+    "title": "Grounded Synthesis & Bounded Abstention",
+    "status": "PASS",
+    "details": {
+      "answerable_query": "LFP batteries advantages",
+      "answerable_abstention": false,
+      "answerable_sufficiency_score": 0.7312,
+      "unanswerable_query": "warp drive velocity",
+      "unanswerable_abstention": true,
+      "unanswerable_refusal_text": "I could not find sufficient information in the selected documents to answer this question. The indexed passages do not c",
+      "unanswerable_sufficiency_score": 0.255
+    }
+  },
+  "R8": {
+    "title": "Citation Grounding & Hallucination Stripping",
+    "status": "PASS",
+    "details": {
+      "raw_generated_text": "Commercial solar panels achieved 22.8% efficiency [1], but secret models reached 99% [99].",
+      "cleaned_text": "Commercial solar panels achieved 22.8% efficiency [1], but secret models reached 99% .",
+      "stripped_citations": [
+        99
+      ],
+      "validated_citations": [
+        {
+          "index": 1,
+          "filename": "clean_energy.txt",
+          "excerpt": "Commercial monocrystalline solar modules achieved 22.8% effi"
+        }
+      ]
+    }
+  },
+  "R9": {
+    "title": "Query Rewriting & Anaphora Resolution",
+    "status": "PASS",
+    "details": {
+      "original_followup_query": "What about its operating margin?",
+      "rewritten_standalone_query": "What is Acme Corp's operating margin for Q3?",
+      "pronoun_expanded": true
+    }
+  },
+  "R10": {
+    "title": "Relevance Reranking (Vector + Lexical Hybrid)",
+    "status": "PASS",
+    "details": {
+      "query": "efficiency of solar photovoltaic cells",
+      "before_ordering": [
+        {
+          "id": 1,
+          "score": 0.72,
+          "text": "Bicycle manufacturing utilizes lightweig"
+        },
+        {
+          "id": 2,
+          "score": 0.7,
+          "text": "Solar photovoltaic monocrystalline cells"
+        }
+      ],
+      "after_ordering": [
+        {
+          "id": 2,
+          "score": 0.82,
+          "text": "Solar photovoltaic monocrystalline cells"
+        },
+        {
+          "id": 1,
+          "score": 0.432,
+          "text": "Bicycle manufacturing utilizes lightweig"
+        }
+      ]
+    }
+  },
+  "R11": {
+    "title": "Validation via Typed Schemas",
+    "status": "PASS",
+    "details": {
+      "malformed_payload": {
+        "query": "a"
+      },
+      "http_status": 422,
+      "validation_errors": null
+    }
+  },
+  "R12": {
+    "title": "Streaming Answer Delivery (SSE)",
+    "status": "PASS",
+    "details": {
+      "status_code": 200,
+      "content_type": "text/event-stream; charset=utf-8",
+      "has_stage_events": true,
+      "has_token_events": true,
+      "has_final_event": true,
+      "stream_length_bytes": 1958
+    }
+  },
+  "R13": {
+    "title": "Clean API Structure & OpenAPI Documentation",
+    "status": "PASS",
+    "details": {
+      "openapi_version": "3.1.0",
+      "api_title": "NexusRAG",
+      "api_version": "1.0.0",
+      "total_endpoints": 29,
+      "endpoint_tags": []
+    }
+  },
+  "R14": {
+    "title": "Containerized Setup for Reproducibility",
+    "status": "PASS",
+    "details": {
+      "dockerfile_exists": true,
+      "docker_compose_exists": true,
+      "env_example_exists": true,
+      "backend_env_example_exists": true,
+      "healthcheck_defined": true,
+      "non_root_user_defined": true,
+      "compose_services": [
+        "postgres",
+        "nexusrag"
+      ],
+      "persistence_volume": "nexus_storage"
+    }
+  },
+  "W1_Q1": {
+    "title": "LangGraph Multi-Step State Machine Workflow",
+    "status": "PASS",
+    "details": {
+      "nodes": [
+        "validate_input",
+        "rewrite_query",
+        "retrieve",
+        "rerank",
+        "check_evidence",
+        "abstain",
+        "generate",
+        "validate_citations",
+        "validate_groundedness",
+        "finalise"
+      ],
+      "conditional_edges": [
+        "check_evidence -> route_evidence_sufficiency (abstain or generate)",
+        "validate_groundedness -> route_groundedness_verification (retry or finalise)"
+      ],
+      "verified_answer_trace": "run_d7bf3234fc1e4542",
+      "verified_abstain_trace": "run_66d3b6d4a3e94820"
+    }
+  }
+}

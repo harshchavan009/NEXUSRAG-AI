@@ -31,3 +31,14 @@ class QueryResponse(BaseModel):
     groundedness_score: float
     timings_ms: Dict[str, float]
 
+class SuggestedInquiry(BaseModel):
+    id: str
+    label: str
+    query: str
+    target_document_id: Optional[str] = None
+    target_filename: Optional[str] = None
+
+class SuggestedInquiriesResponse(BaseModel):
+    suggestions: List[SuggestedInquiry]
+    total_indexed_documents: int
+

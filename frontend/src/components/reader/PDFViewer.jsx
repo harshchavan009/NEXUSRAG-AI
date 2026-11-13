@@ -38,12 +38,15 @@ export function PDFViewer({
   onTabChange,
   documentMetadata = {}
 }) {
+  const isPdf = Boolean((filename || fileUrl || '').toLowerCase().match(/\.pdf($|\?)/));
   const canvasRef = useRef(null);
   const [pdfDoc, setPdfDoc] = useState(null);
   const [currentPage, setCurrentPage] = useState(highlightPage || 1);
   const [totalPages, setTotalPages] = useState(1);
   const [scale, setScale] = useState(1.15);
   const [loading, setLoading] = useState(true);
+  const [rawText, setRawText] = useState('');
+  const [textLoading, setTextLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchFileTerm, setSearchFileTerm] = useState('');
   const [panelTab, setPanelTab] = useState(activeTab || 'citation');
@@ -52,11 +55,34 @@ export function PDFViewer({
   const [commentsList, setCommentsList] = useState([]);
   const [filterColor, setFilterColor] = useState('all');
   const [showThumbnails, setShowThumbnails] = useState(false);
-  const [viewMode, setViewMode] = useState('canvas'); // 'canvas' | 'text'
+  const [viewMode, setViewMode] = useState(() => (isPdf ? 'canvas' : 'text'));
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
 
   const chunksQuery = useDocumentChunks(documentMetadata?.id);
   const chunks = chunksQuery.data?.chunks || [];
+
+  const renderHighlightedContent = (text, excerpt) => {
+    if (!text) return null;
+    if (!excerpt || !excerpt.trim()) return text;
+
+    const cleanExcerpt = excerpt.trim();
+    const idx = text.toLowerCase().indexOf(cleanExcerpt.toLowerCase().slice(0, 35));
+    if (idx === -1) return text;
+
+    const before = text.slice(0, idx);
+    const match = text.slice(idx, idx + Math.min(cleanExcerpt.length, 300));
+    const after = text.slice(idx + match.length);
+
+    return (
+      <>
+        {before}
+        <mark className="bg-amber-200 dark:bg-amber-900/60 text-ink px-1 py-0.5 rounded font-medium border-b-2 border-brand">
+          {match}
+        </mark>
+        {after}
+      </>
+    );
+  };
 
   // Sync internal panel tab with parent
   useEffect(() => {
@@ -71,38 +97,76 @@ export function PDFViewer({
     }
   }, [highlightPage, highlightExcerpt]);
 
-  // Load PDF Document
+  // Load Document (PDF via PDF.js, or plain text / markdown via direct fetch)
   useEffect(() => {
     if (!fileUrl) return;
 
-    let isMounted = true;
-    setLoading(true);
-    setError(null);
+    if (!isPdf) {
+      let isMounted = true;
+      setTextLoading(true);
+      setError(null);
+      setLoading(false);
+      setViewMode('text');
 
-    const loadingTask = pdfjsLib.getDocument({
-      url: fileUrl,
-      withCredentials: true,
-    });
+      const targetUrl = fileUrl.startsWith('http')
+        ? fileUrl
+        : (typeof window !== 'undefined' && window.location?.origin && window.location.origin !== 'null'
+          ? `${window.location.origin}${fileUrl}`
+          : fileUrl);
 
-    loadingTask.promise
-      .then((doc) => {
-        if (!isMounted) return;
-        setPdfDoc(doc);
-        setTotalPages(doc.numPages);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (!isMounted) return;
-        console.error('Error loading PDF document:', err);
-        setError('Failed to load document preview. Ensure file is accessible.');
-        setLoading(false);
+      fetch(targetUrl, { credentials: 'include' })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.text();
+        })
+        .then((txt) => {
+          if (!isMounted) return;
+          setRawText(txt);
+          setTextLoading(false);
+        })
+        .catch((err) => {
+          if (!isMounted) return;
+          console.warn('Direct file text fetch error, using chunks:', err);
+          setTextLoading(false);
+        });
+
+      return () => {
+        isMounted = false;
+      };
+    } else {
+      let isMounted = true;
+      setLoading(true);
+      setError(null);
+
+      const loadingTask = pdfjsLib.getDocument({
+        url: fileUrl,
+        withCredentials: true,
       });
 
-    return () => {
-      isMounted = false;
-      loadingTask.destroy();
-    };
-  }, [fileUrl]);
+      loadingTask.promise
+        .then((doc) => {
+          if (!isMounted) return;
+          setPdfDoc(doc);
+          setTotalPages(doc.numPages);
+          setLoading(false);
+        })
+        .catch((err) => {
+          if (!isMounted) return;
+          console.error('Error loading PDF document:', err);
+          // Gracefully fall back to extracted text if available
+          setViewMode('text');
+          setLoading(false);
+          if (!chunks || chunks.length === 0) {
+            setError('Failed to load document preview. Ensure file is accessible.');
+          }
+        });
+
+      return () => {
+        isMounted = false;
+        loadingTask.destroy();
+      };
+    }
+  }, [fileUrl, isPdf]);
 
   // Render current page to canvas
   useEffect(() => {
@@ -189,48 +253,70 @@ export function PDFViewer({
               <span className="hidden sm:inline font-semibold">NexusRAG File Annotator</span>
             </div>
 
-            {/* Page navigation controls: < 4 of 20 > */}
-            <div className="flex items-center gap-1 border-l border-border pl-3">
-              <button
-                onClick={prevPage}
-                disabled={currentPage <= 1 || loading}
-                className="p-1 rounded hover:bg-surface-subtle disabled:opacity-40 text-ink cursor-pointer"
-                title="Previous page"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
+            {/* Page navigation controls: < 4 of 20 > for PDF, or Format badge for TXT/MD */}
+            {isPdf ? (
+              <div className="flex items-center gap-1 border-l border-border pl-3">
+                <button
+                  onClick={prevPage}
+                  disabled={currentPage <= 1 || loading}
+                  className="p-1 rounded hover:bg-surface-subtle disabled:opacity-40 text-ink cursor-pointer"
+                  title="Previous page"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
 
-              <span className="font-mono text-xs text-ink px-1.5">
-                <span className="font-semibold">{currentPage}</span> of {totalPages}
-              </span>
+                <span className="font-mono text-xs text-ink px-1.5">
+                  <span className="font-semibold">{currentPage}</span> of {totalPages}
+                </span>
 
-              <button
-                onClick={nextPage}
-                disabled={currentPage >= totalPages || loading}
-                className="p-1 rounded hover:bg-surface-subtle disabled:opacity-40 text-ink cursor-pointer"
-                title="Next page"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+                <button
+                  onClick={nextPage}
+                  disabled={currentPage >= totalPages || loading}
+                  className="p-1 rounded hover:bg-surface-subtle disabled:opacity-40 text-ink cursor-pointer"
+                  title="Next page"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 border-l border-border pl-3 text-[11px] font-mono text-ink-muted">
+                <span className="px-1.5 py-0.5 rounded bg-brand/10 text-brand font-semibold uppercase">
+                  {documentMetadata?.file_extension?.replace('.', '') || 'TXT'}
+                </span>
+                <span className="text-ink-muted">Verified Evidence</span>
+              </div>
+            )}
           </div>
 
           {/* Center Zoom & Tool Icons */}
           <div className="flex items-center gap-2">
-            {/* View Mode Switcher: PDF vs Extracted Text */}
+            {/* View Mode Switcher */}
             <div className="hidden sm:flex items-center gap-0.5 bg-surface-subtle rounded-md p-0.5 border border-border">
-              <button
-                onClick={() => setViewMode('canvas')}
-                className={clsx('px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer', viewMode === 'canvas' ? 'bg-surface text-ink shadow-2xs font-bold' : 'text-ink-muted hover:text-ink')}
-              >
-                PDF View
-              </button>
-              <button
-                onClick={() => setViewMode('text')}
-                className={clsx('px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer', viewMode === 'text' ? 'bg-surface text-ink shadow-2xs font-bold' : 'text-ink-muted hover:text-ink')}
-              >
-                Extracted Text
-              </button>
+              {isPdf ? (
+                <>
+                  <button
+                    onClick={() => setViewMode('canvas')}
+                    className={clsx('px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer', viewMode === 'canvas' ? 'bg-surface text-ink shadow-2xs font-bold' : 'text-ink-muted hover:text-ink')}
+                  >
+                    PDF View
+                  </button>
+                  <button
+                    onClick={() => setViewMode('text')}
+                    className={clsx('px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer', viewMode === 'text' ? 'bg-surface text-ink shadow-2xs font-bold' : 'text-ink-muted hover:text-ink')}
+                  >
+                    Extracted Text
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setViewMode('text')}
+                    className="px-2 py-0.5 rounded text-[11px] font-medium bg-surface text-ink shadow-2xs font-bold"
+                  >
+                    Document View
+                  </button>
+                </>
+              )}
             </div>
 
             {viewMode === 'canvas' && (
@@ -321,7 +407,7 @@ export function PDFViewer({
             </div>
           )}
 
-          {/* Extracted Text View */}
+          {/* Extracted Text or Full Text Document View */}
           {viewMode === 'text' ? (
             <div className="flex-1 overflow-auto p-6 flex flex-col items-center bg-canvas">
               <div className="max-w-3xl w-full bg-surface border border-border rounded-xl shadow-xs p-6 flex flex-col gap-6 text-ink font-serif leading-relaxed text-sm">
@@ -331,18 +417,52 @@ export function PDFViewer({
                     <span className="font-semibold text-ink">{filename}</span>
                   </div>
                   <span className="font-mono text-ink-muted text-[11px]">
-                    {chunks.length} Extracted Chunks
+                    {rawText ? 'Full Text Document' : `${chunks.length} Extracted Chunks`}
                   </span>
                 </div>
 
-                {chunksQuery.isLoading ? (
+                {/* Popover / Citation Highlight Card for Text Documents */}
+                {highlightExcerpt && isPopoverOpen && (
+                  <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 shadow-xs flex flex-col gap-2 font-sans">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded bg-brand/10 text-brand flex items-center justify-center font-bold text-[10px]">
+                          AI
+                        </div>
+                        <span className="font-semibold text-xs text-ink">Verified Citation Anchor</span>
+                      </div>
+                      <button
+                        onClick={() => setIsPopoverOpen(false)}
+                        className="p-1 rounded hover:bg-surface-subtle text-ink-faint hover:text-ink cursor-pointer"
+                        title="Dismiss citation card"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <p className="font-serif italic text-xs text-ink bg-white/70 dark:bg-black/30 p-2.5 rounded-lg border border-amber-200/50 dark:border-amber-800/40 leading-relaxed">
+                      "{highlightExcerpt}"
+                    </p>
+                  </div>
+                )}
+
+                {/* Content Rendering: Raw Document Text or Chunks */}
+                {textLoading || (loading && isPdf) ? (
+                  <div className="p-8 text-center text-xs text-ink-muted flex flex-col items-center gap-2">
+                    <div className="animate-spin w-5 h-5 border-2 border-brand border-t-transparent rounded-full" />
+                    <span>Loading document content...</span>
+                  </div>
+                ) : rawText ? (
+                  <div className="font-serif text-sm leading-relaxed whitespace-pre-wrap text-ink select-text bg-surface-subtle/50 p-6 rounded-xl border border-border/60">
+                    {renderHighlightedContent(rawText, highlightExcerpt)}
+                  </div>
+                ) : chunksQuery.isLoading ? (
                   <div className="p-8 text-center text-xs text-ink-muted flex flex-col items-center gap-2">
                     <div className="animate-spin w-5 h-5 border-2 border-brand border-t-transparent rounded-full" />
                     <span>Loading extracted text chunks...</span>
                   </div>
                 ) : chunks.length === 0 ? (
                   <div className="p-8 text-center text-xs text-ink-muted italic">
-                    No extracted chunks found for this document.
+                    No extracted text available for this document.
                   </div>
                 ) : (
                   <div className="flex flex-col gap-4">

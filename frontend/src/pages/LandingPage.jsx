@@ -39,7 +39,7 @@ export function LandingPage({ onNavigate }) {
         </h1>
 
         <p className="mt-6 text-base sm:text-lg text-ink-muted max-w-2xl font-serif leading-relaxed">
-          NexusRAG analyzes PDFs, technical manuals, and research reports with sentence-level citations, groundedness validation, and inspectable retrieval graphs.
+          NexusRAG analyzes PDFs, Markdown files, and plain text documents with sentence-level citations, verified evidence checks, and complete retrieval transparency.
         </p>
 
         {/* Action Buttons */}
@@ -61,27 +61,20 @@ export function LandingPage({ onNavigate }) {
           >
             Try Sample Research
           </Button>
-
-          <Button
-            variant="ghost"
-            size="lg"
-            icon={BookOpen}
-            onClick={() => onNavigate(VIEWS.DOCS)}
-          >
-            Documentation
-          </Button>
         </div>
 
         {/* Real Product Proof Preview: Captured Screenshot of Live Running App */}
         <div className="mt-12 w-full max-w-5xl rounded-xl border border-border bg-surface shadow-xl overflow-hidden text-left">
           <div className="h-9 bg-surface-subtle border-b border-border px-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-sm bg-border-strong inline-block" />
-              <span className="text-xs font-medium text-ink">
-                Live Running Application • Dashboard Workspace
+              <span className="w-2.5 h-2.5 rounded-full bg-border-strong inline-block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-border-strong/60 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-border-strong/40 inline-block" />
+              <span className="text-xs font-mono text-ink-muted ml-2">
+                nexusrag.app/dashboard
               </span>
             </div>
-            <span className="text-[11px] font-mono text-ink-muted">1440x900 Interactive Research Canvas</span>
+            <span className="text-[11px] font-sans text-ink-muted">Research Dashboard Preview</span>
           </div>
 
           <div className="relative bg-surface p-2">
@@ -158,7 +151,7 @@ export function LandingPage({ onNavigate }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="flex flex-col gap-4">
             <span className="text-xs font-mono font-bold text-brand uppercase tracking-wider">
-              Feature 01 • Deep-Linked Verification
+              Feature 01: Passage Highlighting
             </span>
             <h3 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight font-sans">
               Verify every claim on the exact source page
@@ -194,10 +187,10 @@ export function LandingPage({ onNavigate }) {
           </div>
           <div className="flex flex-col gap-4 lg:order-2 order-1">
             <span className="text-xs font-mono font-bold text-brand uppercase tracking-wider">
-              Feature 02 • Forensic Transparency
+              Feature 02: Pipeline Inspection
             </span>
             <h3 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight font-sans">
-              Full 9-Node LangGraph Execution Traces
+              Inspect the full 9-node execution path
             </h3>
             <p className="text-sm text-ink-muted font-serif leading-relaxed">
               NexusRAG is not a black-box chatbot. Every query run produces an inspectable trace: see the standalone rewritten query, similarity scores for initial candidates, Flash reranker weights, node execution durations in milliseconds, and groundedness overlap metrics.
@@ -214,10 +207,10 @@ export function LandingPage({ onNavigate }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="flex flex-col gap-4">
             <span className="text-xs font-mono font-bold text-brand uppercase tracking-wider">
-              Feature 03 • Targeted Synthesis
+              Feature 03: Scoped Retrieval
             </span>
             <h3 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight font-sans">
-              Scoped Multi-Document Research Desk
+              Search across individual files or entire collections
             </h3>
             <p className="text-sm text-ink-muted font-serif leading-relaxed">
               Target inquiries across individual files, collections, or entire knowledge bases. NexusRAG generates suggested inquiries directly from your uploaded materials, displays inline sentence-level citations with similarity confidence, and provides one-click exports.
@@ -306,7 +299,7 @@ export function LandingPage({ onNavigate }) {
               Start researching your documents
             </h2>
             <p className="text-xs sm:text-sm text-ink-muted font-serif mt-1 max-w-lg leading-relaxed">
-              Ingest verified open-access research papers or upload your own files to experience citation-grounded RAG.
+              Load benchmark documents or upload your own files to experience verifiable, citation-grounded research.
             </p>
           </div>
           <Button

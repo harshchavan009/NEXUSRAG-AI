@@ -36,6 +36,7 @@ vi.mock('../api/queries', () => ({
   useCreateCollection: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateCollection: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
   useDeleteCollection: () => ({ mutate: vi.fn(), isPending: false }),
+  useDocumentChunks: () => ({ data: { chunks: [] }, isLoading: false }),
   useDocuments: () => ({
     data: [
       {
@@ -208,5 +209,13 @@ describe('App Navigation & 7 Core View Rendering', () => {
     renderWithProviders(<App />);
     expect(screen.getByText(/System Status & Service Uptime/i)).toBeInTheDocument();
     expect(screen.getByText(/All Core Systems Fully Operational/i)).toBeInTheDocument();
+  });
+
+  it('renders non-PDF text documents in reader without preview error', () => {
+    window.history.pushState({}, '', '/app/reader');
+    renderWithProviders(<App />);
+    expect(screen.getByText('NexusRAG File Annotator')).toBeInTheDocument();
+    expect(screen.getByText('Document View')).toBeInTheDocument();
+    expect(screen.queryByText(/Failed to load document preview/i)).toBeNull();
   });
 });
