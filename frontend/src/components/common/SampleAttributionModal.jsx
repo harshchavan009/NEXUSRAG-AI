@@ -1,56 +1,20 @@
 import React from 'react';
 import { Modal } from './Modal';
 import { ExternalLink, ShieldCheck, FileText, CheckCircle } from 'lucide-react';
+import {
+  SAMPLE_DOCUMENTS,
+  SAMPLE_DOCUMENTS_SUMMARY_NOTE,
+  SAMPLE_DOCUMENTS_MODAL_TITLE,
+} from '../../constants/sampleDocuments';
 
 export function SampleAttributionModal({ isOpen, onClose }) {
-  const samplePapers = [
-    {
-      title: 'NexusRAG: Architectural Foundations of Auditable RAG',
-      authors: 'NexusRAG Systems Engineering Group (2026)',
-      filename: 'ai_system_architecture_whitepaper.pdf',
-      format: 'PDF (10 Pages, 10 Chunks)',
-      sourceUrl: 'https://github.com/harshchavan009/NEXUSRAG-AI/blob/main/data/sample_documents/ai_system_architecture_whitepaper.pdf',
-      license: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
-      licenseType: 'CC BY 4.0 Technical Specification',
-      attributionNotes: 'Authentic 10-page architecture whitepaper specifying multi-format ingestion, FAISS IndexIDMap2 vector indexing, 9-node LangGraph orchestration, and server-side citation validation.',
-    },
-    {
-      title: 'Clean Energy & Photovoltaic Infrastructure Assessment (2024)',
-      authors: 'NexusRAG Engineering Benchmarks Team (2024)',
-      filename: 'clean_energy_report_2024.txt',
-      format: 'Plain Text (26 Sections, 6 Chunks)',
-      sourceUrl: 'https://github.com/harshchavan009/NEXUSRAG-AI/blob/main/data/sample_documents/clean_energy_report_2024.txt',
-      license: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
-      licenseType: 'CC BY 4.0 Synthetic Benchmark',
-      attributionNotes: 'Comprehensive synthetic technical benchmark detailing LFP battery storage market dynamics (82% share), photovoltaic conversion efficiencies (22.8%), and levelized cost of energy ($36/MWh).',
-    },
-    {
-      title: 'Corporate Governance, Risk Oversight & Materiality Statement (2024)',
-      authors: 'NexusRAG Engineering Benchmarks Team (2024)',
-      filename: 'corporate_governance_report.txt',
-      format: 'Plain Text (27 Sections, 5 Chunks)',
-      sourceUrl: 'https://github.com/harshchavan009/NEXUSRAG-AI/blob/main/data/sample_documents/corporate_governance_report.txt',
-      license: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
-      licenseType: 'CC BY 4.0 Synthetic Benchmark',
-      attributionNotes: 'Synthetic governance charter specifying board committee independence (77.8%), mandatory executive clawback mandates under SEC Rule 10D-1, voting thresholds, and disaster recovery RTO/RPO targets.',
-    },
-    {
-      title: 'Principles of Distributed Consensus and Fault-Tolerant State Machines',
-      authors: 'NexusRAG Systems Architecture Group (2024)',
-      filename: 'distributed_systems_consensus_brief.md',
-      format: 'Markdown (22 Sections, 5 Chunks)',
-      sourceUrl: 'https://github.com/harshchavan009/NEXUSRAG-AI/blob/main/data/sample_documents/distributed_systems_consensus_brief.md',
-      license: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
-      licenseType: 'CC BY 4.0 Technical Specification',
-      attributionNotes: 'Synthetic distributed systems specification detailing Raft election timeouts (150ms-300ms), Byzantine Fault Tolerance bounds (N >= 3f + 1), and Multi-Paxos single-round-trip invariants.',
-    },
-  ];
+  const samplePapers = SAMPLE_DOCUMENTS;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Sample Benchmark Materials & Attribution" maxWidth="max-w-2xl">
+    <Modal isOpen={isOpen} onClose={onClose} title={SAMPLE_DOCUMENTS_MODAL_TITLE} maxWidth="max-w-2xl">
       <div className="flex flex-col gap-4 text-xs text-ink font-sans">
         <p className="text-ink-muted leading-relaxed font-serif">
-          NexusRAG includes four comprehensive synthetic benchmark documents (one 10-page PDF, one Markdown specification, and two plain text reports) created specifically for rigorous, transparent evaluation of multi-stage RAG ingestion, chunking, reranking, and citation verification under Creative Commons Attribution 4.0.
+          {SAMPLE_DOCUMENTS_SUMMARY_NOTE}
         </p>
 
         <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1">

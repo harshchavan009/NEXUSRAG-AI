@@ -53,6 +53,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
 
+        # Private API responses must never be stored in browser or intermediary caches
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+
         # Automatically issue secure session cookie if a fresh workspace was provisioned
         if hasattr(request.state, "new_session_token") and request.state.new_session_token:
             response.set_cookie(

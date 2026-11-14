@@ -34,6 +34,16 @@ class FAISSVectorStore:
     """
     def __init__(self, workspace_id: str, dimension: int = None, model_name: str = None):
         self.workspace_id = workspace_id
+        if dimension is None or model_name is None:
+            try:
+                from backend.app.rag.embeddings.factory import get_embedding_provider
+                prov = get_embedding_provider()
+                if dimension is None:
+                    dimension = prov.dimension
+                if model_name is None:
+                    model_name = prov.model_name
+            except Exception:
+                pass
         self.dimension = dimension or settings.EMBEDDING_DIMENSION
         self.model_name = model_name or settings.DEFAULT_EMBEDDING_MODEL
         

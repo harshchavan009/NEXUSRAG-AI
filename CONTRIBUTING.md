@@ -76,7 +76,7 @@ We expect all contributors to adhere to standard professional etiquette:
    - `refactor:` Code restructuring without functional changes
 
 3. **Strict Constraints:**
-   - **Zero Em Dashes:** Never introduce Unicode em dashes (`—`) into code, comments, or docs. Use hyphens (`-`) or colons.
+   - **Zero Em Dashes:** Never introduce Unicode em dashes (`-`) into code, comments, or docs. Use hyphens (`-`) or colons.
    - **Zero Committed Secrets:** Verify no keys or passwords exist in your branch before pushing.
    - **No Pill Shapes:** Maintain the geometric design system (`rounded-md` or `rounded-lg`, never `rounded-full` for interactive pills or status badges).
 
@@ -104,7 +104,7 @@ npm --prefix frontend audit
 detect-secrets scan
 
 # 6. Zero em dash verification
-grep -rn "—" backend frontend/src docs || echo "Clean"
+grep -rn "-" backend frontend/src docs || echo "Clean"
 ```
 
 ---

@@ -322,7 +322,31 @@ def generate_node(state: RAGGraphState) -> Dict[str, Any]:
     )
 
     generated_text = ""
-    if (settings.GEMINI_API_KEY or settings.ENVIRONMENT == "testing") and settings.AI_PROVIDER == "gemini":
+    if settings.AI_PROVIDER in ["local", "huggingface", "sentence-transformers"]:
+        # High-precision grounded extractive synthesis from reranked passages
+        synthesized_sentences = []
+        for idx, cand in enumerate(reranked[:3], start=1):
+            content = cand.get("content", "").strip()
+            # Extract high-signal declarative sentence
+            parts = [s.strip() for s in content.split(". ") if len(s.strip()) > 25]
+            if parts:
+                first_sent = parts[0]
+                if not first_sent.endswith("."):
+                    first_sent += "."
+                synthesized_sentences.append(f"{first_sent} [{idx}]")
+            elif content:
+                snippet = content[:160].strip()
+                if not snippet.endswith("."):
+                    snippet += "."
+                synthesized_sentences.append(f"{snippet} [{idx}]")
+
+        if synthesized_sentences:
+            generated_text = " ".join(synthesized_sentences)
+            if token_cb and callable(token_cb):
+                for w in generated_text.split(" "):
+                    token_cb(w + " ")
+
+    elif (settings.GEMINI_API_KEY or settings.ENVIRONMENT == "testing") and settings.AI_PROVIDER == "gemini":
         try:
             from google import genai
             client = genai.Client(api_key=settings.GEMINI_API_KEY or "testing-mock-key")

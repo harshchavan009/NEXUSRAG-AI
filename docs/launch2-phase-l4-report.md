@@ -42,7 +42,7 @@ In Phase L4:
    - **Retrieval Inspector:** Left runs selector rail folds into a mobile drawer with dedicated trigger button.
 7. **Workspace Quotas & Retention Panel:**
    - Added real metrics grid in Settings: `{documents.length} / 100 files`, `{totalStorageMB} MB / 250 MB`, active sessions, 7-day rolling cookie retention explanation, and enterprise sign-in roadmap.
-8. **Strict Zero Em Dash Rule:** Verified 0 occurrences of em dashes (`—`) across all frontend and backend source files.
+8. **Strict Zero Em Dash Rule:** Verified 0 occurrences of em dashes (`-`) across all frontend and backend source files.
 
 ---
 

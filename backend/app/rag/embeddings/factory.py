@@ -21,8 +21,11 @@ def get_embedding_provider(
                 "Gemini API key is not configured. Set GEMINI_API_KEY in your environment to enable vector embeddings."
             )
         return GeminiEmbeddingProvider()
+    elif prov in ["local", "huggingface", "sentence-transformers"]:
+        from backend.app.rag.embeddings.local_embeddings import LocalSentenceTransformerEmbeddingProvider
+        return LocalSentenceTransformerEmbeddingProvider()
     elif prov == "mock":
         return MockEmbeddingProvider(dimension=settings.EMBEDDING_DIMENSION)
     else:
-        raise ValueError(f"Unsupported embedding provider: '{prov}'. Supported providers: 'gemini', 'mock'.")
+        raise ValueError(f"Unsupported embedding provider: '{prov}'. Supported providers: 'gemini', 'local', 'mock'.")
 

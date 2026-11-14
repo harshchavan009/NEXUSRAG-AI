@@ -39,7 +39,7 @@ This document systematically confirms, categorizes, and provides evidence for al
 - **Observation:** In `frontend/src/pages/LandingPage.jsx:130-143`, a floating testimonial card displays:
   ```jsx
   "The citation highlighting and groundedness verification are SO simple and useful. It's been the best RAG experience we've had."
-  — Verified Researcher, ShadowFox AI Internship
+  - Verified Researcher, ShadowFox AI Internship
   ```
 - **Evaluation:** **BLOCKER**. This is an invented customer review, lifted almost word-for-word from Reference 5 (`ref-5-landing-slite.png`: *"The editing interface and document structure are SO simple and useful. It's been the best Knowledge Base experience we've had."*).
 - **Resolution:** Delete this testimonial card entirely. Never ship synthetic or attributed quotes.

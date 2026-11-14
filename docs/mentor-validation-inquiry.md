@@ -51,7 +51,7 @@ The repository contains top-level folders categorizing tasks across levels:
 Both options are fully prepared on my end. If Option A is acceptable for Advanced-Track candidates, I will submit the dedicated NexusRAG repository. If Option B is mandatory for the evaluation rubric, I will organize the repository into the monorepo structure accordingly.
 
 Submission Package Readiness Checklist:
-1. GitHub Repository: Clean Git commit history, 72 automated tests passing (52 pytest + 20 vitest), zero secrets, zero CVEs, full documentation.
+1. GitHub Repository: Clean Git commit history, 116 automated test scenarios passing (52 backend pytest + 28 frontend vitest + 28 route smoke + 8 E2E journeys), zero secrets, zero CVEs, full documentation suite.
 2. Demonstration Video: 4-minute 15-second self-recorded video walk-through hosted on Google Drive with public view access enabled.
 3. Traceability Matrix: Comprehensive mapping of all PDF requirements (R1 through R14, W1, W2, Q1, O1, E1, S1) with verified proof.
 

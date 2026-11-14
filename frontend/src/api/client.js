@@ -10,7 +10,7 @@ export async function getCsrfToken() {
   if (cachedCsrfToken) return cachedCsrfToken;
 
   try {
-    const res = await fetch('/api/v1/health', { credentials: 'include' });
+    const res = await fetch('/api/v1/workspaces/current', { credentials: 'include' });
     const csrfHeader = res.headers.get('X-CSRF-Token');
     if (csrfHeader) {
       cachedCsrfToken = csrfHeader;
@@ -60,7 +60,7 @@ export async function apiRequest(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    let errorData = {};
+    let errorData;
     try {
       errorData = await response.json();
     } catch (_) {

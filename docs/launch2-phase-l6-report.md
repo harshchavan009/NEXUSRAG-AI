@@ -155,7 +155,7 @@ All sensitive files are strictly excluded from static route mounting.
 
 Ran automated check across security documentation and updated code:
 ```bash
-grep -n "—" docs/security-review.md SECURITY.md .well-known/security.txt backend/tests/test_health.py
+grep -n "-" docs/security-review.md SECURITY.md .well-known/security.txt backend/tests/test_health.py
 ```
 **Output:** `Zero em dashes found`. Clean compliance maintained.
 

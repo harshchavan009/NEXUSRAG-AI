@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 class Settings(BaseSettings):
     # Application Info
     APP_NAME: str = "NexusRAG"
-    APP_VERSION: str = "1.0.0"
+    APP_VERSION: str = "1.3.0"
     ENVIRONMENT: str = Field(default="development", description="development, staging, production")
     DEBUG: bool = False
     
@@ -78,6 +78,15 @@ class Settings(BaseSettings):
         "env_file_encoding": "utf-8",
         "extra": "ignore"
     }
+
+    def model_post_init(self, __context: Optional[dict] = None) -> None:
+        if self.AI_PROVIDER in ["local", "huggingface", "sentence-transformers"]:
+            if self.DEFAULT_EMBEDDING_MODEL == "gemini-embedding-2":
+                self.DEFAULT_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            if self.EMBEDDING_DIMENSION == 768:
+                self.EMBEDDING_DIMENSION = 384
+            if self.DEFAULT_GENERATION_MODEL == "gemini-3.5-flash-lite":
+                self.DEFAULT_GENERATION_MODEL = "local-grounded-synthesis"
 
 settings = Settings()
 

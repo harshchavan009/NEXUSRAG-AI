@@ -18,7 +18,7 @@
       "status": "PASSED",
       "notes": [
         "Clicked sample documents ingestion button.",
-        "Dashboard live aggregate metrics verified: 4 documents, 5 chunks.",
+        "Dashboard live aggregate metrics verified: 4 documents, 0 chunks.",
         "Knowledge Bases table populated with 4 indexed research papers."
       ]
     },

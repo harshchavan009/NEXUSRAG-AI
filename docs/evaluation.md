@@ -23,17 +23,20 @@ This report establishes the quantitative performance, retrieval accuracy, eviden
 ## 2. Benchmark Dataset & Methodology
 
 ### 2.1 Reference Documents (`data/sample_documents/`)
-1. **`clean_energy_report_2024.txt`** (US NREL Open Public Domain):
+The evaluation corpus comprises 4 comprehensive benchmark documents written for NexusRAG under CC BY 4.0, totaling 26 chunks across PDF, TXT, and Markdown:
+1. **`ai_system_architecture_whitepaper.pdf`** (10 pages, 10 chunks, CC BY 4.0):
+   - NexusRAG architectural specifications, FAISS IndexIDMap2 inner-product search, and LangGraph 9-node DAG state machine.
+2. **`clean_energy_report_2024.txt`** (26 sections, 6 chunks, CC BY 4.0):
    - Photovoltaic cell and module efficiencies (monocrystalline 22.8%, tandem perovskite-silicon 33.9%).
    - Battery energy storage chemistries (LFP 82% utility market share, 88.5% round-trip efficiency).
    - Levelized cost of energy (LCOE: $36/MWh standalone, $58-74/MWh solar-plus-storage).
    - Offshore wind capacity (75.2 GW across 31 countries, 15 MW turbines).
-2. **`distributed_systems_consensus_brief.md`** (CC BY 4.0 Open Technical Specification):
+3. **`distributed_systems_consensus_brief.md`** (22 sections, 5 chunks, CC BY 4.0):
    - State machine replication (SMR) invariants.
    - Raft protocol: leader election timeout intervals (150ms-300ms) and majority quorum $\lfloor N/2 \rfloor + 1$.
    - Byzantine Fault Tolerance: bound $N \ge 3f + 1$ and quorum intersection $2f + 1$.
    - Multi-Paxos Phase 1 amortization and Phase 2 round-trip latency.
-3. **`corporate_governance_report.txt`** (SEC Model Public Corporate Disclosure):
+4. **`corporate_governance_report.txt`** (27 sections, 5 chunks, CC BY 4.0):
    - Board independence ratio (77.8% independent non-executive directors).
    - Shareholder voting thresholds (75% supermajority for material mergers).
    - Executive compensation clawback mandates under SEC Rule 10D-1.

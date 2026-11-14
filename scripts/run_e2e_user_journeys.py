@@ -104,7 +104,7 @@ def run_e2e_journeys():
             
             # Total Documents metric card
             doc_card = page.locator("div:has(> div > span:text('Total Documents'))").first
-            doc_metric = doc_card.locator("div.text-2xl").text_content().strip()
+            doc_metric = doc_card.locator("div.text-3xl, div.text-2xl").text_content().strip()
             chunk_card = page.locator("div:has(> div > span:text('Vector Chunks'))").first
             chunk_metric = chunk_card.locator("div.text-2xl").text_content().strip()
             j2_notes.append(f"Dashboard live aggregate metrics verified: {doc_metric} documents, {chunk_metric} chunks.")
@@ -325,7 +325,7 @@ def run_e2e_journeys():
             
             # In Visitor B's view, documents and vectors should be 0 (isolated)
             doc_card_b = page_b.locator("div:has(> div > span:text('Total Documents'))").first
-            doc_count_b = doc_card_b.locator("div.text-2xl").text_content().strip()
+            doc_count_b = doc_card_b.locator("div.text-3xl, div.text-2xl").text_content().strip()
             assert doc_count_b == "0", f"Cross-tenant leak! Visitor B saw {doc_count_b} documents from Visitor A"
             j7_notes.append("Visitor B has 0 documents (Zero Cross-Tenant Leakage verified).")
             

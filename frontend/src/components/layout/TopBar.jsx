@@ -58,7 +58,7 @@ export function TopBar({ title, subtitle, onSearchClick, onFeedbackClick, onShor
           </button>
         )}
 
-        {/* Workspace Health Indicator */}
+        {/* Workspace Health Indicator: displayed only when degraded or offline */}
         <div className="flex items-center gap-2 pl-1">
           {isError ? (
             <span className="text-[11px] font-medium text-status-error px-2 py-0.5 rounded bg-status-error/10 border border-status-error/30 flex items-center gap-1.5">
@@ -66,19 +66,11 @@ export function TopBar({ title, subtitle, onSearchClick, onFeedbackClick, onShor
               <span>Backend Offline</span>
             </span>
           ) : statusData?.status && statusData.status !== 'healthy' ? (
-            <StatusDot
-              status={statusData.status}
-              label="Service Degraded"
-            />
-          ) : (
-            <div
-              className="text-[11px] font-medium text-ink-muted flex items-center gap-1.5"
-              title="Session data is strictly isolated"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
-              <span className="hidden sm:inline">Workspace Active</span>
-            </div>
-          )}
+            <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span>Degraded: {statusData.database !== 'connected' ? 'Database offline' : 'Check settings'}</span>
+            </span>
+          ) : null}
         </div>
       </div>
     </header>

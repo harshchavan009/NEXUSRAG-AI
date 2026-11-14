@@ -21,19 +21,22 @@ Health check endpoint reporting backend operational status.
   }
   ```
 
-### `GET /api/v1/health/system`
-Live telemetry and storage metrics backing the Zero Static Data verification display.
-- **Request:** None
+### `GET /api/v1/system/status`
+Live runtime parameters, chunking limits, and defaults for UI configuration.
+
+### `GET /api/v1/system/probe`
+Live AI provider probe verifying embedding and generation endpoints, cached for 60 seconds.
 - **Response `200 OK`:**
   ```json
   {
-    "app_name": "NexusRAG",
-    "version": "1.0.0",
-    "environment": "development",
-    "database_type": "sqlite",
-    "faiss_vectors": 18,
-    "indexed_chunks": 18,
-    "status": "healthy"
+    "status": "online",
+    "provider": "gemini",
+    "embedding_model": "gemini-embedding-2",
+    "generation_model": "gemini-3.5-flash-lite",
+    "latency_ms": 542.1,
+    "message": "API online and responsive. Live probe completed in 542.1ms.",
+    "error": null,
+    "tested_at": "2026-11-14T21:00:00Z"
   }
   ```
 

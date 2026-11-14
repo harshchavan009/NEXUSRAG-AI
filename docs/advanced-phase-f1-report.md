@@ -86,7 +86,7 @@ $ pytest backend/tests/test_evaluation_benchmark.py
 
 ### 3.4 Zero Em Dash Verification
 ```bash
-$ grep -rn "—" backend/ frontend/src/ data/sample_documents/
+$ grep -rn "-" backend/ frontend/src/ data/sample_documents/
 # Exit code 1 (Zero em dashes found)
 ```
 

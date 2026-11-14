@@ -5,17 +5,17 @@
     "details": {
       "valid_pdf": {
         "status": 201,
-        "id": "279dedc4-3583-428c-a29e-2352f065115e",
+        "id": "49ef6e30-406a-4bd3-a69c-ea1b197c10aa",
         "filename": "architecture_whitepaper.pdf"
       },
       "valid_txt": {
         "status": 201,
-        "id": "07898db7-7d43-45a9-8449-a5c0d17ed4e9",
+        "id": "63ea77ef-a652-4f45-ac50-ea42bc1468db",
         "filename": "clean_energy.txt"
       },
       "valid_md": {
         "status": 201,
-        "id": "6639ea81-6138-4f28-937e-a9ce2bec2e47",
+        "id": "ec8b8747-1f67-4852-885d-e078972ad7be",
         "filename": "consensus.md"
       },
       "empty_file_rejected": {
@@ -168,7 +168,7 @@
       ],
       "workspace_b_unindexed_query": "I could not find sufficient information in the selected documents to answer this question. The indexed passages do not c",
       "workspace_b_abstention": true,
-      "cross_tenant_leakage": true
+      "cross_tenant_isolation_verified": true
     }
   },
   "R7": {
@@ -262,7 +262,7 @@
       "has_stage_events": true,
       "has_token_events": true,
       "has_final_event": true,
-      "stream_length_bytes": 1958
+      "stream_length_bytes": 1961
     }
   },
   "R13": {
@@ -313,8 +313,8 @@
         "check_evidence -> route_evidence_sufficiency (abstain or generate)",
         "validate_groundedness -> route_groundedness_verification (retry or finalise)"
       ],
-      "verified_answer_trace": "run_d7bf3234fc1e4542",
-      "verified_abstain_trace": "run_66d3b6d4a3e94820"
+      "verified_answer_trace": "run_0d68f31118db4804",
+      "verified_abstain_trace": "run_23acd56fc051475a"
     }
   }
 }

@@ -22,7 +22,16 @@ import { StatusDot } from '../components/common/StatusDot';
 import { Modal } from '../components/common/Modal';
 import { useSystemStatus, useCurrentWorkspace, usePurgeWorkspace, useProviderProbe, useDocuments, useSessions } from '../api/queries';
 import { useToast } from '../components/common/Toast';
+import { getUIState, setUIState, UI_STATE_KEYS } from '../utils/storage';
 import clsx from 'clsx';
+
+const DEFAULT_RETRIEVAL_PARAMS = {
+  topK: 8,
+  rerankCount: 4,
+  sufficiencyThreshold: 0.65,
+  groundednessThreshold: 0.70,
+  temperature: 0.20,
+};
 
 export function SettingsPage() {
   const { data: statusData } = useSystemStatus();
@@ -41,25 +50,18 @@ export function SettingsPage() {
   const [isPurgeModalOpen, setIsPurgeModalOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash-lite');
   const [retrievalParams, setRetrievalParams] = useState(() => {
-    try {
-      const stored = localStorage.getItem('nexusrag_retrieval_params');
-      if (stored) return JSON.parse(stored);
-    } catch (e) {}
-    return {
-      topK: 8,
-      rerankCount: 4,
-      sufficiencyThreshold: 0.65,
-      groundednessThreshold: 0.70,
-      temperature: 0.20,
-    };
+    const stored = getUIState(
+      UI_STATE_KEYS.RETRIEVAL_PARAMS,
+      DEFAULT_RETRIEVAL_PARAMS,
+      (data) => typeof data === 'object' && data !== null
+    );
+    return { ...DEFAULT_RETRIEVAL_PARAMS, ...(stored || {}) };
   });
 
   const handleUpdateParam = (key, value) => {
     setRetrievalParams((prev) => {
       const next = { ...prev, [key]: value };
-      try {
-        localStorage.setItem('nexusrag_retrieval_params', JSON.stringify(next));
-      } catch (e) {}
+      setUIState(UI_STATE_KEYS.RETRIEVAL_PARAMS, next);
       return next;
     });
   };
@@ -106,12 +108,9 @@ export function SettingsPage() {
           <h1 className="text-2xl font-bold tracking-tight text-ink font-sans">
             System Settings & Architecture
           </h1>
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-brand/10 text-brand">
-            v1.0.0
-          </span>
         </div>
         <p className="text-xs sm:text-sm text-ink-muted mt-1 font-serif">
-          Manage AI model parameters, chunking thresholds, vector persistence, database dialect, and tenant data privacy.
+          Configure AI models, chunking thresholds, retrieval parameters, database storage, and session settings.
         </p>
       </div>
 
@@ -280,7 +279,7 @@ export function SettingsPage() {
             <div className="flex items-center justify-between">
               <label className="font-semibold text-ink">Evidence Sufficiency Gate</label>
               <span className="font-mono text-brand font-bold bg-surface px-2 py-0.5 rounded border border-border">
-                {retrievalParams.sufficiencyThreshold.toFixed(2)}
+                {(retrievalParams?.sufficiencyThreshold ?? 0.65).toFixed(2)}
               </span>
             </div>
             <input
@@ -304,7 +303,7 @@ export function SettingsPage() {
             <div className="flex items-center justify-between">
               <label className="font-semibold text-ink">Groundedness Gate Threshold</label>
               <span className="font-mono text-brand font-bold bg-surface px-2 py-0.5 rounded border border-border">
-                {retrievalParams.groundednessThreshold.toFixed(2)}
+                {(retrievalParams?.groundednessThreshold ?? 0.70).toFixed(2)}
               </span>
             </div>
             <input
@@ -336,7 +335,7 @@ export function SettingsPage() {
                 temperature: 0.20,
               };
               setRetrievalParams(defaults);
-              localStorage.setItem('nexusrag_retrieval_params', JSON.stringify(defaults));
+              setUIState(UI_STATE_KEYS.RETRIEVAL_PARAMS, defaults);
               toast.info('Retrieval settings reset to defaults.');
             }}
             className="text-brand hover:underline font-medium text-[11px]"

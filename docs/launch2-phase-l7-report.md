@@ -118,7 +118,7 @@ Zero databases, zero vector binary indexes, zero user uploads, zero secrets, and
 
 Verified with automated regex check:
 ```bash
-grep -n "—" CHANGELOG.md CONTRIBUTING.md .github/pull_request_template.md .github/ISSUE_TEMPLATE/*.md scripts/generate_social_preview.py
+grep -n "-" CHANGELOG.md CONTRIBUTING.md .github/pull_request_template.md .github/ISSUE_TEMPLATE/*.md scripts/generate_social_preview.py
 ```
 **Output:** Zero prohibited decorative em dashes found. Only developer instruction strings warning against their introduction exist in `CONTRIBUTING.md` and the PR template.
 

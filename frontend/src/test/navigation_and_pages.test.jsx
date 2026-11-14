@@ -58,6 +58,7 @@ vi.mock('../api/queries', () => ({
   useDeleteDocument: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateDocument: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
   useBulkMoveDocuments: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
+  useSuggestedInquiries: () => ({ data: { suggestions: [] }, isLoading: false }),
   useLoadSampleDocuments: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
   useReindexDocument: () => ({ mutate: vi.fn(), isPending: false }),
   useSessions: () => ({ data: [], isLoading: false }),
@@ -172,7 +173,7 @@ describe('App Navigation & 7 Core View Rendering', () => {
     // Command palette modal opens
     expect(screen.getByPlaceholderText(/Type a command, page name, or search documents/i)).toBeInTheDocument();
     expect(screen.getByText('Go to Retrieval Inspector')).toBeInTheDocument();
-    expect(screen.getByText('Add Sample Documents (Ingest 4 papers)')).toBeInTheDocument();
+    expect(screen.getByText('Add Sample Documents (4 benchmark documents)')).toBeInTheDocument();
 
     // Escape closes the command palette
     fireEvent.keyDown(window, { key: 'Escape' });
@@ -217,5 +218,23 @@ describe('App Navigation & 7 Core View Rendering', () => {
     expect(screen.getByText('NexusRAG File Annotator')).toBeInTheDocument();
     expect(screen.getByText('Document View')).toBeInTheDocument();
     expect(screen.queryByText(/Failed to load document preview/i)).toBeNull();
+  });
+
+  it('renders ResearchDeskPage cleanly without selectedDocs reference error or crash', () => {
+    window.history.pushState({}, '', '/app/research');
+    renderWithProviders(<App />);
+    expect(screen.getAllByText('Research Desk').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByPlaceholderText(/Ask a question or request verification/i)).toBeInTheDocument();
+  });
+
+  it('renders ResearchDeskPage cleanly with document selection without error', () => {
+    window.history.pushState({}, '', '/app/research');
+    renderWithProviders(<App />);
+    expect(screen.getAllByText('Research Desk').length).toBeGreaterThanOrEqual(1);
+    const docItems = screen.queryAllByText('clean_energy_report_2024.txt');
+    if (docItems.length > 0) {
+      fireEvent.click(docItems[0]);
+    }
+    expect(screen.getAllByText('Research Desk').length).toBeGreaterThanOrEqual(1);
   });
 });

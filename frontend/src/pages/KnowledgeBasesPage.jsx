@@ -14,13 +14,15 @@ import {
   Pencil,
   Sparkles,
   CheckSquare,
-  Square
+  Square,
+  Info
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { StatusDot } from '../components/common/StatusDot';
 import { UploadTray } from '../components/upload/UploadTray';
 import { Modal } from '../components/common/Modal';
 import { SampleAttributionModal } from '../components/common/SampleAttributionModal';
+import { SAMPLE_DOCUMENTS_DESCRIPTION } from '../constants/sampleDocuments';
 import {
   useDocuments,
   useCollections,
@@ -379,6 +381,15 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsAttributionModalOpen(true)}
+              className="text-xs text-brand hover:underline font-sans font-medium flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle transition-colors shadow-2xs cursor-pointer"
+              title="View benchmark document licences and attribution"
+            >
+              <Info className="w-3.5 h-3.5 text-brand" />
+              <span>Sample Attribution</span>
+            </button>
+
             {selectedDocIds.length > 0 && (
               <div className="flex items-center gap-2 bg-surface border border-border px-3 py-1 rounded-lg text-xs">
                 <span className="font-semibold text-brand">{selectedDocIds.length} selected</span>
@@ -467,14 +478,14 @@ export function KnowledgeBasesPage({ onOpenDocument }) {
                         >
                           {isSampleLoading ? 'Ingesting Samples...' : 'Load Sample Documents'}
                         </Button>
-                        <p className="text-[11px] text-ink-muted leading-relaxed font-serif">
-                          Loads 4 verified open-access research papers (Transformers, Clean Energy, RAG vs Long-Context, and Climate Modeling).
+                        <p className="text-[11px] text-ink-muted leading-relaxed font-serif max-w-md mx-auto">
+                          {SAMPLE_DOCUMENTS_DESCRIPTION}
                         </p>
                         <button
                           onClick={() => setIsAttributionModalOpen(true)}
                           className="text-[11px] text-brand hover:underline font-sans font-medium cursor-pointer"
                         >
-                          View verified paper licences & attribution
+                          View demo document licences & attribution
                         </button>
                       </div>
                     </td>

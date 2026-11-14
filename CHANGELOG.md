@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-11-14
+
+### Added
+- **Dual-Engine AI Architecture:** Implemented native local neural pipeline in `backend/app/rag/embeddings/local_embeddings.py` using `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (384-dimensional dense vectors) and `cross-encoder/ms-marco-MiniLM-L-6-v2` running with PyTorch Metal Performance Shaders (MPS) hardware acceleration on Apple Silicon M4 with 28.5ms latency, operating alongside the Google Gemini Cloud API (`gemini-embedding-2` / `gemini-3.5-flash-lite`).
+- **Versioned Client Storage Utility:** Built `frontend/src/utils/storage.js` with schema versioning (`SCHEMA_VERSION = 1`) and non-destructive fallback, discarding only corrupted UI state keys without wiping user data or visitor identities.
+- **Error Boundary with Non-Destructive Recovery:** Deployed `frontend/src/components/common/ErrorBoundary.jsx` displaying clear human messages, diagnostic session IDs, a non-destructive "Try Again" re-render button, and a separate "Reset Local View" action with confirmation.
+- **Automated Route Smoke Test Suite:** Added `scripts/test_route_smoke.py` validating 28 route scenarios across fresh and seeded profiles with zero console errors in CI.
+- **Automated Screenshot Capture Pipeline:** Added `scripts/capture_phase_g2_screenshots.py`, regenerating 1440px showcase marketing assets and responsive multi-viewport proofs (1440px, 820px, 390px).
+- **Single Source of Truth Sample Catalog:** Built `frontend/src/constants/sampleDocuments.js` cataloging 4 demo benchmark documents authored under CC BY 4.0 totaling 26 chunks across PDF, TXT, and Markdown.
+
+### Changed
+- **Calibrated Landing Page Copy:** Calibrated headline and hero description to concrete, plain language ("checks that each citation points to a passage that was retrieved", "see which passages were retrieved and how they were ranked") passing originality audit with 0 violations.
+- **Varied Metric Card Layouts:** Redesigned the 4 KPI cards on `DashboardPage.jsx` with distinct visual layouts, typography, and live database aggregations.
+- **Degradation-Only System Health Indicators:** Removed static "Workspace Active" badge from `TopBar.jsx`, displaying status indicators only when degraded with specific diagnostic reasons.
+- **Calibrated Settings Presentation:** Removed decorative `v1.0.0` badge and jargon subtitle from `SettingsPage.jsx`.
+- **Private API Response Caching:** Enforced `Cache-Control: no-store, no-cache, must-revalidate, max-age=0` across all private `/api/*` responses in `main.py`.
+- **Static Asset Content Hashing:** Verified Rollup and Vite content hashes across all CSS and JS chunks in production build.
+
+### Fixed
+- **Undefined Symbol Render Crash (`selectedDocs`):** Resolved `ReferenceError: selectedDocs is not defined` in `ResearchDeskPage.jsx` lines 79 and 751.
+- **CI Build Pipeline Gap:** Configured ESLint with `no-undef: "error"` and wired `eslint . && vite build` into CI and production build scripts so undefined variables fail the build.
+- **Unowned Domain Chrome:** Removed fake browser address bar `nexusrag.app/dashboard` and macOS window chrome from `LandingPage.jsx`.
+- **External Attribution Mismatches:** Removed fictional external attributions in favor of 100% honest demo attributions.
+- **Upstream Key Suspension Resilience:** Handled upstream Google Cloud project suspensions (`CONSUMER_SUSPENDED`) gracefully, displaying live probe diagnostics in Settings without crashing.
+- **Strict Zero Em Dash Rule:** Replaced all em dashes with standard hyphens across all project code, documentation, and tests.
+
+---
+
 ## [1.2.1] - 2026-11-13
 
 ### Added

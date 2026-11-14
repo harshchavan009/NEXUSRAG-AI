@@ -39,7 +39,7 @@ export function LandingPage({ onNavigate }) {
         </h1>
 
         <p className="mt-6 text-base sm:text-lg text-ink-muted max-w-2xl font-serif leading-relaxed">
-          NexusRAG analyzes PDFs, Markdown files, and plain text documents with sentence-level citations, verified evidence checks, and complete retrieval transparency.
+          NexusRAG analyzes PDFs, Markdown files, and plain text documents with sentence-level citations. It checks that each citation points to a passage that was retrieved, and lets you see which passages were retrieved and how they were ranked.
         </p>
 
         {/* Action Buttons */}
@@ -65,25 +65,17 @@ export function LandingPage({ onNavigate }) {
 
         {/* Real Product Proof Preview: Captured Screenshot of Live Running App */}
         <div className="mt-12 w-full max-w-5xl rounded-xl border border-border bg-surface shadow-xl overflow-hidden text-left">
-          <div className="h-9 bg-surface-subtle border-b border-border px-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-border-strong inline-block" />
-              <span className="w-2.5 h-2.5 rounded-full bg-border-strong/60 inline-block" />
-              <span className="w-2.5 h-2.5 rounded-full bg-border-strong/40 inline-block" />
-              <span className="text-xs font-mono text-ink-muted ml-2">
-                nexusrag.app/dashboard
-              </span>
-            </div>
-            <span className="text-[11px] font-sans text-ink-muted">Research Dashboard Preview</span>
-          </div>
-
-          <div className="relative bg-surface p-2">
+          <div className="p-2 bg-surface">
             <img
               src="/screenshots/dashboard.png"
               alt="NexusRAG live dashboard preview"
               className="w-full h-auto rounded-lg border border-border shadow-xs"
               loading="lazy"
             />
+          </div>
+          <div className="py-2.5 px-4 bg-surface-subtle border-t border-border flex items-center justify-between text-xs text-ink-muted">
+            <span className="font-sans font-medium text-ink">NexusRAG Research Dashboard</span>
+            <span className="font-serif italic text-[11px]">Playwright-captured live workspace view with real document ingestion and metrics</span>
           </div>
         </div>
       </section>

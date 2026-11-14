@@ -3,17 +3,17 @@
   "in_domain_count": 6,
   "out_of_domain_count": 4,
   "gate_calibration": {
-    "true_positives": 6,
-    "false_negatives": 0,
+    "true_positives": 4,
+    "false_negatives": 2,
     "true_negatives": 4,
     "false_positives": 0,
-    "accuracy": 1.0
+    "accuracy": 0.8
   },
   "retrieval_performance": {
-    "mean_precision_at_1": 1.0,
-    "mean_precision_at_4": 0.3333,
-    "mean_recall_at_4": 1.0,
-    "mean_reciprocal_rank": 1.0
+    "mean_precision_at_1": 0.6667,
+    "mean_precision_at_4": 0.6667,
+    "mean_recall_at_4": 0.6667,
+    "mean_reciprocal_rank": 0.6667
   },
   "grounding_and_citations": {
     "faithfulness_compliance_rate": 1.0,
@@ -21,32 +21,32 @@
   },
   "latency_percentiles_ms": {
     "total": {
-      "p50": 3.04,
-      "p90": 4.05,
-      "p95": 5.65,
-      "p99": 6.93,
-      "mean": 3.44
+      "p50": 13.9,
+      "p90": 19.21,
+      "p95": 19.41,
+      "p99": 19.56,
+      "mean": 13.9
     },
     "retrieve": {
-      "p50": 2.62,
-      "p90": 3.38,
-      "p95": 4.76,
-      "p99": 5.86,
-      "mean": 2.93
+      "p50": 13.46,
+      "p90": 18.53,
+      "p95": 18.97,
+      "p99": 19.33,
+      "mean": 13.54
     },
     "rerank": {
-      "p50": 0.2,
-      "p90": 0.22,
-      "p95": 0.23,
-      "p99": 0.23,
-      "mean": 0.19
+      "p50": 0.17,
+      "p90": 0.32,
+      "p95": 0.39,
+      "p99": 0.45,
+      "mean": 0.21
     },
     "generate": {
-      "p50": 0.12,
-      "p90": 0.13,
-      "p95": 0.18,
-      "p99": 0.22,
-      "mean": 0.08
+      "p50": 0.0,
+      "p90": 0.03,
+      "p95": 0.04,
+      "p99": 0.04,
+      "mean": 0.01
     }
   },
   "detailed_query_results": [
@@ -57,26 +57,26 @@
       "actual_answerable": true,
       "is_abstention": false,
       "gate_correct": true,
-      "sufficiency_score": 0.9,
+      "sufficiency_score": 0.8723,
       "groundedness_score": 1.0,
       "precision_at_1": 1.0,
-      "precision_at_4": 0.3333333333333333,
+      "precision_at_4": 1.0,
       "recall_at_4": 1.0,
       "mrr": 1.0,
       "key_facts_found": 0,
       "total_key_facts": 3,
       "valid_citations_count": 3,
       "timings": {
-        "validate_input": 0.0,
-        "rewrite_query": 0.19,
-        "retrieve": 6.14,
-        "rerank": 0.23,
+        "validate_input": 0.01,
+        "rewrite_query": 0.1,
+        "retrieve": 18.43,
+        "rerank": 0.25,
         "check_evidence": 0.01,
-        "generate": 0.23,
-        "validate_citations": 0.11,
-        "validate_groundedness": 0.33,
+        "generate": 0.03,
+        "validate_citations": 0.07,
+        "validate_groundedness": 0.26,
         "finalise": 0.01,
-        "total": 7.25
+        "total": 19.17
       }
     },
     {
@@ -89,7 +89,7 @@
       "sufficiency_score": 0.75,
       "groundedness_score": 1.0,
       "precision_at_1": 1.0,
-      "precision_at_4": 0.3333333333333333,
+      "precision_at_4": 1.0,
       "recall_at_4": 1.0,
       "mrr": 1.0,
       "key_facts_found": 0,
@@ -98,14 +98,14 @@
       "timings": {
         "validate_input": 0.0,
         "rewrite_query": 0.01,
-        "retrieve": 2.68,
-        "rerank": 0.2,
-        "check_evidence": 0.01,
-        "generate": 0.12,
-        "validate_citations": 0.03,
-        "validate_groundedness": 0.28,
+        "retrieve": 13.23,
+        "rerank": 0.17,
+        "check_evidence": 0.0,
+        "generate": 0.04,
+        "validate_citations": 0.02,
+        "validate_groundedness": 0.19,
         "finalise": 0.01,
-        "total": 3.34
+        "total": 13.67
       }
     },
     {
@@ -115,55 +115,53 @@
       "actual_answerable": true,
       "is_abstention": false,
       "gate_correct": true,
-      "sufficiency_score": 0.825,
+      "sufficiency_score": 0.7969,
       "groundedness_score": 1.0,
       "precision_at_1": 1.0,
-      "precision_at_4": 0.3333333333333333,
+      "precision_at_4": 1.0,
       "recall_at_4": 1.0,
       "mrr": 1.0,
-      "key_facts_found": 0,
+      "key_facts_found": 1,
       "total_key_facts": 3,
       "valid_citations_count": 3,
       "timings": {
         "validate_input": 0.0,
         "rewrite_query": 0.01,
-        "retrieve": 3.07,
-        "rerank": 0.19,
+        "retrieve": 13.7,
+        "rerank": 0.17,
         "check_evidence": 0.0,
-        "generate": 0.12,
-        "validate_citations": 0.03,
-        "validate_groundedness": 0.26,
+        "generate": 0.03,
+        "validate_citations": 0.02,
+        "validate_groundedness": 0.19,
         "finalise": 0.01,
-        "total": 3.69
+        "total": 14.13
       }
     },
     {
       "query_id": "q4_distributed_systems",
       "query_text": "What is the randomized election timeout interval used by Raft followers?",
       "expected_answerable": true,
-      "actual_answerable": true,
-      "is_abstention": false,
-      "gate_correct": true,
-      "sufficiency_score": 0.7714,
+      "actual_answerable": false,
+      "is_abstention": true,
+      "gate_correct": false,
+      "sufficiency_score": 0.6429,
       "groundedness_score": 1.0,
-      "precision_at_1": 1.0,
-      "precision_at_4": 0.3333333333333333,
-      "recall_at_4": 1.0,
-      "mrr": 1.0,
+      "precision_at_1": 0.0,
+      "precision_at_4": 0.0,
+      "recall_at_4": 0.0,
+      "mrr": 0.0,
       "key_facts_found": 0,
       "total_key_facts": 3,
-      "valid_citations_count": 3,
+      "valid_citations_count": 0,
       "timings": {
         "validate_input": 0.0,
         "rewrite_query": 0.01,
-        "retrieve": 2.27,
-        "rerank": 0.16,
+        "retrieve": 12.82,
+        "rerank": 0.13,
         "check_evidence": 0.0,
-        "generate": 0.12,
-        "validate_citations": 0.03,
-        "validate_groundedness": 0.27,
+        "abstain": 0.01,
         "finalise": 0.01,
-        "total": 2.87
+        "total": 12.98
       }
     },
     {
@@ -173,10 +171,10 @@
       "actual_answerable": true,
       "is_abstention": false,
       "gate_correct": true,
-      "sufficiency_score": 0.81,
+      "sufficiency_score": 0.8606,
       "groundedness_score": 1.0,
       "precision_at_1": 1.0,
-      "precision_at_4": 0.3333333333333333,
+      "precision_at_4": 1.0,
       "recall_at_4": 1.0,
       "mrr": 1.0,
       "key_facts_found": 0,
@@ -185,43 +183,41 @@
       "timings": {
         "validate_input": 0.0,
         "rewrite_query": 0.01,
-        "retrieve": 2.6,
-        "rerank": 0.17,
+        "retrieve": 7.53,
+        "rerank": 0.13,
         "check_evidence": 0.0,
-        "generate": 0.12,
-        "validate_citations": 0.03,
-        "validate_groundedness": 0.26,
+        "generate": 0.03,
+        "validate_citations": 0.02,
+        "validate_groundedness": 0.23,
         "finalise": 0.01,
-        "total": 3.2
+        "total": 7.96
       }
     },
     {
       "query_id": "q6_governance",
       "query_text": "What are the maximum recovery time objective RTO and recovery point objective RPO for disaster recovery?",
       "expected_answerable": true,
-      "actual_answerable": true,
-      "is_abstention": false,
-      "gate_correct": true,
-      "sufficiency_score": 0.9,
+      "actual_answerable": false,
+      "is_abstention": true,
+      "gate_correct": false,
+      "sufficiency_score": 0.3477,
       "groundedness_score": 1.0,
-      "precision_at_1": 1.0,
-      "precision_at_4": 0.3333333333333333,
-      "recall_at_4": 1.0,
-      "mrr": 1.0,
-      "key_facts_found": 1,
+      "precision_at_1": 0.0,
+      "precision_at_4": 0.0,
+      "recall_at_4": 0.0,
+      "mrr": 0.0,
+      "key_facts_found": 0,
       "total_key_facts": 4,
-      "valid_citations_count": 3,
+      "valid_citations_count": 0,
       "timings": {
         "validate_input": 0.0,
         "rewrite_query": 0.01,
-        "retrieve": 2.98,
-        "rerank": 0.2,
-        "check_evidence": 0.0,
-        "generate": 0.12,
-        "validate_citations": 0.03,
-        "validate_groundedness": 0.28,
-        "finalise": 0.01,
-        "total": 3.63
+        "retrieve": 17.81,
+        "rerank": 0.46,
+        "check_evidence": 0.01,
+        "abstain": 0.0,
+        "finalise": 0.02,
+        "total": 18.31
       }
     },
     {
@@ -231,7 +227,7 @@
       "actual_answerable": false,
       "is_abstention": true,
       "gate_correct": true,
-      "sufficiency_score": 0.2295,
+      "sufficiency_score": 0.54,
       "groundedness_score": 1.0,
       "precision_at_1": 0.0,
       "precision_at_4": 0.0,
@@ -241,14 +237,14 @@
       "total_key_facts": 0,
       "valid_citations_count": 0,
       "timings": {
-        "validate_input": 0.0,
-        "rewrite_query": 0.01,
-        "retrieve": 2.63,
-        "rerank": 0.22,
+        "validate_input": 0.01,
+        "rewrite_query": 0.02,
+        "retrieve": 17.0,
+        "rerank": 0.31,
         "check_evidence": 0.0,
-        "abstain": 0.01,
-        "finalise": 0.01,
-        "total": 2.88
+        "abstain": 0.0,
+        "finalise": 0.02,
+        "total": 17.36
       }
     },
     {
@@ -270,12 +266,12 @@
       "timings": {
         "validate_input": 0.0,
         "rewrite_query": 0.01,
-        "retrieve": 2.18,
-        "rerank": 0.16,
+        "retrieve": 19.42,
+        "rerank": 0.15,
         "check_evidence": 0.0,
-        "abstain": 0.0,
+        "abstain": 0.01,
         "finalise": 0.01,
-        "total": 2.36
+        "total": 19.6
       }
     },
     {
@@ -285,7 +281,7 @@
       "actual_answerable": false,
       "is_abstention": true,
       "gate_correct": true,
-      "sufficiency_score": 0.1645,
+      "sufficiency_score": 0.153,
       "groundedness_score": 1.0,
       "precision_at_1": 0.0,
       "precision_at_4": 0.0,
@@ -297,12 +293,12 @@
       "timings": {
         "validate_input": 0.0,
         "rewrite_query": 0.01,
-        "retrieve": 2.48,
-        "rerank": 0.21,
+        "retrieve": 8.05,
+        "rerank": 0.18,
         "check_evidence": 0.0,
         "abstain": 0.0,
         "finalise": 0.01,
-        "total": 2.71
+        "total": 8.25
       }
     },
     {
@@ -324,12 +320,12 @@
       "timings": {
         "validate_input": 0.0,
         "rewrite_query": 0.01,
-        "retrieve": 2.25,
-        "rerank": 0.17,
+        "retrieve": 7.39,
+        "rerank": 0.14,
         "check_evidence": 0.0,
         "abstain": 0.0,
         "finalise": 0.01,
-        "total": 2.44
+        "total": 7.55
       }
     }
   ]

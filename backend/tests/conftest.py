@@ -19,6 +19,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_
 # Point global settings and database module to test DB for background tasks
 settings.ENVIRONMENT = "testing"
 settings.DATABASE_URL = TEST_DATABASE_URL
+settings.GEMINI_API_KEY = ""
 import backend.app.database as db_mod
 db_mod.SessionLocal.configure(bind=test_engine)
 db_mod.engine = test_engine

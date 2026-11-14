@@ -26,7 +26,8 @@ import {
   RotateCcw,
   MessageSquare,
   Download,
-  CheckSquare
+  CheckSquare,
+  X
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { StatusDot } from '../components/common/StatusDot';
@@ -76,7 +77,7 @@ export function ResearchDeskPage({
   const collections = Array.isArray(rawColls.data) ? rawColls.data : (rawColls.data?.collections || []);
   const rawDocs = useDocuments();
   const documents = Array.isArray(rawDocs.data) ? rawDocs.data : (rawDocs.data?.documents || []);
-  const suggestionsQuery = useSuggestedInquiries(selectedDocs);
+  const suggestionsQuery = useSuggestedInquiries(selectedDocIds);
   const suggestedInquiries = suggestionsQuery.data?.suggestions || [];
 
   const createSessionMutation = useCreateSession();
@@ -98,7 +99,9 @@ export function ResearchDeskPage({
 
   // Scroll to bottom when streaming or messages update
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [sessionDetail?.messages, streamingText]);
 
   const handleCreateNewSession = async () => {
@@ -748,7 +751,7 @@ export function ResearchDeskPage({
                   </span>
                   {documents.length > 0 && suggestedInquiries.length > 0 && (
                     <span className="text-[10px] text-brand font-medium">
-                      Derived from {selectedDocs.length > 0 ? 'Selected' : 'Indexed'} Files
+                      Derived from {selectedDocIds.length > 0 ? 'Selected' : 'Indexed'} Files
                     </span>
                   )}
                 </div>

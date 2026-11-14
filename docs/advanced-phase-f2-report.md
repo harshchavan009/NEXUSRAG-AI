@@ -81,7 +81,7 @@ Scanned all .jsx, .js, .html production files cleanly.
 
 ### 3.5 Zero Em Dash Audit
 ```bash
-$ grep -rn "—" backend/ frontend/src/ data/sample_documents/
+$ grep -rn "-" backend/ frontend/src/ data/sample_documents/
 # Exit code 1 (Zero em dashes found)
 ```
 

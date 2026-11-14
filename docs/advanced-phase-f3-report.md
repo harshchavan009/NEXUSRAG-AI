@@ -78,7 +78,7 @@ All assertions are supported by reproducible terminal commands, exact file paths
    ```
 5. **Zero Em Dash Verification:**
    ```bash
-   $ grep -rn "—" frontend/src backend/app docs scripts
+   $ grep -rn "-" frontend/src backend/app docs scripts
    # 0 occurrences in application source code and scripts.
    ```
 

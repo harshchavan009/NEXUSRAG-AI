@@ -8,8 +8,10 @@
 [![FAISS](https://img.shields.io/badge/FAISS-CPU_1.8+-00599C.svg)](https://github.com/facebookresearch/faiss)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-38B2AC.svg?logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Pytest Tests](https://img.shields.io/badge/Backend_Tests-52_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
-[![Vitest Tests](https://img.shields.io/badge/Frontend_Tests-20_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
-[![Total Tests](https://img.shields.io/badge/Total_Automated_Tests-72_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![Vitest Tests](https://img.shields.io/badge/Frontend_Tests-28_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![Route Smoke Tests](https://img.shields.io/badge/Smoke_Tests-28_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![E2E Journeys](https://img.shields.io/badge/E2E_Journeys-8_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
+[![Total Tests](https://img.shields.io/badge/Total_Automated_Tests-116_Passed-success.svg)](#19-quantitative-evaluation-benchmark-results)
 [![ShadowFox Compliance](https://img.shields.io/badge/ShadowFox_Compliance-100%25_Verified-brightgreen.svg)](docs/advanced-compliance.md)
 [![Security Audit](https://img.shields.io/badge/Vulnerabilities-0_Reported-brightgreen.svg)](#20-defense-in-depth-security-review--threat-model)
 
@@ -22,12 +24,12 @@
 
 | Research Desk & Grounded Synthesis | Retrieval Inspector & Observability Trace |
 |:---:|:---:|
-| ![Research Desk](docs/screenshots/phase_t5/j3_research_desk_response.png) | ![Retrieval Inspector](docs/screenshots/phase_t5/j4_retrieval_inspector.png) |
+| ![Research Desk](frontend/public/screenshots/research.png) | ![Retrieval Inspector](frontend/public/screenshots/inspector.png) |
 | *Grounded SSE synthesis with bracketed citation chips linked to exact passages* | *9-node LangGraph trace, candidate scoring, and millisecond duration waterfall* |
 
 | First-Run Ingestion & Knowledge Base | Spec Page 7 Settings & Telemetry |
 |:---:|:---:|
-| ![Knowledge Bases](docs/screenshots/phase_t5/j2_onboarding_and_knowledge_base.png) | ![Settings Page](docs/screenshots/phase_t5/j5_settings_page_spec_7.png) |
+| ![Knowledge Bases](frontend/public/screenshots/library.png) | ![Settings Page](frontend/public/screenshots/settings.png) |
 | *1-click sample document ingestion with real-time byte progress* | *AI provider configuration, chunk parameters, and dual-dialect database telemetry* |
 
 ---
@@ -392,9 +394,11 @@ cd frontend
 npm install
 cd ..
 
-# 5. Run Test Battery (67 tests)
+# 5. Run Test Battery (116 automated test scenarios)
 pytest backend/tests -v
-npm --prefix frontend test -- --run
+npm --prefix frontend test
+python3 scripts/test_route_smoke.py
+python3 scripts/run_e2e_user_journeys.py
 ```
 
 ### Starting Native Development Servers

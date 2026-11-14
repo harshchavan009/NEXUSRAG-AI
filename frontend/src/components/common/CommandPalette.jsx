@@ -60,7 +60,7 @@ export function CommandPalette({ isOpen, onClose, onNavigate, onOpenDocument }) 
     {
       id: 'act-sample',
       category: 'Actions',
-      label: 'Add Sample Documents (Ingest 4 papers)',
+      label: 'Add Sample Documents (4 benchmark documents)',
       icon: Sparkles,
       action: async () => {
         try {

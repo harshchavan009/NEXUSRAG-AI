@@ -236,3 +236,9 @@ When explaining NexusRAG to technical interviewers or mentors, structure your an
 4. **"What happens when a document is deleted?"**
    > *"Because we use FAISS IndexIDMap2, we don't have to rebuild the entire vector index. We store chunk database IDs directly in the index, so document deletion triggers `remove_ids` on the exact chunk IDs in memory, followed by an atomic POSIX write to disk."*
 
+5. **"How do you handle AI provider failures or missing keys?"**
+   > *"NexusRAG enforces a strict Zero-Mock Invariant. If a cloud API key is unconfigured or suspended, the system surfaces clear diagnostics via the health probe endpoint and Settings without crashing, refusing to fabricate fake vector embeddings or canned responses. Furthermore, NexusRAG natively supports an unmocked local neural pipeline using `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` and `cross-encoder/ms-marco-MiniLM-L-6-v2` on Apple Silicon MPS hardware acceleration with sub-50ms latency for completely private, offline-capable verification."*
+
+6. **"Why did Vite fail to catch an undefined variable in production, and how did you fix it?"**
+   > *"Vite uses Rollup and Esbuild, which transpile JSX and bundle modules without full AST symbol-resolution checks by default. To guarantee that production builds and CI fail immediately on any undeclared variable, we wired ESLint `no-undef: 'error'` into `eslint . && vite build`. Additionally, we implemented client storage schema versioning (`SCHEMA_VERSION = 1`) and a non-destructive Error Boundary that allows users to re-render without clearing data, or reset only local UI view state with explicit confirmation."*
+

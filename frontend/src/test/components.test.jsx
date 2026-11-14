@@ -5,6 +5,8 @@ import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { StatusDot } from '../components/common/StatusDot';
 import { Modal } from '../components/common/Modal';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { getUIState, setUIState, resetLocalUIView, UI_STATE_KEYS } from '../utils/storage';
 
 describe('Frontend Design System Tokens & Accessibility Suite', () => {
   describe('Button Component', () => {
@@ -126,6 +128,83 @@ describe('Frontend Design System Tokens & Accessibility Suite', () => {
         </Modal>
       );
       expect(container.firstChild).toBeNull();
+    });
+  });
+
+  describe('ErrorBoundary Component', () => {
+    it('renders children when no error occurs', () => {
+      render(
+        <ErrorBoundary>
+          <div>Healthy View Content</div>
+        </ErrorBoundary>
+      );
+      expect(screen.getByText('Healthy View Content')).toBeInTheDocument();
+    });
+
+    it('catches render error, displays plain message with diagnostic ID and Try Again action', () => {
+      const ProblemComponent = () => {
+        throw new Error('Test component render explosion');
+      };
+      // Suppress console.error during expected throw
+      const originalError = console.error;
+      console.error = vi.fn();
+
+      render(
+        <ErrorBoundary>
+          <ProblemComponent />
+        </ErrorBoundary>
+      );
+
+      expect(screen.getByText('Application View Recovery')).toBeInTheDocument();
+      expect(screen.getByText(/Your indexed documents, collections, and workspace sessions are completely safe/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Try Again/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Reset Local View/i })).toBeInTheDocument();
+
+      // Click Reset Local View to show confirmation
+      fireEvent.click(screen.getByRole('button', { name: /Reset Local View/i }));
+      expect(screen.getByText(/Your documents, vector index, and chat history will not be affected/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Confirm & Reload/i })).toBeInTheDocument();
+
+      console.error = originalError;
+    });
+  });
+
+  describe('Storage Utility & Safe State Recovery', () => {
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    it('returns default value when key does not exist', () => {
+      const val = getUIState('non_existent_key', 'default_value');
+      expect(val).toBe('default_value');
+    });
+
+    it('safely parses JSON values and writes with setUIState', () => {
+      setUIState(UI_STATE_KEYS.RETRIEVAL_PARAMS, { topK: 5, rerankWeight: 0.6 });
+      const read = getUIState(UI_STATE_KEYS.RETRIEVAL_PARAMS, null);
+      expect(read).toEqual({ topK: 5, rerankWeight: 0.6 });
+    });
+
+    it('discards corrupted JSON key without throwing error or wiping other keys', () => {
+      localStorage.setItem('valid_key', 'valid_data');
+      localStorage.setItem('corrupted_key', '{ invalid json ...');
+      const val = getUIState('corrupted_key', 'fallback_val', (data) => typeof data === 'object');
+      expect(val).toBe('fallback_val');
+      // Other keys remain intact
+      expect(localStorage.getItem('valid_key')).toBe('valid_data');
+    });
+
+    it('resets only UI state keys and preserves visitor token or custom data', () => {
+      setUIState(UI_STATE_KEYS.THEME, 'dark');
+      setUIState(UI_STATE_KEYS.RAIL_EXPANDED, false);
+      localStorage.setItem('custom_visitor_token', 'token_12345');
+
+      resetLocalUIView();
+
+      expect(localStorage.getItem(UI_STATE_KEYS.THEME)).toBeNull();
+      expect(localStorage.getItem(UI_STATE_KEYS.RAIL_EXPANDED)).toBeNull();
+      // Custom visitor data is preserved
+      expect(localStorage.getItem('custom_visitor_token')).toBe('token_12345');
     });
   });
 });

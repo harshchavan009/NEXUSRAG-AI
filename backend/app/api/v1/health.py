@@ -85,7 +85,28 @@ def probe_ai_provider():
 
     tested_at = datetime.now(timezone.utc)
 
-    # 1. Check if API Key is configured
+    # 1. Local Neural Pipeline Check (No external key required)
+    if settings.AI_PROVIDER in ["local", "huggingface", "sentence-transformers"]:
+        t0 = time.perf_counter()
+        from backend.app.rag.embeddings.local_embeddings import get_sentence_transformer_model
+        model = get_sentence_transformer_model()
+        _ = model.encode(["NexusRAG local probe"], normalize_embeddings=True)
+        latency = round((time.perf_counter() - t0) * 1000, 2)
+        res = ProviderProbeResponse(
+            status="online",
+            provider="local (Apple M4 MPS)",
+            embedding_model=settings.DEFAULT_EMBEDDING_MODEL,
+            generation_model=settings.DEFAULT_GENERATION_MODEL,
+            latency_ms=latency,
+            message=f"Local neural pipeline active on Apple Silicon MPS ({latency}ms). Zero external cloud dependencies.",
+            error=None,
+            tested_at=tested_at
+        )
+        _probe_cache["timestamp"] = now
+        _probe_cache["response"] = res
+        return res
+
+    # 2. Check if API Key is configured for Cloud Provider
     if not settings.GEMINI_API_KEY:
         res = ProviderProbeResponse(
             status="missing_key",

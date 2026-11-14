@@ -24,6 +24,7 @@ from fastapi.testclient import TestClient
 
 from backend.app.main import app
 from backend.app.config import settings
+settings.GEMINI_API_KEY = ""
 from backend.app.database import Base, get_db
 from backend.app.models.workspace import Workspace
 from backend.app.models.document import Document
@@ -345,7 +346,7 @@ def run_all_verifications():
         "workspace_a_citations": scoped_citations,
         "workspace_b_unindexed_query": res_b.json().get("answer", "")[:120],
         "workspace_b_abstention": res_b.json().get("is_abstention"),
-        "cross_tenant_leakage": len(res_b.json().get("citations", [])) == 0
+        "cross_tenant_isolation_verified": len(res_b.json().get("citations", [])) == 0
     }
     log_evidence("R6", "Document-Scoped Retrieval & Tenant Isolation", "PASS", r6_results)
 

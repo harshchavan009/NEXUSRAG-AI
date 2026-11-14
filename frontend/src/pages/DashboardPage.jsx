@@ -31,6 +31,8 @@ import { StatusDot } from '../components/common/StatusDot';
 import { Modal } from '../components/common/Modal';
 import { UploadTray } from '../components/upload/UploadTray';
 import { SampleAttributionModal } from '../components/common/SampleAttributionModal';
+import { SAMPLE_DOCUMENTS_SHORT_DESC, SAMPLE_DOCUMENTS_TILE_SUBTITLE } from '../constants/sampleDocuments';
+import { getUIState, setUIState, UI_STATE_KEYS } from '../utils/storage';
 import {
   useDocuments,
   useCollections,
@@ -60,7 +62,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
   const [isSampleLoading, setIsSampleLoading] = useState(false);
   const [isAttributionModalOpen, setIsAttributionModalOpen] = useState(false);
   const [isOnboardingDismissed, setIsOnboardingDismissed] = useState(() => {
-    return localStorage.getItem('nexusrag_onboarding_dismissed') === 'true';
+    return Boolean(getUIState(UI_STATE_KEYS.ONBOARDING_DISMISSED, false));
   });
 
   const docsQuery = useDocuments();
@@ -163,12 +165,19 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
             <h1 className="text-2xl font-bold tracking-tight text-ink font-sans">
               Research Workspace
             </h1>
-            <div className="flex items-center gap-1.5 text-xs text-brand font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
-              <span>Workspace Active</span>
-            </div>
+            {healthQuery.isError ? (
+              <span className="text-[11px] font-medium text-status-error px-2 py-0.5 rounded bg-status-error/10 border border-status-error/30 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-status-error" />
+                <span>Backend Offline</span>
+              </span>
+            ) : probeQuery.data?.status === 'missing_key' ? (
+              <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                <span>API Key Required</span>
+              </span>
+            ) : null}
           </div>
-          <p className="text-xs sm:text-sm text-ink-muted mt-0.5">
+          <p className="text-xs sm:text-sm text-ink-muted mt-0.5 font-serif">
             Query your indexed collections with grounded citations and transparent retrieval traces
           </p>
         </div>
@@ -196,7 +205,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
             onClick={() => setIsAttributionModalOpen(true)}
             className="text-[11px] text-ink-muted hover:text-brand font-mono underline cursor-pointer self-start sm:self-end"
           >
-            Sample Paper Licences & Attribution
+            Sample Document Licences & Attribution
           </button>
         </div>
       </div>
@@ -252,17 +261,17 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
         <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-xs text-ink uppercase tracking-wider font-mono">
-                First-Run Onboarding Checklist
+              <span className="font-semibold text-xs text-ink font-sans">
+                Getting Started with NexusRAG
               </span>
-              <span className="font-mono text-[10px] bg-brand/10 text-brand px-2 py-0.5 rounded font-bold">
-                {completedSteps} of 4 Complete
+              <span className="text-[11px] bg-brand/10 text-brand px-2 py-0.5 rounded font-medium">
+                {completedSteps} of 4 complete
               </span>
             </div>
             <button
               onClick={() => {
                 setIsOnboardingDismissed(true);
-                localStorage.setItem('nexusrag_onboarding_dismissed', 'true');
+                setUIState(UI_STATE_KEYS.ONBOARDING_DISMISSED, 'true');
               }}
               className="text-ink-muted hover:text-ink text-[11px] flex items-center gap-1 cursor-pointer"
               title="Dismiss onboarding checklist"
@@ -287,7 +296,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
                 {step1Done ? <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" /> : <Circle className="w-4 h-4 text-ink-muted flex-shrink-0 mt-0.5" />}
                 <div>
                   <span className="font-semibold text-ink block">1. Ingest Documents</span>
-                  <span className="text-[11px] text-ink-muted font-serif">Upload your files or load 4 benchmark documents.</span>
+                  <span className="text-[11px] text-ink-muted font-serif">Upload your files or {SAMPLE_DOCUMENTS_SHORT_DESC.toLowerCase()}.</span>
                 </div>
               </div>
               {!step1Done && (
@@ -340,7 +349,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  localStorage.setItem('nexusrag_inspector_visited', 'true');
+                  setUIState(UI_STATE_KEYS.INSPECTOR_VISITED, 'true');
                   onNavigate(VIEWS.INSPECTOR);
                 }}
                 className="w-full justify-center"
@@ -355,16 +364,16 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
       {/* 2. Varied-Layout Aggregate Metrics (Zero Static Data Compliant) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Total Documents - Featured Primary Metric */}
-        <div className="p-4 rounded-xl bg-surface border-2 border-brand/20 shadow-xs flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-surface border border-brand/30 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-brand uppercase tracking-wider">Total Documents</span>
-            <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
+            <span className="text-xs font-semibold text-brand font-sans">Total Documents</span>
+            <div className="w-7 h-7 rounded-lg bg-brand/10 flex items-center justify-center text-brand">
               <FileText className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-bold text-ink tracking-tight font-sans">{documents.length}</div>
-            <div className="text-[11px] text-ink-muted mt-1 flex items-center gap-1.5">
+            <div className="text-3xl font-bold text-ink tracking-tight font-sans">{documents.length}</div>
+            <div className="text-[11px] text-ink-muted mt-1 flex items-center gap-1.5 font-sans">
               <span className="font-medium text-ink">{documents.filter((d) => d.status === 'indexed').length} ready</span>
               <span>•</span>
               <span>{totalPages} {totalPages === 1 ? 'page' : 'pages'}</span>
@@ -373,14 +382,16 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
         </div>
 
         {/* Card 2: Knowledge Collections */}
-        <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col justify-between">
+        <div className="p-4 rounded-xl bg-surface-subtle/70 border border-border shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-ink-muted">Collections</span>
-            <Folder className="w-4 h-4 text-ink-muted" />
+            <span className="text-xs font-medium text-ink-muted font-sans">Collections</span>
+            <div className="w-7 h-7 rounded-lg bg-surface flex items-center justify-center text-ink-muted border border-border">
+              <Folder className="w-3.5 h-3.5" />
+            </div>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-bold text-ink tracking-tight">{collections.length}</div>
-            <p className="text-[11px] text-ink-muted mt-1">
+            <div className="text-2xl font-bold text-ink tracking-tight font-sans">{collections.length}</div>
+            <p className="text-[11px] text-ink-muted mt-1 font-serif">
               {collections.length === 0 ? 'No custom collections' : `${collections.length} organized namespaces`}
             </p>
           </div>
@@ -389,12 +400,14 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
         {/* Card 3: Vector Chunks & Embeddings */}
         <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-ink-muted">Vector Chunks</span>
-            <Sparkles className="w-4 h-4 text-ink-muted" />
+            <span className="text-xs font-medium text-ink-muted font-sans">Vector Chunks</span>
+            <span className="font-mono text-[10px] bg-surface-subtle text-ink-muted px-1.5 py-0.5 rounded border border-border">
+              768d MRL
+            </span>
           </div>
           <div className="mt-2">
             <div className="text-2xl font-bold text-ink tracking-tight font-mono">{totalChunks}</div>
-            <p className="text-[11px] text-ink-muted mt-1">
+            <p className="text-[11px] text-ink-muted mt-1 font-sans">
               {totalChunks === 0 ? 'No indexed chunks' : `${totalChunks} searchable passages`}
             </p>
           </div>
@@ -403,16 +416,18 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
         {/* Card 4: Research Sessions */}
         <div className="p-4 rounded-xl bg-surface border border-border shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-ink-muted">Active Sessions</span>
-            <MessageSquare className="w-4 h-4 text-ink-muted" />
+            <span className="text-xs font-medium text-ink-muted font-sans">Active Sessions</span>
+            <div className="w-7 h-7 rounded-lg bg-surface-subtle flex items-center justify-center text-ink-muted">
+              <MessageSquare className="w-3.5 h-3.5" />
+            </div>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-bold text-ink tracking-tight">{sessions.length}</div>
+            <div className="text-2xl font-bold text-ink tracking-tight font-sans">{sessions.length}</div>
             <button
               onClick={handleCreateNewSession}
-              className="text-[11px] text-brand hover:underline font-medium mt-1 text-left"
+              className="text-[11px] text-brand hover:underline font-medium mt-1 text-left cursor-pointer flex items-center gap-1 font-sans"
             >
-              + New research session
+              <span>+ New research session</span>
             </button>
           </div>
         </div>
@@ -511,7 +526,7 @@ export function DashboardPage({ onNavigate, onStartQuery, onOpenDocument }) {
             <FileText className="w-4 h-4 text-brand flex-shrink-0" />
             <div className="min-w-0">
               <div className="text-xs font-medium text-ink truncate">Add Sample Docs</div>
-              <div className="text-[10px] text-ink-muted truncate">Ingest 4 real papers</div>
+              <div className="text-[10px] text-ink-muted truncate">{SAMPLE_DOCUMENTS_TILE_SUBTITLE}</div>
             </div>
           </button>
 

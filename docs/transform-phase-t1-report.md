@@ -1,4 +1,4 @@
-# NexusRAG Transformation — Phase T1 Report: Blockers & Honesty Cleanup
+# NexusRAG Transformation - Phase T1 Report: Blockers & Honesty Cleanup
 **Date:** November 11, 2026  
 **Phase Status:** Completed & Fully Verified  
 **Commit:** `9d4d1ad`  
@@ -151,7 +151,7 @@ $ npm --prefix frontend test -- --run
 ### 3.3 Forbidden String Grep Audit
 ```
 $ git grep -n -E "annual_financial_report|100% verified|What will you discover today|256-bit isolation|1 of 1 files|ShadowFox" frontend/src/
-# (0 occurrences returned — completely clean)
+# (0 occurrences returned - completely clean)
 ```
 
 ### 3.4 Live Sample Ingestion & Idempotency Verification

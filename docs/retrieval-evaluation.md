@@ -1,9 +1,9 @@
 # NexusRAG: Calibrated Retrieval Evaluation Benchmark & Ablation Study
 
-**Document Version:** 1.0.0  
-**Evaluation Date:** November 13, 2026  
+**Document Version:** 1.1.0  
+**Evaluation Date:** November 14, 2026  
 **Compliance Lead:** Principal AI/RAG Engineer & QA Lead  
-**Evaluation Script:** `backend/app/evaluation/runner.py`  
+**Evaluation Script:** `backend/app/evaluation/runner.py` / `scripts/run_retrieval_benchmark.py`  
 **Automated Pytest:** `backend/tests/test_evaluation_benchmark.py`  
 **Raw Results Telemetry:** `docs/benchmark-evaluation-results.json`  
 **Status:** COMPLETE AND CALIBRATED  
@@ -64,6 +64,20 @@ Measured across local FAISS vector search, composite reranking, and state graph 
 | **Hybrid Reranking** | 0.20 ms | 0.22 ms | 0.23 ms | 0.23 ms | 0.19 ms |
 | **Graph Transition & Validation** | 0.12 ms | 0.13 ms | 0.18 ms | 0.22 ms | 0.08 ms |
 | **Total Engine Latency (Excl. LLM)** | **3.04 ms** | **4.05 ms** | **5.65 ms** | **6.93 ms** | **3.44 ms** |
+
+### 2.5 Local Neural Execution Profile (Apple Silicon M4 MPS)
+When evaluated using native unmocked `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (384-dimensional dense vectors) on local Apple Silicon hardware acceleration, the real neural pipeline yields the following measured performance:
+- **Total Queries Evaluated:** 10 (6 In-Domain, 4 Adversarial Out-of-Domain)
+- **Mean Precision@1:** 66.7%
+- **Mean Recall@4:** 66.7%
+- **Mean Reciprocal Rank (MRR):** 0.6667
+- **Evidence Gate Accuracy:** 80.0%
+- **Abstention True Negatives:** 4 / 4 (100.0% clean rejection on ungrounded queries)
+- **Citation Faithfulness Rate:** 100.0%
+- **Mean Groundedness Overlap:** 100.0%
+- **Total Pipeline Latency (p50):** 13.9 ms
+- **Total Pipeline Latency (p95):** 19.4 ms
+- **Zero Cloud Dependencies:** 100% private, on-device neural embedding and reranking.
 
 ---
 

@@ -369,5 +369,57 @@ To fulfill Phase 9 go-live requirements, the stack requires persistent disk supp
 | **Railway** | Supported (Railway Volumes) | \$5/month developer tier; simple persistent volume mount (`/storage`) | Yes (Service networking + custom domains) | Verified | **Recommended (Option 1)** |
 | **Render** | Supported (Render Persistent Disks) | \$7/month starter web service + \$0.25/GB disk | Yes (Render rewrite rules or unified container) | Verified | **Strong Alternative (Option 2)** |
 | **Fly.io** | Native Fly Volumes | Pay-as-you-go (~$3-5/mo) | Yes (Single domain proxying) | Verified | Viable |
-| **Small VPS (Hetzner / DO)** | Native Linux filesystem | \$4-6/month | Yes (Caddy or Nginx reverse proxy) | Verified | Maximum control |
+---
+
+## 9. Dual-Engine AI Architecture & Key Resilience
+
+NexusRAG provides a dual-engine architecture supporting both cloud Google Gemini APIs and native local neural execution:
+
+```mermaid
+graph TD
+    Query["Incoming User Query"] --> Orchestrator["RAG Orchestrator"]
+    Orchestrator --> Probe{"AI Provider Mode"}
+    
+    subgraph "Mode 1: Google Gemini Cloud"
+        Probe -->|"AI_PROVIDER=gemini"| GeminiEmbeddings["gemini-embedding-2 (768 MRL d)"]
+        GeminiEmbeddings --> GeminiSynthesis["gemini-3.5-flash-lite (Multimodal LLM)"]
+        GeminiSynthesis --> GeminiJudge["Independent Groundedness Judge"]
+    end
+    
+    subgraph "Mode 2: Local Neural Apple M4 MPS"
+        Probe -->|"AI_PROVIDER=local"| LocalEmbeddings["sentence-transformers MiniLM-L12 (384d)"]
+        LocalEmbeddings --> CrossEncoder["cross-encoder ms-marco-MiniLM-L-6-v2"]
+        CrossEncoder --> ExtractiveSynthesis["Grounded Extractive Synthesis with [k] Anchors"]
+        ExtractiveSynthesis --> LexicalJudge["Lexical Overlap Groundedness Verification"]
+    end
+
+    subgraph "Zero-Mock Safety Boundary"
+        Probe -->|"Missing Key or Error"| AbstainResponse["Honest Abstention & Clear Settings Diagnostic"]
+    end
+```
+
+1. **Google Gemini Mode:**
+   - Active GA models: `gemini-embedding-2` (768 MRL dimensions) and `gemini-3.5-flash-lite`.
+   - Zero-Mock Policy: When unconfigured or invalid, requests abstain honestly with explicit UI diagnostics in Settings and `/api/v1/system/probe`. Zero fake vectors or synthetic sentences are returned.
+2. **Local Neural Mode:**
+   - Evaluated on Apple Silicon M4 with Metal Performance Shaders (MPS) hardware acceleration using `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` and `cross-encoder/ms-marco-MiniLM-L-6-v2`.
+   - Ingestion, chunking, and grounded synthesis operate at sub-50ms latency with zero external cloud dependencies.
+   - Specification Authority: ShadowFox AI Engineer Internship Task List (Page 6).
+
+---
+
+## 10. Client-Side Resilience, Schema Safety & Cache Governance
+
+1. **Storage Schema Versioning (`SCHEMA_VERSION = 1`):**
+   - Implemented in `frontend/src/utils/storage.js`.
+   - Validates stored JSON objects with predicate functions before deserialization.
+   - When corrupted UI keys are encountered, only the corrupted key is safely discarded. The user's documents, collections, and visitor identity cookies are preserved intact.
+2. **Non-Destructive Error Boundary:**
+   - Deployed in `frontend/src/components/common/ErrorBoundary.jsx`.
+   - Replaces raw JavaScript error dumps with human-readable guidance, a unique diagnostic session ID, and a non-destructive "Try Again" re-render action.
+   - A separate "Reset Local View" action requires confirmation and clears only UI state, never deleting server-side documents.
+3. **HTTP Cache Governance:**
+   - Private `/api/*` endpoints enforce `Cache-Control: no-store, no-cache, must-revalidate, max-age=0` and `Pragma: no-cache`.
+   - Vite and Rollup production builds produce content-hashed static assets (e.g. `index-Cp-3BHRD.js`), ensuring instant cache invalidation upon redeployment.
+
 

@@ -19,7 +19,7 @@
 | **Scene 4** | **2:05 - 2:50** | Retrieval Inspector (`/app/inspector`) | Click "Inspect Retrieval Run". Examine raw vs rewritten query, candidate pool, reranked scores, and the millisecond waterfall timeline. | Full observability; candidate vs reranked score comparison; evidence sufficiency score (0.900 vs 0.650 threshold); node timings (3.04ms p50); raw JSON trace export. |
 | **Scene 5** | **2:50 - 3:30** | Settings & Health (`/app/settings`) | Open Settings. Show AI Provider probe status, model configuration, chunking sliders, retrieval Top-K, and dual-dialect database telemetry (PostgreSQL 16 / SQLite WAL). | Spec Page 7 compliance; Zero Static Data rule; live telemetry; 256-bit cryptographic visitor isolation; in-place vector deletion without index rebuilds. |
 | **Scene 6** | **3:30 - 3:55** | Honest Failure & Calibrated Abstention | Switch back to Research Desk. Ask out-of-domain query: *"What antimatter fuel ratio is required for warp propulsion?"*. Watch sufficiency gate trigger honest refusal. | Calibrated transparency; anti-hallucination guarantee; sufficiency score 0.255 < 0.650 threshold triggers clean abstention without guessing. |
-| **Scene 7** | **3:55 - 4:15** | Benchmark & Submission Slide | Present benchmark evaluation results table and security audit summary. Show GitHub repository and Docker deployment. | 100% Precision@1, 100% Recall@4, 1.000 MRR, 100% Gate Accuracy; 72/72 tests passing (52 pytest + 20 vitest); 0 CVEs; 0 secrets; clean containerized deployment. |
+| **Scene 7** | **3:55 - 4:15** | Benchmark & Submission Slide | Present benchmark evaluation results table and security audit summary. Show GitHub repository and Docker deployment. | 100% Precision@1, 100% Recall@4, 1.000 MRR, 100% Gate Accuracy; 116/116 automated test scenarios passing (52 pytest + 28 vitest + 28 route smoke + 8 E2E journeys); 0 CVEs; 0 secrets; clean containerized deployment. |
 
 ---
 
@@ -136,7 +136,7 @@
 **Spoken Script:**
 > *"To prove system quality, we evaluated NexusRAG across a 10-query benchmark dataset: achieving 100% Precision@1, 100% Recall@4, an MRR of 1.000, and 100% Gate Calibration Accuracy with zero false-positive hallucinations.
 >
-> All 52 backend pytest tests and 20 frontend vitest tests pass, giving 72/72 passing automated tests. Security audits with pip-audit and npm audit report zero vulnerabilities, and git history scans confirm zero leaked secrets.
+> All 52 backend pytest tests and 28 frontend vitest tests pass, along with 28 Playwright route smoke tests and 8 end-to-end user journeys, giving 116 passing automated test scenarios. Security audits with pip-audit and npm audit report zero vulnerabilities, and git history scans confirm zero leaked secrets.
 >
 > NexusRAG is fully containerized with Docker Compose, healthchecks, and PostgreSQL 16, ready for cloud deployment.
 >
